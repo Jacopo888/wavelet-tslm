@@ -118,6 +118,30 @@ def t_lenient_coverage_only_warns():
     ei.check_eval_coverage(800, 800, "test", env={"TSLM_EVAL_STRICT": "1"})
 
 
+# ---- 3b. check_resume_checkpoint (rifiuto resume intra-epoca) --------------
+
+def t_resume_refuses_intra_epoch_under_coverage():
+    env = {"TSLM_REQUIRE_FULL_COVERAGE": "1"}
+    for bad in ("checkpoint_epoch_4_batch_2500.pt", "latest_checkpoint.pt"):
+        try:
+            ei.check_resume_checkpoint(f"/x/{bad}", env=env)
+        except SystemExit as e:
+            assert "intra-epoch" in str(e)
+            continue
+        raise AssertionError(f"{bad} accettato sotto coverage")
+
+
+def t_resume_allows_epoch_end_and_warm_start():
+    env = {"TSLM_REQUIRE_FULL_COVERAGE": "1"}
+    ei.check_resume_checkpoint("/x/epoch_4_end.pt", env=env)
+    ei.check_resume_checkpoint(
+        "/x/checkpoint_epoch_4_batch_2500.pt",
+        env={"TSLM_REQUIRE_FULL_COVERAGE": "1",
+             "TSLM_RESUME_WEIGHTS_ONLY": "1"})
+    ei.check_resume_checkpoint("/x/latest_checkpoint.pt", env={})  # no coverage
+    ei.check_resume_checkpoint(None, env=env)
+
+
 # ---- 4. parse_status_for --------------------------------------------------
 
 def t_parse_status():

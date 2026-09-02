@@ -46,6 +46,7 @@ from src.utils.config import ExperimentConfig
 from eval_integrity import (
     EvalJsonlWriter,
     check_eval_coverage,
+    check_resume_checkpoint,
     coverage_abort,
     parse_status_for,
     restore_grad_ckpt,
@@ -918,6 +919,8 @@ def train(
     env_resume = os.environ.get("TSLM_RESUME_FROM")
     if env_resume:
         resume_from = env_resume
+    # Coverage mode refuses intra-epoch resume points (silent epoch loss).
+    check_resume_checkpoint(resume_from)
 
     if resume_from is None:
         if config.runtime.run_name:
@@ -1282,6 +1285,17 @@ def train(
     else:
         print(f"  Best val {val_primary_metric}: n/a (no improvement this run)")
     print(f"  Checkpoint: {output_dir / 'checkpoints' / 'best_model.pt'}")
+
+    # TSLM_SKIP_FINAL_TEST=1: skip the built-in test eval on best-by-val-LOSS.
+    # The single-GPU pipeline selects best-by-val-PRIMARY afterwards and runs
+    # the test on THAT winner — the built-in eval would burn ~800 generations
+    # on a model the selection may discard (review finding, 02/09).
+    if os.environ.get("TSLM_SKIP_FINAL_TEST") == "1":
+        print("\n[SkipFinalTest] built-in test eval skipped: selection "
+              "best-by-primary + test run externally (eval worker)")
+        if exp_logger is not None:
+            exp_logger.finish()
+        return
 
     # Load best model for final evaluation
     if history["best_epoch"] is not None:

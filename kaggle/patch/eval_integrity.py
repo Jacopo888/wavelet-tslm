@@ -96,6 +96,30 @@ def check_eval_coverage(n_rows: int, n_expected: Optional[int],
         )
 
 
+def check_resume_checkpoint(path: str, env=None) -> None:
+    """Refuse INTRA-EPOCH resume when full coverage is required.
+
+    train.py's resume restarts from `epoch+1`: resuming from a
+    checkpoint_epoch_N_batch_M.pt silently skips the rest of epoch N
+    (thousands of rows the coverage counters never re-check) and shrinks
+    the schedule. Under TSLM_REQUIRE_FULL_COVERAGE=1 only end-of-epoch
+    checkpoints (epoch_*_end.pt) or explicit weights-only warm starts are
+    acceptable resume points (review finding, 02/09).
+    """
+    env = env if env is not None else os.environ
+    if not path or env.get("TSLM_REQUIRE_FULL_COVERAGE") != "1":
+        return
+    if env.get("TSLM_RESUME_WEIGHTS_ONLY") == "1":
+        return  # warm start, epochs restart from 1: coverage is intact
+    name = os.path.basename(str(path))
+    if "batch" in name or name == "latest_checkpoint.pt":
+        raise SystemExit(
+            f"[Coverage] ABORT: resume from intra-epoch checkpoint "
+            f"'{name}' would silently skip the remainder of its epoch. "
+            f"Resume from an epoch_*_end.pt (or set "
+            f"TSLM_RESUME_WEIGHTS_ONLY=1 for a warm start).")
+
+
 def parse_status_for(category: str, pred_answer: str,
                      parser=None, required_keys=None) -> str:
     """Classify how the official parser saw this prediction.
