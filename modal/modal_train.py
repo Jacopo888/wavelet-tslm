@@ -68,6 +68,26 @@ def _sync_dir(src, dst):
     shutil.copytree(src, dst, dirs_exist_ok=True)
 
 
+def _clone_repo(dest):
+    """Anonymous GitHub clones get throttled intermittently ('could not read
+    Username'): never prompt, retry with backoff."""
+    import os
+    import subprocess
+    import time
+    env = dict(os.environ, GIT_TERMINAL_PROMPT="0")
+    for attempt in range(1, 6):
+        r = subprocess.run(
+            f"git clone --depth 1 https://github.com/OpenTSLM/TimeRLM {dest}",
+            shell=True, env=env)
+        if r.returncode == 0:
+            return
+        print(f"[clone] attempt {attempt} failed (rc={r.returncode}), "
+              f"retrying in {10 * attempt}s", flush=True)
+        subprocess.run(f"rm -rf {dest}", shell=True)
+        time.sleep(10 * attempt)
+    raise RuntimeError("git clone failed after 5 attempts")
+
+
 def _materialize_data(repo, sys_executable):
     """Deterministic data provenance (integrity pass 02/09): train, val AND
     gold test all come from the PINNED HF revision via the patched
@@ -128,7 +148,7 @@ def train_session(session: str, config_file: str, subset_seed: int,
     else:
         print("from-scratch run: no resume checkpoint", flush=True)
 
-    _sh(f"git clone --depth 1 https://github.com/OpenTSLM/TimeRLM {REPO}")
+    _clone_repo(REPO)
     for src, dst in OVERLAY.items():
         dst_path = os.path.join(REPO, dst)
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
@@ -238,7 +258,7 @@ def select_and_eval(session: str, config_file: str):
         raise RuntimeError(f"no checkpoints dir under {sess_dir}")
     ck_dir = ck_dirs[0]
 
-    _sh(f"git clone --depth 1 https://github.com/OpenTSLM/TimeRLM {REPO}")
+    _clone_repo(REPO)
     for src, dst in OVERLAY.items():
         dst_path = os.path.join(REPO, dst)
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
@@ -317,7 +337,7 @@ def reeval(session: str, config_file: str, checkpoint_rel: str, tag: str):
     if not os.path.exists(ck):
         raise RuntimeError(f"missing checkpoint {ck}")
 
-    _sh(f"git clone --depth 1 https://github.com/OpenTSLM/TimeRLM {REPO}")
+    _clone_repo(REPO)
     for src, dst in OVERLAY.items():
         dst_path = os.path.join(REPO, dst)
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
