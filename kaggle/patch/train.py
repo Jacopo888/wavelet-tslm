@@ -45,9 +45,11 @@ from src.utils.config import ExperimentConfig
 # not fall back to the pre-integrity behavior.
 from eval_integrity import (
     EvalJsonlWriter,
+    budget_active,
     check_eval_coverage,
     check_resume_checkpoint,
     coverage_abort,
+    forbid_budget_under_coverage,
     parse_status_for,
     restore_grad_ckpt,
 )
@@ -919,8 +921,9 @@ def train(
     env_resume = os.environ.get("TSLM_RESUME_FROM")
     if env_resume:
         resume_from = env_resume
-    # Coverage mode refuses intra-epoch resume points (silent epoch loss).
-    check_resume_checkpoint(resume_from)
+    # A full-coverage run refuses partial budgets outright (a truncated
+    # epoch would save an epoch_N_end.pt that falsely looks complete).
+    forbid_budget_under_coverage()
 
     if resume_from is None:
         if config.runtime.run_name:
@@ -953,6 +956,11 @@ def train(
             output_dir = checkpoint_path.parent.parent
         else:
             output_dir = checkpoint_path.parent
+
+    # Coverage mode refuses non-epoch-boundary resume points. Checked on the
+    # RESOLVED path (2nd review round: the auto-resume discovery above picks
+    # latest_checkpoint.pt AFTER any earlier check would have run).
+    check_resume_checkpoint(resume_from)
 
     print("=" * 70)
     print(f"Training [{dataset_name}]")
@@ -1140,11 +1148,10 @@ def train(
             # Belt: the counters must also account for EVERY dataset row.
             # A dataloader that silently drops samples leaves both counters
             # clean while shrinking the epoch — catch that too (skipped when
-            # a time/step budget legitimately truncates the epoch).
-            budget_stop = (os.environ.get("TSLM_MAX_TRAIN_SECONDS")
-                           or os.environ.get("TSLM_MAX_TRAIN_STEPS"))
+            # a time/step budget legitimately truncates the epoch; "0"/"" do
+            # NOT count as budgets — 2nd review round).
             if (n_expected is not None and n_ok + n_fail != n_expected
-                    and not budget_stop):
+                    and not budget_active()):
                 raise SystemExit(
                     f"[Coverage] ABORT: epoch {epoch} accounted for "
                     f"{n_ok + n_fail}/{n_expected} dataset rows — samples were "

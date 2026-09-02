@@ -60,6 +60,12 @@ class QwenBackbone:
             # seq~1800 on a 4B model); sdpa uses memory-efficient kernels.
             defaults["attn_implementation"] = attn_env
 
+        # TSLM_QWEN_REVISION pins the exact HF snapshot (recorded in
+        # RUN_MANIFEST.json): without it the manifest documents a revision
+        # the run might not actually use (review finding, 02/09).
+        rev = os.environ.get("TSLM_QWEN_REVISION")
+        if rev:
+            defaults["revision"] = rev
         self._model = AutoModelForCausalLM.from_pretrained(self.model_id, **defaults)
 
         # Resize embeddings if tokenizer has been loaded with extra tokens
@@ -83,6 +89,7 @@ class QwenBackbone:
             local_files_only=False,
             trust_remote_code=True,
             cache_dir=None,
+            revision=os.environ.get("TSLM_QWEN_REVISION") or None,
         )
 
         # Qwen already has pad_token=<|endoftext|>, but guard just in case

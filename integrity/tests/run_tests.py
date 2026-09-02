@@ -120,13 +120,16 @@ def t_lenient_coverage_only_warns():
 
 # ---- 3b. check_resume_checkpoint (rifiuto resume intra-epoca) --------------
 
-def t_resume_refuses_intra_epoch_under_coverage():
+def t_resume_refuses_all_non_epoch_end_under_coverage():
+    # ALLOWLIST (2° giro review): anche best_model.pt e nomi arbitrari
+    # devono essere rifiutati, non solo i pattern noti.
     env = {"TSLM_REQUIRE_FULL_COVERAGE": "1"}
-    for bad in ("checkpoint_epoch_4_batch_2500.pt", "latest_checkpoint.pt"):
+    for bad in ("checkpoint_epoch_4_batch_2500.pt", "latest_checkpoint.pt",
+                "best_model.pt", "renamed_partial.pt", "epoch_4_end.pt.bak"):
         try:
             ei.check_resume_checkpoint(f"/x/{bad}", env=env)
         except SystemExit as e:
-            assert "intra-epoch" in str(e)
+            assert "not allowed" in str(e)
             continue
         raise AssertionError(f"{bad} accettato sotto coverage")
 
@@ -134,12 +137,35 @@ def t_resume_refuses_intra_epoch_under_coverage():
 def t_resume_allows_epoch_end_and_warm_start():
     env = {"TSLM_REQUIRE_FULL_COVERAGE": "1"}
     ei.check_resume_checkpoint("/x/epoch_4_end.pt", env=env)
+    ei.check_resume_checkpoint("/x/epoch_12_end.pt", env=env)
     ei.check_resume_checkpoint(
         "/x/checkpoint_epoch_4_batch_2500.pt",
         env={"TSLM_REQUIRE_FULL_COVERAGE": "1",
              "TSLM_RESUME_WEIGHTS_ONLY": "1"})
     ei.check_resume_checkpoint("/x/latest_checkpoint.pt", env={})  # no coverage
     ei.check_resume_checkpoint(None, env=env)
+
+
+def t_budget_active_ignores_zero_and_empty():
+    assert not ei.budget_active(env={})
+    assert not ei.budget_active(env={"TSLM_MAX_TRAIN_SECONDS": "0"})
+    assert not ei.budget_active(env={"TSLM_MAX_TRAIN_STEPS": ""})
+    assert ei.budget_active(env={"TSLM_MAX_TRAIN_SECONDS": "3600"})
+    assert ei.budget_active(env={"TSLM_MAX_TRAIN_STEPS": "1988"})
+
+
+def t_budget_forbidden_under_coverage():
+    try:
+        ei.forbid_budget_under_coverage(
+            env={"TSLM_REQUIRE_FULL_COVERAGE": "1",
+                 "TSLM_MAX_TRAIN_SECONDS": "3600"})
+    except SystemExit as e:
+        assert "falsely looks complete" in str(e)
+    else:
+        raise AssertionError("budget+coverage accettati insieme")
+    # combinazioni lecite
+    ei.forbid_budget_under_coverage(env={"TSLM_REQUIRE_FULL_COVERAGE": "1"})
+    ei.forbid_budget_under_coverage(env={"TSLM_MAX_TRAIN_SECONDS": "3600"})
 
 
 # ---- 4. parse_status_for --------------------------------------------------

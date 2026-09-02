@@ -6,8 +6,10 @@ set -u
 cd ~/timerlm/sft/tslm
 ENV="TSLM_TORCH_DTYPE=bfloat16 TSLM_AMP=1 TSLM_AMP_DTYPE=bfloat16 \
 TSLM_ATTN_IMPL=sdpa TSLM_SAVE_TRAINABLE_ONLY=1 TSLM_EVAL_STRICT=1 \
+TSLM_QWEN_REVISION=${TSLM_QWEN_REVISION:-} \
 HF_HUB_DISABLE_PROGRESS_BARS=1"
 EXPECTED_EPOCHS=5
+MAX_WAIT_HOURS=60
 
 fail() {
   echo "WORKER_FAILED: $1"
@@ -15,16 +17,36 @@ fail() {
   exit 1
 }
 
-while [ ! -f ~/logs/va1.done ]; do sleep 60; done
+# Attesa con LIVENESS (review 02/09, 2° giro): se la sessione tmux del
+# trainer muore senza scrivere va1.done, o si supera il tetto ore, il
+# worker FALLISCE invece di attendere per sempre in silenzio.
+waited=0
+while [ ! -f ~/logs/va1.done ]; do
+  if ! tmux has-session -t va1 2>/dev/null; then
+    sleep 30   # grazia: la shell puo' star scrivendo va1.done proprio ora
+    [ -f ~/logs/va1.done ] && break
+    fail "sessione tmux va1 morta senza scrivere va1.done"
+  fi
+  sleep 60
+  waited=$((waited + 60))
+  if [ "$waited" -ge $((MAX_WAIT_HOURS * 3600)) ]; then
+    fail "training oltre il tetto di ${MAX_WAIT_HOURS}h senza va1.done"
+  fi
+done
 train_exit=$(cat ~/logs/va1.done)
 [ "$train_exit" = "EXIT:0" ] || fail "training terminato con $train_exit (serve EXIT:0)"
 echo "training concluso con EXIT:0, parte la selezione"
 
 run="results/anomaly_xl_precise/anomaly_xl_wavelet_va1"
 ckdir="$run/checkpoints"
+# Insieme ESATTO 1..5, non un conteggio (5 file vecchi/sbagliati non passano).
+for ep in $(seq 1 $EXPECTED_EPOCHS); do
+  [ -f "$ckdir/epoch_${ep}_end.pt" ] || \
+    fail "manca il checkpoint epoch_${ep}_end.pt (insieme atteso: 1..$EXPECTED_EPOCHS)"
+done
 n_ck=$(ls "$ckdir"/epoch_*_end.pt 2>/dev/null | wc -l)
 [ "$n_ck" -eq "$EXPECTED_EPOCHS" ] || \
-  fail "trovati $n_ck checkpoint epoch_*_end.pt, attesi $EXPECTED_EPOCHS"
+  fail "trovati $n_ck checkpoint epoch_*_end.pt, attesi esattamente $EXPECTED_EPOCHS"
 
 for ck in "$ckdir"/epoch_*_end.pt; do
   ep=$(basename "$ck" | grep -oE '[0-9]+')

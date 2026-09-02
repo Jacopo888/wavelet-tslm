@@ -96,28 +96,61 @@ def check_eval_coverage(n_rows: int, n_expected: Optional[int],
         )
 
 
-def check_resume_checkpoint(path: str, env=None) -> None:
-    """Refuse INTRA-EPOCH resume when full coverage is required.
+_EPOCH_END_RE = None
 
-    train.py's resume restarts from `epoch+1`: resuming from a
-    checkpoint_epoch_N_batch_M.pt silently skips the rest of epoch N
+
+def check_resume_checkpoint(path: str, env=None) -> None:
+    """Refuse any non-epoch-boundary resume when full coverage is required.
+
+    train.py's resume restarts from `epoch+1`: resuming from anything that
+    is not a clean end-of-epoch state silently skips the rest of its epoch
     (thousands of rows the coverage counters never re-check) and shrinks
-    the schedule. Under TSLM_REQUIRE_FULL_COVERAGE=1 only end-of-epoch
-    checkpoints (epoch_*_end.pt) or explicit weights-only warm starts are
-    acceptable resume points (review finding, 02/09).
+    the schedule. Under TSLM_REQUIRE_FULL_COVERAGE=1 this is an ALLOWLIST
+    (2nd review round: a denylist let best_model.pt / renamed files
+    through): only `epoch_<n>_end.pt`, or an explicit weights-only warm
+    start, may resume.
     """
+    global _EPOCH_END_RE
     env = env if env is not None else os.environ
     if not path or env.get("TSLM_REQUIRE_FULL_COVERAGE") != "1":
         return
     if env.get("TSLM_RESUME_WEIGHTS_ONLY") == "1":
         return  # warm start, epochs restart from 1: coverage is intact
+    import re
+    if _EPOCH_END_RE is None:
+        _EPOCH_END_RE = re.compile(r"^epoch_\d+_end\.pt$")
     name = os.path.basename(str(path))
-    if "batch" in name or name == "latest_checkpoint.pt":
+    if not _EPOCH_END_RE.match(name):
         raise SystemExit(
-            f"[Coverage] ABORT: resume from intra-epoch checkpoint "
-            f"'{name}' would silently skip the remainder of its epoch. "
-            f"Resume from an epoch_*_end.pt (or set "
+            f"[Coverage] ABORT: resume from '{name}' is not allowed under "
+            f"TSLM_REQUIRE_FULL_COVERAGE=1 — only epoch_<n>_end.pt "
+            f"checkpoints resume with intact coverage (or set "
             f"TSLM_RESUME_WEIGHTS_ONLY=1 for a warm start).")
+
+
+def budget_active(env=None) -> bool:
+    """True when a partial-run budget is genuinely set ("0" and "" are NOT
+    budgets — the 2nd review round caught `"0"` disabling the coverage
+    belt)."""
+    env = env if env is not None else os.environ
+    for var in ("TSLM_MAX_TRAIN_SECONDS", "TSLM_MAX_TRAIN_STEPS"):
+        v = (env.get(var) or "").strip()
+        if v and v != "0":
+            return True
+    return False
+
+
+def forbid_budget_under_coverage(env=None) -> None:
+    """A full-coverage run and a partial budget contradict each other: the
+    budget truncates epochs whose epoch_N_end.pt then LOOK complete
+    (review finding #4, 2nd round). Refuse the combination at startup."""
+    env = env if env is not None else os.environ
+    if env.get("TSLM_REQUIRE_FULL_COVERAGE") == "1" and budget_active(env):
+        raise SystemExit(
+            "[Coverage] ABORT: TSLM_MAX_TRAIN_SECONDS/STEPS set together "
+            "with TSLM_REQUIRE_FULL_COVERAGE=1 — a budget-truncated epoch "
+            "would save an epoch_N_end.pt that falsely looks complete. "
+            "Drop the budget or the coverage flag.")
 
 
 def parse_status_for(category: str, pred_answer: str,
