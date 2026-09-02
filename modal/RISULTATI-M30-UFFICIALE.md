@@ -31,12 +31,36 @@ Modal A100-80GB, bf16, da zero. 22.440 batch processati (4.488×5), ma solo **19
 | classify | 0.004 | 0.011 | 0.000 | 0.022 | 0.745 |
 | primary | 0.211 | 0.238 | — | — | — |
 
-## Lettura
+## Lettura (RISCRITTA dopo l'integrity pass del 02/09 sera — vedi integrity/REPORT.md)
 
-1. **Il titolo regge, e migliora, nel run pulito**: localize 0.181 — ~25-60× il blocco TSLM pubblicato e SOPRA il baseline classico (0.160). Il primo percettore SFT della classe che localizza meglio del classico, con ricetta 100% fedele e certificata (ogni episodio visto, ogni epoca piena).
-2. **measure_magnitude 0.510**: 5,5× il miglior TSLM pubblicato, a un soffio dall'agente GPT+codice (0.554).
-3. **Scoperta collaterale (dal confronto con full1)**: il run "sporco" — che per un incidente ha visto le celle 16-canali SOLO nelle ultime ~1,4 epoche a LR basso — fa MEGLIO su all_channels (0.180 vs 0.030) e lead_lag (0.340 vs 0.264). L'incidente è di fatto un **esperimento di curriculum**: esposizione multicanale concentrata e tardiva > esposizione uniforme, per i task multicanale. Non citabile come protocollo (non riproducibile a disegno), ma è un'ipotesi concreta e testabile per il futuro (curriculum weighting delle celle 16ch) e materiale eccellente per la discussione col lab.
+1. **localize 0.181 NON dimostra localizzazione** (decomposizione sui
+   per-esempio, input ufficiali pinnati): la confusion è TP131/FP3/FN30/TN36
+   — **detection di presenza genuina** (precision 0.978, recall 0.814,
+   accuratezza 0.835, sopra entrambi i null: sempre-assente 0.195,
+   sempre-presente 0.805) — ma l'**IoU sui 161 positivi è 0.0017**. Il
+   primary è quasi tutto credito dei negativi (36/200=0.180). Nota: i TSLM
+   pubblicati (0.003-0.008) stanno molto SOTTO il null 0.195 (allucinano
+   anomalie); il confronto va comunque scoped alla famiglia Chronos+4B
+   (Toto SFT 32B in Table 1 va citato a parte, con nota di classe).
+   Fenotipo "rileva ma non piazza" coerente con l'ipotesi bf16-posizioni
+   (→ variante v2 fp32, esperimento separato).
+2. **measure_magnitude 0.510 CI95 [0.463, 0.556]**: il risultato forte e
+   stabile — 5,5× il miglior TSLM pubblicato, vicino all'agente GPT+codice
+   (0.554).
+3. **Il "curriculum accidentale" di full1 è SGONFIATO**: il suo all_channels
+   0.18-0.20 è interamente accuratezza sui 23 gold vuoti (18-20/23 corretti)
+   con **F1 0.000 sui 77 gold non vuoti**. L'esposizione 16ch tardiva ha
+   insegnato la calibrazione a rispondere "nessuna anomalia", NON la
+   localizzazione multicanale. lead_lag: entrambi i run ≈ o sotto il null
+   0.350 — nessuna evidenza di skill lead/lag.
 4. classify resta ~0 per tutti i percettori SFT (terreno dell'agente → Livello 2).
+
+**Numeri certificati sul test HF pinnato `df363a46` (02/09 sera, eval-only,
+800/800, JSONL per-esempio)**: m30-ep4 primary **0.2156** (identico allo
+storico su tutto tranne lead_lag 0.3043 — le serie rigenerate differivano
+dall'HF solo nelle 100 righe lead_lag); full1-best-ep5 **0.2356**; full1
+post-top-up **0.2417** (22.440/22.440 step — candidato full1 di
+riferimento). Tabella completa in `integrity/REPORT.md`.
 
 ## Costi e infrastruttura
 

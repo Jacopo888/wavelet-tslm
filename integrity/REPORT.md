@@ -109,14 +109,22 @@ ora passa pulita. I percorsi torch-bound di train.py sono compilati
 Job Modal `reeval` (A100-40GB, evaluator nuovo, 800/800, eval_errors=0,
 JSONL per-esempio in artifacts/):
 
-| Categoria | m30 ep4 (hfpin) | m30 ep4 (storico, input rigenerati) | full1 post-top-up (hfpin) | full1 best ep5 (storico) |
-|---|---:|---:|---:|---:|
-| primary | **0.2156** | 0.2106 | **0.2417** | 0.2376 |
-| localize | 0.1814 | 0.1814 (identico) | 0.1755 | 0.1576 |
-| classify | 0.0037 | 0.0037 (identico) | 0.0089 | 0.0105 |
-| measure_magnitude | 0.5102 | 0.5102 (identico) | 0.5326 | 0.5220 |
-| all_channels | 0.0300 | 0.0300 (identico) | 0.2000 | 0.1800 |
-| lead_lag | 0.3043 | 0.2643 | 0.2993 | 0.3403 |
+| Categoria | m30 ep4 (hfpin) | m30 ep4 (storico) | full1 best ep5 (hfpin) | full1 best ep5 (storico) | full1 post-top-up (hfpin) |
+|---|---:|---:|---:|---:|---:|
+| primary | **0.2156** | 0.2106 | **0.2356** | 0.2376 | **0.2417** |
+| localize | 0.1814 | 0.1814 (id.) | 0.1621 | 0.1576 | 0.1755 |
+| classify | 0.0037 | 0.0037 (id.) | 0.0106 | 0.0105 | 0.0089 |
+| measure_magnitude | 0.5102 | 0.5102 (id.) | 0.5229 | 0.5220 | 0.5326 |
+| all_channels | 0.0300 | 0.0300 (id.) | 0.1900 | 0.1800 | 0.2000 |
+| lead_lag | 0.3043 | 0.2643 | 0.3035 | 0.3403 | 0.2993 |
+
+Decomposizione full1-best sugli input ufficiali: localize conf
+TP135/FP7/FN26/TN32 (prec 0.951, rec 0.839), IoU positivi 0.0026;
+all_channels 0.190 = empty-acc 0.826 con F1 0.000 sui non vuoti; MMag
+0.5229 CI [0.472, 0.572]; zero violazioni strict. Stesso fenotipo.
+Le piccole differenze full1-best storico↔hfpin fuori da lead_lag derivano
+dal percorso (eval in-run 29/08 vs eval-only da checkpoint ricaricato);
+d'ora in poi fanno fede SOLO gli eval-only hfpin.
 
 Letture:
 - **Scoperta di provenienza raffinata**: per m30 (stesso checkpoint, stesso

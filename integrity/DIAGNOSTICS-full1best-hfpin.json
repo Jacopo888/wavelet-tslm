@@ -1,0 +1,103 @@
+{
+ "a": {
+  "name": "full1_best_hfpin",
+  "n": 800,
+  "categories": {
+   "classify_with_evidence": {
+    "n": 200,
+    "primary": {
+     "mean": 0.010618129799977142,
+     "ci95": [
+      0.001968085106382979,
+      0.02259485572004479
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   },
+   "lead_lag_with_magnitude": {
+    "n": 100,
+    "primary": {
+     "mean": 0.30350677490234373,
+     "ci95": [
+      0.2157012939453125,
+      0.39350677490234376
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   },
+   "localize": {
+    "n": 200,
+    "primary": {
+     "mean": 0.16209601400484783,
+     "ci95": [
+      0.1124367088607595,
+      0.21453272286560737
+     ]
+    },
+    "null_baseline": 0.195,
+    "strict_violations": {},
+    "decomposition": {
+     "confusion": {
+      "tp": 135,
+      "fp": 7,
+      "fn": 26,
+      "tn": 32
+     },
+     "n_gold_positive": 161,
+     "n_gold_negative": 39,
+     "negatives_accuracy": 0.8205128205128205,
+     "positives_mean_iou": 0.0026037441054010337,
+     "matched_mean_iou": 0.0031052059331078993,
+     "n_matched": 135,
+     "positives_acc_at_iou": {
+      "0.1": 0.012422360248447204,
+      "0.3": 0.0,
+      "0.5": 0.0
+     },
+     "presence_recall": 0.8385093167701864,
+     "presence_precision": 0.9507042253521126
+    }
+   },
+   "localize_all_channels": {
+    "n": 100,
+    "primary": {
+     "mean": 0.19,
+     "ci95": [
+      0.12,
+      0.27
+     ]
+    },
+    "null_baseline": 0.23,
+    "strict_violations": {},
+    "decomposition": {
+     "n_empty_gold": 23,
+     "empty_accuracy": 0.8260869565217391,
+     "n_nonempty_gold": 77,
+     "nonempty_mean_f1": 0.0
+    }
+   },
+   "measure_magnitude": {
+    "n": 200,
+    "primary": {
+     "mean": 0.5229478706650478,
+     "ci95": [
+      0.4720698191813736,
+      0.5719926985522173
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   }
+  },
+  "strict_violations_total": {},
+  "primary_overall": {
+   "mean": 0.23560385048026117,
+   "ci95": [
+    0.20886989598796393,
+    0.26268312388978227
+   ]
+  }
+ }
+}

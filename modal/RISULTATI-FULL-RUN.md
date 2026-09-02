@@ -1,5 +1,14 @@
 # Run ufficiale wavelet — risultati (Modal A100-40GB, bf16)
 
+> **AGGIORNAMENTO 02/09 (integrity pass — fa fede `integrity/REPORT.md`)**:
+> numeri certificati sul test HF pinnato: best-ep5 primary **0.2356**
+> (localize 0.1621, MMag 0.5229, all_ch 0.190), post-top-up **0.2417**.
+> Due correzioni di lettura: (1) l'all_channels 0.18-0.19 è INTERAMENTE
+> accuratezza sui 23 gold vuoti (F1 0.000 sui 77 non vuoti) — il "vantaggio
+> curriculum" era calibrazione, non localizzazione multicanale; (2) il
+> localize è detection di presenza (precision 0.951, recall 0.839), NON
+> localizzazione: IoU sui positivi 0.0026.
+
 Ricetta del paper: full train set (4.488) × 5 epoche, batch 1, LoRA r16/α32, LR 1e-4 linear+warmup 3%, selezione best per val loss. Eval sul gold test **completo (800 righe, seed 42)** — confrontabile riga-per-riga con la Table 1.
 
 ## Storia del run (per onestà del report)
