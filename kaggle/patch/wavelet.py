@@ -1,8 +1,10 @@
 """WaveletTSModel — ChatTS-style TSLM with a multiresolution wavelet front-end.
 
-Identical to ChatTSModel in every respect (placeholder-token embedding
-replacement, projector, LoRA'd Qwen backbone, loss, generation) except the
-perception module: WaveletTSEncoder replaces the frozen Chronos-2 encoder.
+Identical to ChatTSModel in every architectural respect (placeholder-token
+embedding replacement, projector, LoRA'd Qwen backbone, loss objective,
+generation) except the perception module: WaveletTSEncoder replaces the
+frozen Chronos-2 encoder.  Its training forward computes that same loss from
+supervised hidden-state positions only to avoid sequence-wide logits.
 Uniform patching becomes adaptive resolution allocation — a fixed budget of
 tokens spent on the coarse band plus the largest detail coefficients.
 
@@ -11,7 +13,10 @@ Use ``model.architecture: wavelet`` with ``extra_kwargs.encoding_method: raw``.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
+
+import torch
+import torch.nn.functional as F
 
 from src.models.chatts import ChatTSModel, MLPProjector
 from src.models.qwen_backbone import QwenBackbone
@@ -22,6 +27,77 @@ if TYPE_CHECKING:
 
 
 class WaveletTSModel(ChatTSModel):
+
+    def forward(
+        self,
+        time_series: torch.Tensor,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        labels: torch.Tensor | None = None,
+        memory_efficient_loss: bool = True,
+        **kwargs: Any,
+    ) -> dict[str, torch.Tensor]:
+        """Run Qwen without materializing prompt logits during training.
+
+        The inherited ChatTS loss builds logits for the entire multimodal
+        sequence and only then masks the prompt with ``ignore_index=-100``.
+        For long multichannel examples, cross entropy upcasts that full
+        ``(batch, sequence, vocab)`` tensor to fp32 and creates a multi-GiB
+        temporary even though only the short answer suffix contributes.
+
+        Qwen's ``logits_to_keep`` indexes the final hidden states *before*
+        ``lm_head``.  Causal LM position ``t`` predicts label ``t + 1``, so
+        the indices below are deliberately computed from ``labels[..., 1:]``.
+        Selecting exactly its non-ignored entries is mathematically identical
+        to the inherited shifted CE (batch size is fixed to one by the run
+        configs), while reducing logits to answer-token rows only.
+
+        ``memory_efficient_loss=False`` is a diagnostic escape hatch used by
+        ``test_loss_equivalence.py`` to execute the unmodified inherited path
+        on small real samples.  Inference also keeps the inherited full-logit
+        behavior because it has no labels/loss allocation.
+        """
+        if labels is None or not memory_efficient_loss:
+            return super().forward(
+                time_series=time_series,
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                labels=labels,
+                **kwargs,
+            )
+
+        if labels.ndim != 2 or labels.size(0) != 1:
+            raise ValueError(
+                "WaveletTSModel's memory-efficient loss requires batch_size=1"
+            )
+
+        ts_features = self._encode_and_project(time_series)
+        inputs_embeds = self._merge_features(ts_features, input_ids)
+
+        # shift_labels[:, t] is predicted by hidden_states[:, t].  Keeping the
+        # non--100 positions here (rather than after lm_head) is the memory win.
+        shift_labels = labels[..., 1:].contiguous()
+        keep_positions = torch.nonzero(
+            shift_labels[0] != -100, as_tuple=False
+        ).flatten()
+
+        outputs = self.llm_model(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask,
+            use_cache=False,
+            logits_to_keep=keep_positions,
+        )
+        logits = outputs.logits
+        selected_labels = shift_labels.index_select(1, keep_positions)
+        loss = F.cross_entropy(
+            logits.reshape(-1, logits.size(-1)),
+            selected_labels.reshape(-1),
+            ignore_index=-100,
+        )
+
+        # With labels, logits intentionally contain supervised positions only;
+        # no training/evaluation caller in this patch consumes full logits.
+        return {"logits": logits, "loss": loss}
 
     @classmethod
     def from_config(cls, config: "ExperimentConfig", device: str) -> "WaveletTSModel":
