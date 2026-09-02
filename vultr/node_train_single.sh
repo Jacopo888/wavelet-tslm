@@ -41,7 +41,11 @@ TSLM_REQUIRE_FULL_COVERAGE=1 TSLM_EVAL_STRICT=1 TSLM_SKIP_FINAL_TEST=1 \
 TSLM_QWEN_REVISION=$QWEN_REV \
 TSLM_SAVE_TRAINABLE_ONLY=1 \
 TSLM_SAVE_OPT_STATE=1 TSLM_VAL_GEN=0 TSLM_KEEP_EPOCH_CKPTS=1 \
-PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True HF_HUB_DISABLE_PROGRESS_BARS=1"
+HF_HUB_DISABLE_PROGRESS_BARS=1"
+# NB vGPU (02/09, confermato con Codex): NIENTE expandable_segments qui —
+# usa le API CUDA VMM che i profili GRID non supportano ("operation not
+# supported" alla prima allocazione grande). Allocator nativo di default;
+# max_split_size_mb solo se compare frammentazione reale in memory_summary.
 
 tmux new-session -d -s va1 \
   "cd ~/timerlm/sft/tslm && env $COMMON_ENV CUDA_VISIBLE_DEVICES=0 \
