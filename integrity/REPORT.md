@@ -104,14 +104,36 @@ da 77 righe rilevato sui file di quarantena effettivi; la root dati reale
 ora passa pulita. I percorsi torch-bound di train.py sono compilati
 (py_compile) e la loro logica è estratta in eval_integrity.py testato.
 
-## 7. In corso: ri-valutazione sul test UFFICIALE pinnato
+## 7. Ri-valutazione sul test UFFICIALE pinnato — FATTA (numeri certificati)
 
-Job Modal `reeval` (2× A100-40GB paralleli, ~$3-5, NON training): m30
-epoch_4_end e full1 latest sul test HF `df363a46`, evaluator nuovo (JSONL
-per-esempio, strict). Output in `sessions/{m30,full1}/reeval/` + JSONL.
-Al termine: diagnostica sui byte ufficiali → numeri certificabili per la
-proposta. (Atteso: piccole variazioni dai numeri storici — stessi gold,
-altre realizzazioni di rumore in input.)
+Job Modal `reeval` (A100-40GB, evaluator nuovo, 800/800, eval_errors=0,
+JSONL per-esempio in artifacts/):
+
+| Categoria | m30 ep4 (hfpin) | m30 ep4 (storico, input rigenerati) | full1 post-top-up (hfpin) | full1 best ep5 (storico) |
+|---|---:|---:|---:|---:|
+| primary | **0.2156** | 0.2106 | **0.2417** | 0.2376 |
+| localize | 0.1814 | 0.1814 (identico) | 0.1755 | 0.1576 |
+| classify | 0.0037 | 0.0037 (identico) | 0.0089 | 0.0105 |
+| measure_magnitude | 0.5102 | 0.5102 (identico) | 0.5326 | 0.5220 |
+| all_channels | 0.0300 | 0.0300 (identico) | 0.2000 | 0.1800 |
+| lead_lag | 0.3043 | 0.2643 | 0.2993 | 0.3403 |
+
+Letture:
+- **Scoperta di provenienza raffinata**: per m30 (stesso checkpoint, stesso
+  percorso eval, generazione greedy) 4 categorie su 5 sono IDENTICHE alla
+  decima cifra → le serie rigenerate differiscono dall'HF pubblicato SOLO
+  nelle 100 righe lead_lag. Il resto del benchmark generato è
+  bit-equivalente. lead_lag resta comunque ≈ null (0.350) in ogni versione.
+- **La decomposizione regge sugli input ufficiali** (DIAGNOSTICS-hfpin.json):
+  m30 localize confusion identica (TP131/FP3/FN30/TN36, precision 0.978),
+  IoU positivi 0.0017; full1 confusion TP131/FP4/FN30/TN35, IoU positivi
+  0.0006; all_channels di full1 = 0.200, tutto da empty-accuracy 0.870 con
+  F1 0.000 sui non vuoti. Conclusioni input-robuste.
+- Parse status (JSONL): m30 740/800 parsed, 60 parse_failed; full1 800/800.
+- NB: il primo re-eval full1 ha usato `latest_checkpoint.pt` (post-top-up),
+  non il canonico `best_model.pt` (ep5) del run storico — re-eval del
+  best_model lanciato per completezza; il post-top-up risulta comunque
+  MIGLIORE (0.2417), candidato a diventare il full1 di riferimento.
 
 ## 8. Implicazioni per la proposta
 
