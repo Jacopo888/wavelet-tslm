@@ -1,0 +1,8 @@
+--channel 2 --mode energy --level 1 --start 2048 --end 4096
+--channel 2 --mode detail --level 1 --start 2900 --end 3350 --top 20
+--channel 2 --mode approx --level 1 --start 2930 --end 3300
+--channel 2 --mode energy --level 1 --start 2900 --end 3350
+--channel 1 --mode energy --level 1 --start 2900 --end 3350
+--channel 3 --mode energy --level 1 --start 2900 --end 3350
+--channel 2 --mode detail --level 1 --start 2930 --end 2990 --top 15
+--channel 2 --mode detail --level 1 --start 3200 --end 3300 --top 15

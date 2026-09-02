@@ -1,0 +1,5 @@
+--channel 3 --mode approx --level 3 --start 7680 --end 8960
+--channel 3 --mode energy --level 4 --start 7680 --end 8960
+--channel 3 --mode approx --level 5 --start 6656 --end 10752
+--channel 3 --mode approx --level 1 --start 7700 --end 7950
+--channel 3 --mode approx --level 1 --start 8650 --end 8900

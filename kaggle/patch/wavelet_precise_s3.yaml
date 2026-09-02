@@ -1,0 +1,73 @@
+# WaveletTSModel - chained-session training, session 3.
+# Warm-starts (weights-only) from the session-2 checkpoint mounted as kernel
+# input; fresh 2000-sample subset (TSLM_SUBSET_SEED=1043). max_samples stays
+# 2000 in every session so the fixed-RNG val/test draws (200 rows each) are
+# identical session-over-session.
+
+name: anomaly_xl_wavelet_precise_s3
+seed: 42
+
+dataset:
+  name: anomaly_xl_precise
+  extra_kwargs:
+    variant: precise
+    train_dir: anomalyXL/datasets/anomalyxl-train/anomalyxl-precise
+
+model:
+  architecture: wavelet
+
+  encoder:
+    type: wavelet
+    output_dim: 512
+    num_tokens: 256
+    coarse_blocks: 128
+    n_pos_freqs: 16
+    freeze: false
+
+  projector:
+    type: mlp
+
+  extra_kwargs:
+    encoding_method: raw
+    freeze_lm_embeddings: true
+
+backbone:
+  name: qwen
+  model_id: Qwen/Qwen3.5-4B
+
+training:
+  backbone_training: lora
+  batch_size: 1
+  num_epochs: 1
+
+  learning_rate:
+    default: 1.0e-4
+
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_ratio: 0.03
+
+  early_stopping:
+    enabled: false
+    patience: 3
+    metric: val_loss
+    mode: min
+
+  logging:
+    wandb:
+      enabled: false
+
+  checkpointing:
+    save_every_n_steps: 500
+    save_best: true
+    metric: val_loss
+    mode: min
+
+  dataloader:
+    num_workers: 0
+    pin_memory: false
+
+runtime:
+  output_dir: results
+  run_name: anomaly_xl_wavelet_precise_s3
+  max_samples: 2000

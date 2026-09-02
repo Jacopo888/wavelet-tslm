@@ -1,0 +1,74 @@
+# Top-up run: complete the official 22440-step recipe after the epoch-4
+# truncation (crash at batch 2500/4488). Same run_name/output as the full run
+# so it auto-resumes full-state from latest_checkpoint.pt; num_epochs 6 only
+# re-enters the epoch loop (resume sets start_epoch = 6) - the LR schedule
+# stays the official 22440 via TSLM_SCHED_TOTAL_STEPS and the run stops at
+# TSLM_MAX_TRAIN_STEPS. Then val + the definitive 800-row gold eval.
+
+name: anomaly_xl_wavelet_precise_full
+seed: 42
+
+dataset:
+  name: anomaly_xl_precise
+  extra_kwargs:
+    variant: precise
+    train_dir: anomalyXL/datasets/anomalyxl-train/anomalyxl-precise
+
+model:
+  architecture: wavelet
+
+  encoder:
+    type: wavelet
+    output_dim: 512
+    num_tokens: 256
+    coarse_blocks: 128
+    n_pos_freqs: 16
+    freeze: false
+
+  projector:
+    type: mlp
+
+  extra_kwargs:
+    encoding_method: raw
+    freeze_lm_embeddings: true
+
+backbone:
+  name: qwen
+  model_id: Qwen/Qwen3.5-4B
+
+training:
+  backbone_training: lora
+  batch_size: 1
+  num_epochs: 6
+
+  learning_rate:
+    default: 1.0e-4
+
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_ratio: 0.03
+
+  early_stopping:
+    enabled: false
+    patience: 3
+    metric: val_loss
+    mode: min
+
+  logging:
+    wandb:
+      enabled: false
+
+  checkpointing:
+    save_every_n_steps: 500
+    save_best: true
+    metric: val_loss
+    mode: min
+
+  dataloader:
+    num_workers: 0
+    pin_memory: false
+
+runtime:
+  output_dir: /vol/sessions/full1
+  run_name: anomaly_xl_wavelet_precise_full
+  max_samples: null

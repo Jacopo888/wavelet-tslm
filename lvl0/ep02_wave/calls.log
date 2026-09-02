@@ -1,0 +1,4 @@
+--channel 1 --mode detail --level 6 --start 9216 --end 13312 --top 20
+--channel 1 --mode approx --level 2 --start 10240 --end 11648
+--channel 1 --mode approx --level 3 --start 10240 --end 11648
+--channel 1 --mode energy --level 3 --start 10240 --end 11648

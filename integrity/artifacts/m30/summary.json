@@ -1,0 +1,13 @@
+{
+  "best_epoch": 2,
+  "best_val_loss": null,
+  "test_loss": 0.4935263664496597,
+  "test_primary": 0.17295770760192666,
+  "test_category_primary": {
+    "localize": 0.175,
+    "classify_with_evidence": 0.003076923076923077,
+    "measure_magnitude": 0.44005746568039295,
+    "localize_all_channels": 0.01,
+    "lead_lag_with_magnitude": 0.13739288330078125
+  }
+}

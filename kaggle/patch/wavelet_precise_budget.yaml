@@ -1,0 +1,73 @@
+# WaveletTSModel - reduced-budget run sized for one 12h Kaggle 2xT4 session:
+# 1500 train samples x 1 epoch (~7.3h at 17.6s/step) + 150 val + 150 test
+# generations (~35s each). NOT directly comparable to the paper's 5008x5
+# official recipe - internal-comparison run; periodic checkpoints every 500
+# steps guard against the session wall.
+
+name: anomaly_xl_wavelet_precise_budget
+seed: 42
+
+dataset:
+  name: anomaly_xl_precise
+  extra_kwargs:
+    variant: precise
+    train_dir: anomalyXL/datasets/anomalyxl-train/anomalyxl-precise
+
+model:
+  architecture: wavelet
+
+  encoder:
+    type: wavelet
+    output_dim: 512
+    num_tokens: 256
+    coarse_blocks: 128
+    n_pos_freqs: 16
+    freeze: false
+
+  projector:
+    type: mlp
+
+  extra_kwargs:
+    encoding_method: raw
+    freeze_lm_embeddings: true
+
+backbone:
+  name: qwen
+  model_id: Qwen/Qwen3.5-4B
+
+training:
+  backbone_training: lora
+  batch_size: 1
+  num_epochs: 1
+
+  learning_rate:
+    default: 1.0e-4
+
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_ratio: 0.03
+
+  early_stopping:
+    enabled: false
+    patience: 3
+    metric: val_loss
+    mode: min
+
+  logging:
+    wandb:
+      enabled: false
+
+  checkpointing:
+    save_every_n_steps: 500
+    save_best: true
+    metric: val_loss
+    mode: min
+
+  dataloader:
+    num_workers: 0
+    pin_memory: false
+
+runtime:
+  output_dir: results
+  run_name: anomaly_xl_wavelet_precise_budget
+  max_samples: 1500

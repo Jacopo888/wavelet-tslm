@@ -1,0 +1,16 @@
+{
+  "id": "jacopodabundo/timerlm-wavelet-s4",
+  "title": "timerlm-wavelet-s4",
+  "code_file": "kernel_run.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "machine_shape": "NvidiaTeslaT4",
+  "enable_internet": "true",
+  "dataset_sources": ["jacopodabundo/timerlm-wavelet-patch"],
+  "competition_sources": [],
+  "kernel_sources": ["jacopodabundo/timerlm-wavelet-s3"],
+  "model_sources": []
+}

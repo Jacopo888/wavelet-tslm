@@ -1,0 +1,20 @@
+{
+  "train_loss": [
+    0.40399033083326724
+  ],
+  "val_loss": [
+    0.388524169921875
+  ],
+  "best_epoch": 1,
+  "best_val_metric": -0.388524169921875,
+  "best_val_metric_name": "primary",
+  "test_loss": 0.396409912109375,
+  "test_primary": 0.11529235004451735,
+  "test_category_primary": {
+    "measure_magnitude": 0.268272954648384,
+    "classify_with_evidence": 0.0,
+    "localize": 0.0,
+    "lead_lag_with_magnitude": 0.23694254557291666,
+    "localize_all_channels": 0.09090909090909091
+  }
+}

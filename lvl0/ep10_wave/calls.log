@@ -1,0 +1,8 @@
+--channel 1 --mode approx --level 3 --start 12800 --end 14336
+--channel 2 --mode approx --level 3 --start 12800 --end 14336
+--channel 3 --mode approx --level 3 --start 12800 --end 14336
+--channel 1 --mode detail --level 5 --start 12288 --end 14848 --top 12
+--channel 2 --mode detail --level 5 --start 12288 --end 14848 --top 12
+--channel 1 --mode detail --level 2 --start 12288 --end 14848 --top 15
+--channel 2 --mode detail --level 2 --start 12288 --end 14848 --top 15
+--channel 3 --mode detail --level 2 --start 12288 --end 14848 --top 15

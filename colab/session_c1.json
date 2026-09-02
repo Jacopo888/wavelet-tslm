@@ -1,0 +1,5 @@
+{
+  "config_file": "wavelet_precise_c1.yaml",
+  "subset_seed": 1044,
+  "train_budget_s": 10800
+}

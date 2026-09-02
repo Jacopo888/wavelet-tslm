@@ -1,0 +1,42 @@
+2026-08-27 20:11:14,128 | INFO | src.training.logging | Experiment 'anomaly_xl_wavelet_precise_s3' logging to results/anomaly_xl_precise/anomaly_xl_wavelet_precise_s3
+2026-08-27 20:11:14,291 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:14,305 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:14,316 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:14,403 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:14,403 | WARNING | huggingface_hub.utils._http | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-27 20:11:14,413 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:14,423 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:14,501 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:14,511 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:14,594 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-4B/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-08-27 20:11:14,683 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-4B/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-08-27 20:11:14,768 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/tokenizer.json "HTTP/1.1 302 Found"
+2026-08-27 20:11:14,851 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-4B/xet-read-token/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a "HTTP/1.1 200 OK"
+2026-08-27 20:11:15,759 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/tokenizer.model "HTTP/1.1 404 Not Found"
+2026-08-27 20:11:15,839 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/added_tokens.json "HTTP/1.1 404 Not Found"
+2026-08-27 20:11:15,919 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/special_tokens_map.json "HTTP/1.1 404 Not Found"
+2026-08-27 20:11:16,002 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/chat_template.jinja "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:16,012 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/chat_template.jinja "HTTP/1.1 200 OK"
+2026-08-27 20:11:16,022 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/chat_template.jinja "HTTP/1.1 200 OK"
+2026-08-27 20:11:17,702 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-4B "HTTP/1.1 200 OK"
+2026-08-27 20:11:17,867 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:17,877 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:17,960 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-08-27 20:11:18,161 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:18,171 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/config.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:18,254 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-08-27 20:11:18,332 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/model.safetensors.index.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:11:18,341 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/model.safetensors.index.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:18,352 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/model.safetensors.index.json "HTTP/1.1 200 OK"
+2026-08-27 20:11:18,436 | INFO | httpx | HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-4B/revision/main "HTTP/1.1 200 OK"
+2026-08-27 20:11:18,521 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/model.safetensors-00001-of-00002.safetensors "HTTP/1.1 302 Found"
+2026-08-27 20:11:18,566 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/model.safetensors-00002-of-00002.safetensors "HTTP/1.1 302 Found"
+2026-08-27 20:12:05,621 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/generation_config.json "HTTP/1.1 404 Not Found"
+2026-08-27 20:12:05,715 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-27 20:12:05,726 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/config.json "HTTP/1.1 200 OK"
+2026-08-27 20:12:05,811 | INFO | httpx | HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-4B/resolve/main/custom_generate/generate.py "HTTP/1.1 404 Not Found"
+2026-08-28 04:59:36,980 | INFO | src.training.logging | Epoch 1: {'train/epoch_loss': 0.40399033083326724, 'val/loss': 0.388524169921875, 'epoch': 1}
+2026-08-28 04:59:37,021 | INFO | src.training.logging | Logged artifact: best_model (model)
+2026-08-28 05:38:59,208 | INFO | src.training.logging | Summary: {'best_epoch': 1, 'best_val_loss': None, 'test_loss': 0.396409912109375, 'test_primary': 0.11529235004451735, 'test_category_primary': {'measure_magnitude': 0.268272954648384, 'classify_with_evidence': 0.0, 'localize': 0.0, 'lead_lag_with_magnitude': 0.23694254557291666, 'localize_all_channels': 0.09090909090909091}}
+2026-08-28 05:38:59,208 | INFO | src.training.logging | Experiment finished. Logs saved to results/anomaly_xl_precise/anomaly_xl_wavelet_precise_s3
+2026-08-28 05:38:59,295 | INFO | src.training.logging | Experiment finished. Logs saved to results/anomaly_xl_precise/anomaly_xl_wavelet_precise_s3

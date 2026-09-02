@@ -1,0 +1,11 @@
+# Sottorepo upstream (2.2GB: clone TimeRLM + venv + dati generati).
+# Stato tracciato in integrity/FREEZE.md (HEAD sha + lista overlay);
+# i sorgenti autorevoli degli innesti sono in kaggle/patch/.
+timerlm/
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.pt
+*.ckpt

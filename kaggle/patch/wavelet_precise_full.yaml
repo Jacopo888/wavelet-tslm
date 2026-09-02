@@ -1,0 +1,76 @@
+# WaveletTSModel - OFFICIAL-RECIPE run from scratch on Modal A100-40GB.
+# Faithful to the paper's TSLM SFT protocol: full train set x 5 epochs,
+# batch 1, LoRA r16 alpha32, LR 1e-4, wd 0.01, warmup 0.03, best-by-val.
+# max_samples null -> full val split for selection, FULL 800-row gold test
+# for the final eval => directly comparable with Table 1.
+# Documented deviations: bfloat16 AMP (their A100 class; Kaggle chain was
+# fp32), best-model selected by val LOSS (TSLM_VAL_GEN=0 skips per-epoch val
+# generations), single GPU.
+
+name: anomaly_xl_wavelet_precise_full
+seed: 42
+
+dataset:
+  name: anomaly_xl_precise
+  extra_kwargs:
+    variant: precise
+    train_dir: anomalyXL/datasets/anomalyxl-train/anomalyxl-precise
+
+model:
+  architecture: wavelet
+
+  encoder:
+    type: wavelet
+    output_dim: 512
+    num_tokens: 256
+    coarse_blocks: 128
+    n_pos_freqs: 16
+    freeze: false
+
+  projector:
+    type: mlp
+
+  extra_kwargs:
+    encoding_method: raw
+    freeze_lm_embeddings: true
+
+backbone:
+  name: qwen
+  model_id: Qwen/Qwen3.5-4B
+
+training:
+  backbone_training: lora
+  batch_size: 1
+  num_epochs: 5
+
+  learning_rate:
+    default: 1.0e-4
+
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_ratio: 0.03
+
+  early_stopping:
+    enabled: false
+    patience: 3
+    metric: val_loss
+    mode: min
+
+  logging:
+    wandb:
+      enabled: false
+
+  checkpointing:
+    save_every_n_steps: 500
+    save_best: true
+    metric: val_loss
+    mode: min
+
+  dataloader:
+    num_workers: 0
+    pin_memory: false
+
+runtime:
+  output_dir: /vol/sessions/full1
+  run_name: anomaly_xl_wavelet_precise_full
+  max_samples: null

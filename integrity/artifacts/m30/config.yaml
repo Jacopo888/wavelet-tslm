@@ -1,0 +1,68 @@
+name: anomaly_xl_wavelet_precise_m30
+seed: 42
+dataset:
+  name: anomaly_xl_precise
+  data_dir: data
+  split: train
+  extra_kwargs:
+    variant: precise
+    train_dir: anomalyXL/datasets/anomalyxl-train/anomalyxl-precise
+model:
+  architecture: wavelet
+  encoder:
+    type: wavelet
+    output_dim: 512
+    num_tokens: 256
+    coarse_blocks: 128
+    n_pos_freqs: 16
+    freeze: false
+  projector:
+    type: mlp
+  extra_kwargs:
+    encoding_method: raw
+    freeze_lm_embeddings: true
+backbone:
+  name: qwen
+  model_id: Qwen/Qwen3.5-4B
+  hf_checkpoint_repo: null
+  hf_checkpoint_file: model_checkpoint.pt
+training:
+  batch_size: 1
+  num_epochs: 5
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  backbone_training: lora
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules: null
+  learning_rate:
+    default: 0.0001
+  early_stopping:
+    enabled: false
+    patience: 3
+    metric: val_loss
+    mode: min
+  optimizer: {}
+  scheduler: {}
+  logging:
+    wandb:
+      enabled: false
+  checkpointing:
+    save_every_n_steps: 500
+    save_best: true
+    metric: val_loss
+    mode: min
+  dataloader:
+    num_workers: 0
+    pin_memory: false
+  eval_max_new_tokens: 500
+runtime:
+  output_dir: /vol/sessions/m30
+  run_name: anomaly_xl_wavelet_precise_m30
+  resume_from: null
+  resume_weights_only: false
+  max_samples: null
+  eval_samples_ratio: 0.1

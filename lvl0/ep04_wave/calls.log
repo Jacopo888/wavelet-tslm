@@ -1,0 +1,4 @@
+--channel 1 --mode energy --level 1 --start 8192 --end 10240
+--channel 1 --mode detail --level 1 --start 8800 --end 9600 --top 30
+--channel 1 --mode energy --level 1 --start 8800 --end 9000
+--channel 1 --mode energy --level 1 --start 9400 --end 9600

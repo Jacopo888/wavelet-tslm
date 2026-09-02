@@ -1,0 +1,22 @@
+{
+"1_code": {"channels": [2], "start": 2946, "end": 3258, "n_commands": 13},
+"2_code": {"channels": [1], "start": 10480, "end": 11392, "n_commands": 21},
+"3_code": {"channels": [3], "start": 10148, "end": 10647, "n_commands": 9},
+"4_code": {"channels": [1], "start": 8900, "end": 9498, "n_commands": 7},
+"5_code": {"channels": [1], "start": 9946, "end": 10088, "n_commands": 11},
+"6_code": {"channels": [3], "start": 7678, "end": 8878, "n_commands": 25},
+"7_code": {"channels": [2], "start": 2527, "end": 2927, "n_commands": 12},
+"8_code": {"channels": [2], "start": 10514, "end": 11215, "n_commands": 35},
+"9_code": {"channels": [1, 3], "start": 4968, "end": 5251, "n_commands": 7},
+"10_code": {"channels": [1, 2], "start": 12993, "end": 13892, "n_commands": 8},
+"1_wave": {"channels": [2], "start": 2968, "end": 3252, "n_commands": 8},
+"2_wave": {"channels": [1], "start": 10496, "end": 11391, "n_commands": 6},
+"3_wave": {"channels": [3], "start": 10150, "end": 10660, "n_commands": 10},
+"4_wave": {"channels": [1], "start": 8910, "end": 9500, "n_commands": 5},
+"5_wave": {"channels": [1], "start": 9920, "end": 10120, "n_commands": 5},
+"6_wave": {"channels": [3], "start": 7800, "end": 8800, "n_commands": 6},
+"7_wave": {"channels": [2], "start": 2527, "end": 2929, "n_commands": 9},
+"8_wave": {"channels": [2], "start": 10518, "end": 11210, "n_commands": 8},
+"9_wave": {"channels": [1, 3], "start": 4970, "end": 5170, "n_commands": 8},
+"10_wave": {"channels": [1, 2], "start": 12800, "end": 13952, "n_commands": 9}
+}

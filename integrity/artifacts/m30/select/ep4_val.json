@@ -1,0 +1,15 @@
+{
+  "loss": 0.5234084528942521,
+  "num_batches": 520,
+  "samples_evaluated": 520,
+  "primary": 0.22846774948330828,
+  "category_primary": {
+    "localize": 0.18761690983913204,
+    "classify_with_evidence": 0.0014565544952285284,
+    "measure_magnitude": 0.5156931243841966,
+    "localize_all_channels": 0.08333333333333333,
+    "lead_lag_with_magnitude": 0.27095703125
+  },
+  "checkpoint": "/vol/sessions/m30/anomaly_xl_precise/anomaly_xl_wavelet_precise_m30/checkpoints/epoch_4_end.pt",
+  "split": "val"
+}

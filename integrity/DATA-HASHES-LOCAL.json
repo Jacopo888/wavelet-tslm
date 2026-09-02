@@ -1,0 +1,60 @@
+{
+ "datasets/anomalyxl-precise/data.parquet": {
+  "sha256": "23659b11e7181f8aebeb96c4a7f396ea76d33a2ffb86ec66182e712fdcdf20af",
+  "bytes": 344449211,
+  "rows": 800
+ },
+ "datasets/anomalyxl-precise/manifest.json": {
+  "sha256": "4f0c2eeb8eadc171cc9da2f3cc63764608ac85e004938e91fd49ea47ae5dc93d",
+  "bytes": 1398
+ },
+ "datasets/anomalyxl-precise/train.parquet": {
+  "sha256": "3f986bb21fdc5092ba24449f7572443d2dc638b936ec27bfcd70a5e1e8144f33",
+  "bytes": 298836234,
+  "rows": 723
+ },
+ "datasets/anomalyxl-precise/val.parquet": {
+  "sha256": "72a2c3d14ae4cda81809b9936a5b63634b873e97cf3d12b7d16a4d6375d9397d",
+  "bytes": 35648895,
+  "rows": 77
+ },
+ "datasets/anomalyxl-coarse/data.parquet": {
+  "sha256": "5e773dd58eb86e11c063efefa192029b2e53f2d8a3ea8b8efad810dbb418d087",
+  "bytes": 128920781,
+  "rows": 248
+ },
+ "datasets/anomalyxl-coarse/manifest.json": {
+  "sha256": "28f8dde8bb408acd4b508d94104ae2ec8cbb729cad7c35ad02764b7cfb8b1d30",
+  "bytes": 794
+ },
+ "datasets/anomalyxl-train/anomalyxl-precise/data.parquet": {
+  "sha256": "23659b11e7181f8aebeb96c4a7f396ea76d33a2ffb86ec66182e712fdcdf20af",
+  "bytes": 344449211,
+  "rows": 800
+ },
+ "datasets/anomalyxl-train/anomalyxl-precise/train.parquet": {
+  "sha256": "3f986bb21fdc5092ba24449f7572443d2dc638b936ec27bfcd70a5e1e8144f33",
+  "bytes": 298836234,
+  "rows": 723
+ },
+ "datasets/anomalyxl-train/anomalyxl-precise/val.parquet": {
+  "sha256": "72a2c3d14ae4cda81809b9936a5b63634b873e97cf3d12b7d16a4d6375d9397d",
+  "bytes": 35648895,
+  "rows": 77
+ },
+ "datasets/anomalyxl-train/anomalyxl-coarse/data.parquet": {
+  "sha256": "5e773dd58eb86e11c063efefa192029b2e53f2d8a3ea8b8efad810dbb418d087",
+  "bytes": 128920781,
+  "rows": 248
+ },
+ "datasets/anomalyxl-train/anomalyxl-coarse/train.parquet": {
+  "sha256": "07ba53e6ff95fabbc06eb6f8609ff68fd3e83871728cff5dfe50e4c019864912",
+  "bytes": 111389807,
+  "rows": 231
+ },
+ "datasets/anomalyxl-train/anomalyxl-coarse/val.parquet": {
+  "sha256": "e3139a9225b4a03be3715105b0ad68bd571439a9c7c5c6b24adbaabdfbb84fe6",
+  "bytes": 16327606,
+  "rows": 17
+ }
+}

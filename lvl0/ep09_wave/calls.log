@@ -1,0 +1,7 @@
+--channel 1 --mode energy --level 1 --start 4096 --end 5120
+--channel 1 --mode energy --level 1 --start 4900 --end 5120
+--channel 1 --mode detail --level 1 --start 4900 --end 5120 --top 30
+--channel 3 --mode energy --level 1 --start 4096 --end 6144
+--channel 3 --mode detail --level 1 --start 4900 --end 5260 --top 30
+--channel 3 --mode detail --level 1 --start 5150 --end 5300 --top 20
+--channel 2 --mode energy --level 1 --start 4096 --end 5376
