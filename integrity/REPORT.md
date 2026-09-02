@@ -24,6 +24,13 @@ fix in commit `4601c62`.
 - `kaggle/patch/preflight_data.py`: gate che rifiuta qualunque root dati
   con split non disgiunti, conteggi errati o manifest fuori pin. Agganciato
   a node_env.sh, node_train.sh e modal_train.py (ogni percorso, cache inclusa).
+  **Indurito il 02/09 sera su rilievo della review esterna**: in modalità
+  training (default) FALLISCE anche su train/val/manifest ASSENTI e
+  riverifica righe+sha256 di ogni entry del manifest contro i file su disco
+  (una cache accettata sulla sola stringa di revisione può essere corrotta);
+  `--allow-test-only` per root di sola valutazione. In train.py aggiunta la
+  cintura "righe attese": a fine epoca ok+failed deve eguagliare le righe
+  del dataset (un dataloader che droppa in silenzio non passa più).
 
 ## 3. Fix di codice (fatto, commit 4601c62)
 
@@ -127,11 +134,20 @@ dal percorso (eval in-run 29/08 vs eval-only da checkpoint ricaricato);
 d'ora in poi fanno fede SOLO gli eval-only hfpin.
 
 Letture:
-- **Scoperta di provenienza raffinata**: per m30 (stesso checkpoint, stesso
-  percorso eval, generazione greedy) 4 categorie su 5 sono IDENTICHE alla
-  decima cifra → le serie rigenerate differiscono dall'HF pubblicato SOLO
-  nelle 100 righe lead_lag. Il resto del benchmark generato è
-  bit-equivalente. lead_lag resta comunque ≈ null (0.350) in ogni versione.
+- **Scoperta di provenienza, ora PROVATA sui contenuti** (recepito il rilievo
+  della review esterna: metriche identiche ≠ byte identici): fingerprint
+  per-categoria delle serie (id, n_canali, somma float64 a 6 cifre) su
+  generato-locale vs HF pinnato → **4/5 categorie con digest IDENTICI,
+  differisce SOLO lead_lag_with_magnitude (100 righe)** — vedi
+  `PROOF-PERCATEGORY-DIGESTS.txt`. Coerente coi punteggi m30 identici fuori
+  da lead_lag. (Fingerprint di somma, non hash bit-a-bit dei float: la
+  probabilità di collisione su 700 righe è trascurabile ma va detto.)
+  lead_lag resta comunque ≈ null (0.350) in ogni versione.
+- **Nota terminologica** (review): "eval_errors=0" = zero errori di
+  loss/generazione della pipeline; m30 ha comunque 60 predizioni
+  parse_failed, correttamente conteggiate come punteggio 0 nel primary.
+- Il confronto best-ep5 (0.2356) vs post-top-up (0.2417) è ora A PARITÀ DI
+  INPUT (entrambi hfpin) — legittimo dopo il terzo eval, come richiesto.
 - **La decomposizione regge sugli input ufficiali** (DIAGNOSTICS-hfpin.json):
   m30 localize confusion identica (TP131/FP3/FN30/TN36, precision 0.978),
   IoU positivi 0.0017; full1 confusion TP131/FP4/FN30/TN35, IoU positivi

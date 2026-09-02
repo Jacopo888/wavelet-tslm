@@ -146,14 +146,17 @@ def t_preflight_detects_leak():
                                     "train.parquet"), ["a", "b"])   # LEAK
         _write_parquet(os.path.join(td, "anomalyxl-train", "anomalyxl-precise",
                                     "val.parquet"), ["z"])
-        old_rows, old_cats = pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES
+        old = (pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES,
+               pf.EXPECTED_SPLIT_ROWS)
         pf.EXPECTED_TEST_ROWS = {"precise": 4}
         pf.EXPECTED_TEST_CATEGORIES = {}
+        pf.EXPECTED_SPLIT_ROWS = {"precise": {"train": 2, "val": 1}}
         try:
             problems = []
             pf.check_variant(td, "precise", problems)
         finally:
-            pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES = old_rows, old_cats
+            (pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES,
+             pf.EXPECTED_SPLIT_ROWS) = old
         assert any("leaked split" in p for p in problems), problems
 
 
@@ -165,15 +168,84 @@ def t_preflight_passes_clean():
                                     "train.parquet"), ["x", "y"])
         _write_parquet(os.path.join(td, "anomalyxl-train", "anomalyxl-precise",
                                     "val.parquet"), ["z"])
-        old_rows, old_cats = pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES
+        old = (pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES,
+               pf.EXPECTED_SPLIT_ROWS)
         pf.EXPECTED_TEST_ROWS = {"precise": 4}
         pf.EXPECTED_TEST_CATEGORIES = {}
+        pf.EXPECTED_SPLIT_ROWS = {"precise": {"train": 2, "val": 1}}
         try:
             problems = []
             pf.check_variant(td, "precise", problems)
         finally:
-            pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES = old_rows, old_cats
+            (pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES,
+             pf.EXPECTED_SPLIT_ROWS) = old
         assert problems == [], problems
+
+
+# ---- 5b. preflight STRICT (training mode) ----------------------------------
+
+def _fixture_root(td, with_splits=True, with_manifest=True, corrupt_hash=False):
+    import hashlib
+    test_p = os.path.join(td, "anomalyxl-precise", "data.parquet")
+    _write_parquet(test_p, ["a", "b", "c", "d"])
+    files = {}
+    if with_splits:
+        for split, ids in (("train", ["x", "y"]), ("val", ["z"])):
+            p = os.path.join(td, "anomalyxl-train", "anomalyxl-precise",
+                             f"{split}.parquet")
+            _write_parquet(p, ids)
+            h = hashlib.sha256(open(p, "rb").read()).hexdigest()
+            files[f"precise/{split}"] = {
+                "path": f"anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/{split}.parquet",
+                "rows": len(ids),
+                "sha256": ("0" * 64) if corrupt_hash else h,
+            }
+    if with_manifest:
+        mdir = os.path.join(td, "anomalyxl-train")
+        os.makedirs(mdir, exist_ok=True)
+        with open(os.path.join(mdir, "MANIFEST.json"), "w") as f:
+            json.dump({"revision": pf.PIN, "files": files}, f)
+
+
+def _run_preflight_main(td, extra_args=()):
+    old_argv = sys.argv
+    old_rows, old_cats, old_srows = (pf.EXPECTED_TEST_ROWS,
+                                     pf.EXPECTED_TEST_CATEGORIES,
+                                     pf.EXPECTED_SPLIT_ROWS)
+    pf.EXPECTED_TEST_ROWS = {"precise": 4}
+    pf.EXPECTED_TEST_CATEGORIES = {}
+    pf.EXPECTED_SPLIT_ROWS = {"precise": {"train": 2, "val": 1}}
+    sys.argv = ["preflight_data.py", td, "--variant", "precise", *extra_args]
+    try:
+        return pf.main()
+    finally:
+        sys.argv = old_argv
+        pf.EXPECTED_TEST_ROWS, pf.EXPECTED_TEST_CATEGORIES = old_rows, old_cats
+        pf.EXPECTED_SPLIT_ROWS = old_srows
+
+
+def t_strict_fails_without_training_splits():
+    with tempfile.TemporaryDirectory() as td:
+        _fixture_root(td, with_splits=False, with_manifest=False)
+        assert _run_preflight_main(td) == 1, "test-only root passed as trainable"
+
+
+def t_test_only_flag_allows_gold_root():
+    with tempfile.TemporaryDirectory() as td:
+        _fixture_root(td, with_splits=False, with_manifest=False)
+        assert _run_preflight_main(td, ("--allow-test-only",)) == 0
+
+
+def t_strict_passes_full_pinned_root():
+    with tempfile.TemporaryDirectory() as td:
+        _fixture_root(td)
+        assert _run_preflight_main(td) == 0
+
+
+def t_strict_fails_on_hash_mismatch():
+    with tempfile.TemporaryDirectory() as td:
+        _fixture_root(td, corrupt_hash=True)
+        assert _run_preflight_main(td) == 1, "corrupted manifest hash passed"
 
 
 # ---- 6. preflight logic against the REAL quarantined leak ------------------

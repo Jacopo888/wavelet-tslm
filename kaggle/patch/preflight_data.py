@@ -31,6 +31,10 @@ import pyarrow.parquet as pq
 PIN = os.environ.get(
     "TSLM_HF_REVISION", "df363a467f855e55aaad414b0bdd58590829df9a")
 EXPECTED_TEST_ROWS = {"precise": 800, "coarse": 248}
+# Training splits at the pinned revision. In training mode (default) their
+# absence is FATAL: a root with only gold tests must never pass as
+# "safe to train" (review finding, 02/09).
+EXPECTED_SPLIT_ROWS = {"precise": {"train": 4488, "val": 520}}
 EXPECTED_TEST_CATEGORIES = {
     "precise": {
         "localize": 200,
@@ -49,7 +53,17 @@ def _ids(path: str) -> set:
     return set(pq.read_table(path, columns=["id"]).column("id").to_pylist())
 
 
-def check_variant(root: str, variant: str, problems: list) -> None:
+def _sha256(path: str) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def check_variant(root: str, variant: str, problems: list,
+                  require_training: bool = False) -> None:
     test_p = os.path.join(root, f"anomalyxl-{variant}", "data.parquet")
     if not os.path.isfile(test_p):
         problems.append(f"{variant}: gold test missing at {test_p}")
@@ -74,6 +88,16 @@ def check_variant(root: str, variant: str, problems: list) -> None:
         p = os.path.join(tr_dir, f"{split}.parquet")
         if os.path.isfile(p):
             split_ids[split] = _ids(p)
+            exp_rows = EXPECTED_SPLIT_ROWS.get(variant, {}).get(split)
+            if exp_rows is not None and len(split_ids[split]) != exp_rows:
+                problems.append(
+                    f"{variant}: {split} has {len(split_ids[split])} rows, "
+                    f"expected {exp_rows} at pinned revision")
+        elif require_training:
+            problems.append(
+                f"{variant}: {split}.parquet MISSING at {p} — a root without "
+                f"training splits is NOT safe to train (run the patched "
+                f"fetch_data.py; use --allow-test-only for eval-only roots)")
     for split, ids in split_ids.items():
         inter = ids & test_ids
         if inter:
@@ -100,27 +124,69 @@ def main() -> int:
     ap.add_argument("root")
     ap.add_argument("--variant", choices=["precise", "coarse", "both"],
                     default="precise")
+    ap.add_argument("--allow-test-only", action="store_true",
+                    help="eval-only roots: gold tests alone are acceptable "
+                         "(training splits/manifest not required)")
+    ap.add_argument("--skip-hash", action="store_true",
+                    help="skip sha256 re-verification of manifest entries "
+                         "(hashing the 2GB train shard takes ~10-20s)")
     args = ap.parse_args()
+    require_training = not args.allow_test_only
 
     problems: list = []
     variants = (["precise", "coarse"] if args.variant == "both"
                 else [args.variant])
     for v in variants:
-        check_variant(args.root, v, problems)
+        check_variant(args.root, v, problems,
+                      require_training=require_training)
 
     manifest = os.path.join(args.root, "anomalyxl-train", "MANIFEST.json")
     if os.path.isfile(manifest):
         try:
-            rev = json.load(open(manifest)).get("revision")
+            man = json.load(open(manifest))
         except Exception as e:
-            rev = f"<unreadable: {e}>"
-        if rev != PIN:
-            problems.append(f"MANIFEST revision {rev} != pinned {PIN}")
-        else:
-            print(f"[preflight] manifest pinned @ {PIN[:12]}")
+            man = None
+            problems.append(f"MANIFEST unreadable: {e}")
+        if man is not None:
+            rev = man.get("revision")
+            if rev != PIN:
+                problems.append(f"MANIFEST revision {rev} != pinned {PIN}")
+            else:
+                print(f"[preflight] manifest pinned @ {PIN[:12]}")
+            # Re-verify every manifest entry on disk: rows AND bytes. A
+            # cache accepted on the revision string alone can still be a
+            # corrupted or swapped file (review finding, 02/09).
+            for key, ent in (man.get("files") or {}).items():
+                # manifest paths are repo-root-relative ("anomalyXL/datasets/…");
+                # our root IS <repo>/anomalyXL/datasets, so strip the prefix.
+                rel = ent.get("path", "")
+                marker = "anomalyXL/datasets/"
+                rel = rel[rel.index(marker) + len(marker):] if marker in rel else rel
+                p = os.path.join(args.root, rel)
+                if not os.path.isfile(p):
+                    problems.append(f"MANIFEST entry {key}: file missing at {p}")
+                    continue
+                rows = pq.ParquetFile(p).metadata.num_rows
+                if rows != ent.get("rows"):
+                    problems.append(
+                        f"MANIFEST entry {key}: {rows} rows on disk vs "
+                        f"{ent.get('rows')} in manifest")
+                if not args.skip_hash:
+                    h = _sha256(p)
+                    if h != ent.get("sha256"):
+                        problems.append(
+                            f"MANIFEST entry {key}: sha256 mismatch "
+                            f"(disk {h[:12]} vs manifest "
+                            f"{str(ent.get('sha256'))[:12]})")
+            if not problems:
+                print("[preflight] manifest entries verified"
+                      + ("" if args.skip_hash else " (rows+sha256)"))
+    elif require_training:
+        problems.append(
+            "MANIFEST.json MISSING — unpinned data is not safe to train on "
+            "(run the patched fetch_data.py)")
     else:
-        print("[preflight] WARNING: no MANIFEST.json (pre-pin data?) — "
-              "run the patched fetch_data.py")
+        print("[preflight] no MANIFEST.json (test-only root, allowed by flag)")
 
     if problems:
         for p in problems:

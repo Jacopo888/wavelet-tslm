@@ -1115,19 +1115,37 @@ def train(
         # loudly instead of silently producing a partially-trained model.
         n_ok = sum(cat_ok.values())
         n_fail = sum(cat_fail.values())
-        print(f"  [Coverage] epoch {epoch}: trained {n_ok}, failed {n_fail}")
+        try:
+            n_expected = len(train_loader.dataset)
+        except (TypeError, AttributeError):
+            n_expected = None
+        print(f"  [Coverage] epoch {epoch}: trained {n_ok}, failed {n_fail}"
+              + (f", expected {n_expected}" if n_expected is not None else ""))
         for c in sorted(set(cat_ok) | set(cat_fail)):
             print(f"    {c}: ok={cat_ok.get(c, 0)} failed={cat_fail.get(c, 0)}")
         if exp_logger is not None:
             exp_logger.log_metrics(
                 {f"coverage/failed_{c}": v for c, v in cat_fail.items()},
                 step=global_step)
-        if n_fail > 0 and os.environ.get("TSLM_REQUIRE_FULL_COVERAGE") == "1":
-            raise SystemExit(
-                f"[Coverage] ABORT: {n_fail} training samples FAILED in epoch "
-                f"{epoch} (by category: {cat_fail}). Full coverage is required "
-                f"(TSLM_REQUIRE_FULL_COVERAGE=1) — fix the config (e.g. "
-                f"TSLM_GRAD_CKPT=1) instead of training a partial model.")
+        if os.environ.get("TSLM_REQUIRE_FULL_COVERAGE") == "1":
+            if n_fail > 0:
+                raise SystemExit(
+                    f"[Coverage] ABORT: {n_fail} training samples FAILED in epoch "
+                    f"{epoch} (by category: {cat_fail}). Full coverage is required "
+                    f"(TSLM_REQUIRE_FULL_COVERAGE=1) — fix the config (e.g. "
+                    f"TSLM_GRAD_CKPT=1) instead of training a partial model.")
+            # Belt: the counters must also account for EVERY dataset row.
+            # A dataloader that silently drops samples leaves both counters
+            # clean while shrinking the epoch — catch that too (skipped when
+            # a time/step budget legitimately truncates the epoch).
+            budget_stop = (os.environ.get("TSLM_MAX_TRAIN_SECONDS")
+                           or os.environ.get("TSLM_MAX_TRAIN_STEPS"))
+            if (n_expected is not None and n_ok + n_fail != n_expected
+                    and not budget_stop):
+                raise SystemExit(
+                    f"[Coverage] ABORT: epoch {epoch} accounted for "
+                    f"{n_ok + n_fail}/{n_expected} dataset rows — samples were "
+                    f"dropped before reaching the training loop.")
 
         # Validate with output logging. TSLM_VAL_GEN=0 skips the per-sample
         # generations on val (~35-40s each): val loss alone drives best-model
