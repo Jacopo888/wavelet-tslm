@@ -40,6 +40,17 @@ from src.datasets.anomaly_xl.qa_dataset import AnomalyXLDataset
 from src.training.logging import ExperimentLogger
 from src.utils.config import ExperimentConfig
 
+# Integrity helpers (deployed next to train.py by every launcher overlay).
+# Hard import on purpose: a launcher that forgets the file must fail loudly,
+# not fall back to the pre-integrity behavior.
+from eval_integrity import (
+    EvalJsonlWriter,
+    check_eval_coverage,
+    coverage_abort,
+    parse_status_for,
+    restore_grad_ckpt,
+)
+
 # The 3 TSLM architectures these 6 configs use — a plain dict beats registry
 # indirection now that there's no need to support pluggable architectures
 # beyond these.
@@ -492,6 +503,7 @@ def train_epoch(
             if torch.isnan(loss) or torch.isinf(loss):
                 print(f"\n  Warning: Invalid loss at batch {batch_idx}, skipping")
                 _count(batch, cat_fail)
+                coverage_abort(f"invalid loss at batch {batch_idx}")
                 continue
 
             if use_amp:
@@ -598,6 +610,7 @@ def train_epoch(
                     if torch.isnan(loss) or torch.isinf(loss):
                         print(f"\n  [CkptFallback] invalid loss at batch {batch_idx}, skipping")
                         _count(batch, cat_fail)
+                        coverage_abort(f"CkptFallback invalid loss at batch {batch_idx}")
                     else:
                         if use_amp:
                             scaler.scale(loss).backward()
@@ -620,16 +633,18 @@ def train_epoch(
                     print(f"\n  [CkptFallback] batch {batch_idx} FAILED anche "
                           f"col fallback: {e2}")
                     _count(batch, cat_fail)
+                    coverage_abort(f"CkptFallback FAILED at batch {batch_idx}: {e2}")
                 finally:
-                    try:
-                        model.get_backbone_module().gradient_checkpointing_disable()
-                    except Exception:
-                        pass
+                    # Restore the GLOBAL checkpointing setting (the old
+                    # unconditional disable stripped ckpt from every batch
+                    # after the first OOM on GRAD_CKPT=1 runs).
+                    restore_grad_ckpt(model.get_backbone_module())
                     optimizer.zero_grad(set_to_none=True)
                     torch.cuda.empty_cache()
                 continue
             print(f"\n  Error at batch {batch_idx}: {e}")
             _count(batch, cat_fail)
+            coverage_abort(f"unrecoverable error at batch {batch_idx}: {e}")
             continue
 
     return total_loss / max(num_batches, 1), global_step, cat_ok, cat_fail
@@ -664,6 +679,65 @@ def validate(
     category_key = dataset.category_key if dataset else None
     primary_metric = dataset.primary_metric if dataset else "accuracy"
 
+    # Positive coverage accounting: every example leaves exactly one JSONL
+    # row (id, category, gold, prediction, parse status, metrics) and the
+    # row count is checked against the dataset size at the end. Errors are
+    # recorded as 0-score rows, never swallowed.
+    expected_examples = None
+    try:
+        expected_examples = len(dataset) if dataset is not None else len(val_loader.dataset)
+    except (TypeError, AttributeError):
+        pass
+    jsonl_writer = None
+    _pred_parser, _pred_required = None, None
+    if log_outputs:
+        jsonl_path = None
+        if output_dir:
+            logs_dir = output_dir / "output_logs"
+            logs_dir.mkdir(parents=True, exist_ok=True)
+            jsonl_path = logs_dir / f"{split_name}_epoch_{epoch}.jsonl"
+        jsonl_writer = EvalJsonlWriter(str(jsonl_path) if jsonl_path else None)
+        try:
+            # Official parser, injected only to LABEL parse status in the
+            # JSONL; the official scorer itself is untouched.
+            from src.datasets.anomaly_xl.scoring import (
+                parse_structured_pred as _pred_parser,
+                REQUIRED_KEYS as _pred_required,
+            )
+        except ImportError:
+            pass
+
+    def _record_error_rows(batch_, status, err=""):
+        # A sample whose loss or generation failed scores 0 and leaves an
+        # explicit row in aggregates and JSONL — silence is never success.
+        nonlocal samples_generated
+        for sample in batch_:
+            category = sample.get(category_key, "unknown") if category_key else "all"
+            if category not in category_correct:
+                category_correct[category] = 0
+                category_total[category] = 0
+                category_metric_sums[category] = 0.0
+            category_total[category] += 1
+            entry = {
+                "sample_idx": samples_generated,
+                "id": sample.get("id", "") if isinstance(sample, dict) else "",
+                "question": ((sample.get("question", "") if isinstance(sample, dict) else "") or "")[:200],
+                "ground_truth": dataset.get_ground_truth(sample) if dataset else "",
+                "predicted_answer": "",
+                "prediction_raw": "",
+                "correct": False,
+                "parse_status": status,
+                "error": str(err)[:300],
+            }
+            if category_key:
+                entry["category"] = category
+            if primary_metric != "accuracy":
+                entry[primary_metric] = 0.0
+            logged_outputs.append(entry)
+            if jsonl_writer is not None:
+                jsonl_writer.write(entry)
+            samples_generated += 1
+
     pbar = tqdm(val_loader, desc=f"Epoch {epoch} [{split_name.upper()}]", leave=False)
 
     # Under TSLM_AMP the trainables are fp32 masters inside a half-precision
@@ -687,9 +761,14 @@ def validate(
 
                 avg_loss = total_loss / max(num_batches, 1)
                 pbar.set_postfix({"loss": f"{avg_loss:.4f}"})
-
-                # Generate outputs for logging
+            except Exception as loss_err:
                 if log_outputs:
+                    _record_error_rows(batch, "loss_error", loss_err)
+                continue
+
+            # Generate outputs for logging (own try: a generation failure
+            # must not be confused with a loss failure, and both leave rows)
+            if log_outputs:
                     try:
                         eval_inputs = model.prepare_batch(batch, training=False)
                         gen_inputs = {k: v for k, v in eval_inputs.items() if k != "labels"}
@@ -720,12 +799,20 @@ def validate(
 
                             entry = {
                                 "sample_idx": samples_generated,
+                                "id": sample.get("id", "") if isinstance(sample, dict) else "",
                                 "question": question[:200],
                                 "ground_truth": ground_truth,
                                 "predicted_answer": pred_answer,
                                 "prediction_raw": pred,
                                 "correct": is_correct,
+                                "parse_status": parse_status_for(
+                                    category, pred_answer,
+                                    _pred_parser, _pred_required),
                             }
+                            if isinstance(sample, dict):
+                                for meta in ("length", "n_channels"):
+                                    if meta in sample:
+                                        entry[meta] = sample[meta]
                             if category_key:
                                 entry["category"] = category
                             # Include any extra eval metrics (e.g. iou)
@@ -734,13 +821,12 @@ def validate(
                                     entry[k] = v
 
                             logged_outputs.append(entry)
+                            if jsonl_writer is not None:
+                                jsonl_writer.write(entry)
                             samples_generated += 1
 
-                    except Exception:
-                        pass  # Skip generation errors
-
-            except Exception:
-                continue
+                    except Exception as gen_err:
+                        _record_error_rows(batch, "generation_error", gen_err)
 
     avg_loss = total_loss / max(num_batches, 1)
 
@@ -748,6 +834,16 @@ def validate(
         "loss": avg_loss,
         "num_batches": num_batches,
     }
+
+    if jsonl_writer is not None:
+        jsonl_writer.close()
+        if jsonl_writer.error_count:
+            print(f"  [EvalCoverage] {split_name}: {jsonl_writer.error_count} "
+                  f"examples recorded as ERROR rows (scored 0)", flush=True)
+        check_eval_coverage(jsonl_writer.count, expected_examples, split_name)
+        result["eval_errors"] = jsonl_writer.error_count
+        if jsonl_writer.path:
+            result["eval_jsonl"] = jsonl_writer.path
 
     # Add evaluation metrics if we logged outputs
     if logged_outputs:
@@ -1286,6 +1382,9 @@ def main():
     if args.eval_only:
         if not args.checkpoint:
             raise SystemExit("--eval-only requires --checkpoint")
+        # Research evals are strict by default: a single missing example
+        # aborts instead of shipping a metric on a smaller denominator.
+        os.environ.setdefault("TSLM_EVAL_STRICT", "1")
         device = get_device()
         model = load_model(config, device)
         # Inject LoRA adapters (and trainable flags) exactly as in training,
@@ -1299,11 +1398,16 @@ def main():
                            else (test_loader, test_dataset))
         out_dir = Path(config.runtime.output_dir) / config.dataset.name / \
             (config.runtime.run_name or "evalonly")
+        # TSLM_EVAL_TAG distinguishes re-evals (e.g. on the pinned HF test)
+        # from historical output_logs files instead of overwriting them.
+        eval_tag = os.environ.get("TSLM_EVAL_TAG", "")
+        split_tag = (f"evalonly_{args.split}_{Path(args.checkpoint).stem}"
+                     + (f"_{eval_tag}" if eval_tag else ""))
         result = validate(
             model, loader, epoch=0,
             dataset=dataset,
             output_dir=out_dir,
-            split_name=f"evalonly_{args.split}_{Path(args.checkpoint).stem}",
+            split_name=split_tag,
             log_outputs=True,
             max_new_tokens=config.training.eval_max_new_tokens,
         )

@@ -1,0 +1,31 @@
+{
+ "repo": "nz00shuuuu/AnomalyXL",
+ "revision_sha": "df363a467f855e55aaad414b0bdd58590829df9a",
+ "last_modified": "2026-07-30 08:28:55+00:00",
+ "files": {
+  "Localize/test.parquet": {
+   "bytes": 344754378,
+   "lfs_sha256": "7b37269d106f70ba7bee5feb504c00059bc880217a56a8279a2631c8bf5e1524"
+  },
+  "Localize/train.parquet": {
+   "bytes": 2053383360,
+   "lfs_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+  },
+  "Localize/val.parquet": {
+   "bytes": 240737135,
+   "lfs_sha256": "90b805b8f40e203b76873a9cf3a0f986e21700c9185c74acc33c44a183b1d977"
+  },
+  "MCQ/test.parquet": {
+   "bytes": 129206979,
+   "lfs_sha256": "3d09a51c147fa44209914bbfd52b27c8e98a4290f6a9d67d781de465727054f5"
+  },
+  "MCQ/train.parquet": {
+   "bytes": 1929407602,
+   "lfs_sha256": "2300bc5c2c768dccc0469a6dc83d847e47b3bad63be745e433b00baf5237e0dc"
+  },
+  "MCQ/val.parquet": {
+   "bytes": 243240389,
+   "lfs_sha256": "8499a22b51a7a1bed88925f40bcfdcd34a35fc04379536d577361480612c99af"
+  }
+ }
+}

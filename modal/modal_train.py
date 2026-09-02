@@ -46,7 +46,13 @@ OVERLAY = {
     "qwen_backbone.py": "sft/tslm/src/models/qwen_backbone.py",
     "qa_dataset.py": "sft/tslm/src/datasets/anomaly_xl/qa_dataset.py",
     "train.py": "sft/tslm/train.py",
+    "eval_integrity.py": "sft/tslm/eval_integrity.py",
+    "fetch_data.py": "sft/tslm/fetch_data.py",
+    "preflight_data.py": "sft/tslm/preflight_data.py",
 }
+
+# The pinned AnomalyXL revision (must match kaggle/patch/fetch_data.py).
+HF_REVISION = "df363a467f855e55aaad414b0bdd58590829df9a"
 
 REPO = "/root/timerlm"
 
@@ -60,6 +66,42 @@ def _sh(cmd, cwd=None, env=None):
 def _sync_dir(src, dst):
     import shutil
     shutil.copytree(src, dst, dirs_exist_ok=True)
+
+
+def _materialize_data(repo, sys_executable):
+    """Deterministic data provenance (integrity pass 02/09): train, val AND
+    gold test all come from the PINNED HF revision via the patched
+    fetch_data.py, which writes MANIFEST.json and asserts split
+    disjointness. The volume cache is trusted only when its manifest
+    matches the pin; pre-integrity caches (no manifest, generated gold)
+    are refreshed from HF on first use."""
+    import json as _json
+    import os
+
+    ds_root = os.path.join(repo, "anomalyXL", "datasets")
+    train_cache = "/vol/data/anomalyxl-train"
+    gold_cache = "/vol/data/gold-precise"
+    manifest = os.path.join(train_cache, "MANIFEST.json")
+    pinned = False
+    if os.path.isfile(manifest):
+        try:
+            pinned = _json.load(open(manifest)).get("revision") == HF_REVISION
+        except Exception:
+            pinned = False
+    if pinned and os.path.isdir(gold_cache):
+        print(f"data: volume cache @ pinned {HF_REVISION[:12]}", flush=True)
+        _sync_dir(train_cache, os.path.join(ds_root, "anomalyxl-train"))
+        _sync_dir(gold_cache, os.path.join(ds_root, "anomalyxl-precise"))
+    else:
+        print("data: cache missing or unpinned -> fetching HF @ pin", flush=True)
+        _sh(f"{sys_executable} fetch_data.py --variant precise",
+            cwd=os.path.join(repo, "sft", "tslm"))
+        _sync_dir(os.path.join(ds_root, "anomalyxl-train"), train_cache)
+        _sync_dir(os.path.join(ds_root, "anomalyxl-precise"), gold_cache)
+    # Anti-leakage gate on whatever ended up in ds_root (cache or fresh).
+    _sh(f"{sys_executable} preflight_data.py {ds_root} --variant precise",
+        cwd=os.path.join(repo, "sft", "tslm"))
+    vol.commit()
 
 
 @app.function(gpu="A100-80GB", image=image, volumes={"/vol": vol},
@@ -98,27 +140,8 @@ def train_session(session: str, config_file: str, subset_seed: int,
 
     _sh(f"{sys.executable} -m pip install -q -e {REPO}/anomalyXL")
 
-    # Benchmark + train shards: generate/fetch once, then serve from the volume.
-    ds_root = os.path.join(REPO, "anomalyXL", "datasets")
-    gold_cache = "/vol/data/gold-precise"
-    if os.path.isdir(gold_cache):
-        print("gold benchmark: from volume cache", flush=True)
-        _sync_dir(gold_cache, os.path.join(ds_root, "anomalyxl-precise"))
-    else:
-        _sh(f"{sys.executable} scripts/generate_anomalyxl_sweep.py "
-            f"--out-root datasets --precise-only --seed 42",
-            cwd=os.path.join(REPO, "anomalyXL"))
-        _sync_dir(os.path.join(ds_root, "anomalyxl-precise"), gold_cache)
-
-    train_cache = "/vol/data/anomalyxl-train"
-    if os.path.isdir(train_cache):
-        print("train shards: from volume cache", flush=True)
-        _sync_dir(train_cache, os.path.join(ds_root, "anomalyxl-train"))
-    else:
-        tslm = os.path.join(REPO, "sft", "tslm")
-        _sh(f"{sys.executable} fetch_data.py", cwd=tslm)
-        _sync_dir(os.path.join(ds_root, "anomalyxl-train"), train_cache)
-    vol.commit()
+    # Benchmark + train shards: pinned HF revision, manifest-verified cache.
+    _materialize_data(REPO, sys.executable)
 
     env = dict(os.environ)
     env.update({
@@ -129,11 +152,16 @@ def train_session(session: str, config_file: str, subset_seed: int,
         "TSLM_AMP": "1",
         "TSLM_AMP_DTYPE": "bfloat16",
         "TSLM_ATTN_IMPL": "sdpa",
-        # A100-80GB: no global checkpointing (fast path ~1.3s/step), but the
-        # per-batch CKPT_FALLBACK retries any OOM cell with checkpointing so
-        # EVERY sample is trained on — the "all episodes" mandate.
-        "TSLM_GRAD_CKPT": "0",
+        # LESSON m30 (02/09): checkpointing ON from batch 0, ALWAYS. With
+        # ckpt off, the allocator fragments on the 131k mono-channel cells
+        # and every 16ch cell then OOMs even through the fallback (2,770
+        # samples silently lost). Full coverage is mandatory: the run
+        # aborts at the FIRST lost sample instead of shipping a partial
+        # model as "complete".
+        "TSLM_GRAD_CKPT": "1",
         "TSLM_CKPT_FALLBACK": "1",
+        "TSLM_REQUIRE_FULL_COVERAGE": "1",
+        "TSLM_EVAL_STRICT": "1",
         "TSLM_KEEP_EPOCH_CKPTS": "1",
         "TSLM_SAVE_TRAINABLE_ONLY": "1",
         "TSLM_SAVE_OPT_STATE": "1",
@@ -220,9 +248,7 @@ def select_and_eval(session: str, config_file: str):
         if f.endswith(".yaml"):
             shutil.copy(os.path.join("/patch", f), os.path.join(cfg_dir, f))
     _sh(f"{sys.executable} -m pip install -q -e {REPO}/anomalyXL")
-    ds_root = os.path.join(REPO, "anomalyXL", "datasets")
-    _sync_dir("/vol/data/gold-precise", os.path.join(ds_root, "anomalyxl-precise"))
-    _sync_dir("/vol/data/anomalyxl-train", os.path.join(ds_root, "anomalyxl-train"))
+    _materialize_data(REPO, sys.executable)
 
     env = dict(os.environ)
     env.update({
@@ -231,6 +257,8 @@ def select_and_eval(session: str, config_file: str):
         "TSLM_AMP_DTYPE": "bfloat16",
         "TSLM_ATTN_IMPL": "sdpa",
         "TSLM_SAVE_TRAINABLE_ONLY": "1",
+        # Eval must account for every example or die (integrity pass 02/09).
+        "TSLM_EVAL_STRICT": "1",
         "HF_HUB_DISABLE_PROGRESS_BARS": "1",
     })
     tslm = os.path.join(REPO, "sft", "tslm")
@@ -271,6 +299,59 @@ def select_and_eval(session: str, config_file: str):
     print("SELECT+EVAL COMPLETE", flush=True)
 
 
+@app.function(gpu="A100-40GB", image=image, volumes={"/vol": vol},
+              memory=24576, cpu=4, timeout=14400)
+def reeval(session: str, config_file: str, checkpoint_rel: str, tag: str):
+    """Integrity re-eval (02/09): score an existing checkpoint on the PINNED
+    official HF test (the historical evals used a regenerated seed-42 gold
+    whose input series differ from the published shard — ids/answers match,
+    series fingerprint does not). Writes aggregate JSON + per-example JSONL
+    under sessions/<session>/reeval/, never overwriting historical logs."""
+    import os
+    import shutil
+    import subprocess
+    import sys
+
+    os.environ["HF_HOME"] = "/vol/hf"
+    ck = os.path.join("/vol", checkpoint_rel)
+    if not os.path.exists(ck):
+        raise RuntimeError(f"missing checkpoint {ck}")
+
+    _sh(f"git clone --depth 1 https://github.com/OpenTSLM/TimeRLM {REPO}")
+    for src, dst in OVERLAY.items():
+        dst_path = os.path.join(REPO, dst)
+        os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+        shutil.copy(os.path.join("/patch", src), dst_path)
+    cfg_dir = os.path.join(REPO, "sft", "tslm", "configs")
+    for f in os.listdir("/patch"):
+        if f.endswith(".yaml"):
+            shutil.copy(os.path.join("/patch", f), os.path.join(cfg_dir, f))
+    _sh(f"{sys.executable} -m pip install -q -e {REPO}/anomalyXL")
+    _materialize_data(REPO, sys.executable)   # refreshes cache to the HF pin
+
+    env = dict(os.environ)
+    env.update({
+        "TSLM_TORCH_DTYPE": "bfloat16",
+        "TSLM_AMP": "1",
+        "TSLM_AMP_DTYPE": "bfloat16",
+        "TSLM_ATTN_IMPL": "sdpa",
+        "TSLM_SAVE_TRAINABLE_ONLY": "1",
+        "TSLM_EVAL_STRICT": "1",
+        "TSLM_EVAL_TAG": tag,
+        "HF_HUB_DISABLE_PROGRESS_BARS": "1",
+    })
+    outdir = f"/vol/sessions/{session}/reeval"
+    os.makedirs(outdir, exist_ok=True)
+    out_json = f"{outdir}/{os.path.basename(checkpoint_rel)}_{tag}_test.json"
+    subprocess.run(
+        [sys.executable, "train.py", "--config", f"configs/{config_file}",
+         "--no-wandb", "--eval-only", "--checkpoint", ck,
+         "--split", "test", "--out-json", out_json],
+        cwd=os.path.join(REPO, "sft", "tslm"), env=env, check=True)
+    vol.commit()
+    print(f"REEVAL DONE -> {out_json}", flush=True)
+
+
 @app.local_entrypoint()
 def main(session: str = "full1",
          config_file: str = "wavelet_precise_full.yaml",
@@ -281,3 +362,16 @@ def main(session: str = "full1",
          sched_total: int = 0):
     train_session.remote(session, config_file, subset_seed, budget_s,
                          resume_rel, max_steps, sched_total)
+
+
+@app.local_entrypoint()
+def reeval_main():
+    m30 = ("sessions/m30/anomaly_xl_precise/anomaly_xl_wavelet_precise_m30"
+           "/checkpoints/epoch_4_end.pt")
+    full1 = ("sessions/full1/anomaly_xl_precise/anomaly_xl_wavelet_precise_full"
+             "/checkpoints/latest_checkpoint.pt")
+    h1 = reeval.spawn("m30", "wavelet_precise_m30.yaml", m30, "hfpin")
+    h2 = reeval.spawn("full1", "wavelet_precise_full.yaml", full1, "hfpin")
+    h1.get()
+    h2.get()
+    print("BOTH REEVALS COMPLETE", flush=True)

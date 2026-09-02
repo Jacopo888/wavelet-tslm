@@ -1,0 +1,50 @@
+{
+ "repo": "nz00shuuuu/AnomalyXL",
+ "revision": "df363a467f855e55aaad414b0bdd58590829df9a",
+ "shards": {
+  "hf_Localize_test": {
+   "rows": 800,
+   "ids_sha": "8d17a5e5fe0d96130a5cd7a2b4d6727b630664ae4d2a331c7473e4c13ed91d11",
+   "answers_sha": "581eb5829ba90a62d515c5fea5c7a6b81c0b5a49d53c5d5dfc453b1824586601",
+   "series_sha": "0bf5694763e0eee3591806084543f31fd62b7a5ac7274a8357f35b0f965995b6"
+  },
+  "hf_Localize_val": {
+   "rows": 520,
+   "ids_sha": "84c109235797a1b2a27e17921eebc04308d7d9fd948db24196c2ce0fc8c65a6b",
+   "answers_sha": "0348abd5b1e354f20a505a026f26375fd3b419ff1e92a70d4b7019eff897cba3",
+   "series_sha": "2ce1f6ee46079c8ddb4cd737f8337a58ed7f2e42e8ce35930345443f317fc915"
+  },
+  "hf_Localize_train": {
+   "rows": 4488,
+   "ids_sha": "ee3572f7a9613ccd2d02ea194d5dd448d68175d466b0039ac0f7a675e01c14de",
+   "answers_sha": "2ea12600c60b37e18b5c18f2320c39e9ac2e28a04d1fc27b3d7e365732ee0f3c",
+   "series_sha": "eb23824473c9953d3c0aed7b109ce0f7f9ea90f60a72c5f07581213aec254240"
+  },
+  "vol_gold_test": {
+   "rows": 800,
+   "ids_sha": "8d17a5e5fe0d96130a5cd7a2b4d6727b630664ae4d2a331c7473e4c13ed91d11",
+   "answers_sha": "581eb5829ba90a62d515c5fea5c7a6b81c0b5a49d53c5d5dfc453b1824586601",
+   "series_sha": "67ace9493768a1c18c015a2d4b4e8d758abf8e300a8f711686f6bbc9a96467d9"
+  },
+  "vol_train": {
+   "rows": 4488,
+   "ids_sha": "ee3572f7a9613ccd2d02ea194d5dd448d68175d466b0039ac0f7a675e01c14de",
+   "answers_sha": "2ea12600c60b37e18b5c18f2320c39e9ac2e28a04d1fc27b3d7e365732ee0f3c",
+   "series_sha": "eb23824473c9953d3c0aed7b109ce0f7f9ea90f60a72c5f07581213aec254240"
+  },
+  "vol_val": {
+   "rows": 520,
+   "ids_sha": "84c109235797a1b2a27e17921eebc04308d7d9fd948db24196c2ce0fc8c65a6b",
+   "answers_sha": "0348abd5b1e354f20a505a026f26375fd3b419ff1e92a70d4b7019eff897cba3",
+   "series_sha": "2ce1f6ee46079c8ddb4cd737f8337a58ed7f2e42e8ce35930345443f317fc915"
+  }
+ },
+ "checks": {
+  "hf_train_x_test": 0,
+  "hf_val_x_test": 0,
+  "hf_train_x_val": 0,
+  "volgold_x_hftest_equal_ids": true,
+  "voltrain_x_hftest": 0
+ },
+ "disjointness_ok": true
+}
