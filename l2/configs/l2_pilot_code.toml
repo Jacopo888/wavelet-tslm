@@ -37,8 +37,10 @@ name = "qwen3.5"
 project = "timerlm-l2"
 name = "l2-pilot-code-qwen35-2b"
 
+# At this pin `batch_size` counts ROLLOUTS (samples) per step and must be divisible by
+# group_size: 64 rollouts = 8 prompts x 8. (The paper's fork counted prompts: "64x8 = 512".)
 [orchestrator]
-batch_size = 8
+batch_size = 64
 group_size = 8
 max_inflight_rollouts = 16
 max_off_policy_steps = 8
@@ -97,6 +99,3 @@ target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj"
 interval = 5
 keep_last = 3
 keep_interval = 35
-
-[ckpt.weights]
-save_adapter_separately = true

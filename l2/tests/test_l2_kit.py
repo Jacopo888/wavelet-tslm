@@ -57,7 +57,10 @@ def test_arms_differ_only_in_skill_and_names():
 def test_arm_configs_keep_the_paper_semantics():
     for arm in ("code", "wavelet"):
         c = _load(CFG / f"l2_pilot_{arm}.toml")
-        assert c["orchestrator"]["batch_size"] * c["orchestrator"]["group_size"] == 64
+        # batch_size = rollouts/step at prime-rl c5afcaa2e (divisible by group_size)
+        assert c["orchestrator"]["batch_size"] == 64 and c["orchestrator"]["group_size"] == 8
+        assert c["orchestrator"]["batch_size"] % c["orchestrator"]["group_size"] == 0
+        assert "weights" not in c["ckpt"], "[ckpt.weights] is not a shared field at this pin"
         assert c["orchestrator"]["advantage"]["length_penalty"]["coef"] == 0.1
         assert c["orchestrator"]["advantage"]["length_penalty"]["gate_by_correctness"] is False
         env = c["orchestrator"]["train"]["env"][0]
@@ -86,6 +89,7 @@ def test_smoke_overlay_changes_only_load():
     for k in s:
         assert k.startswith(allowed_prefixes), f"smoke overlay touches {k}"
     assert s["max_steps"] == 2
+    assert s["orchestrator.batch_size"] % s["orchestrator.group_size"] == 0
 
 
 def test_inference_config_matches_arms():

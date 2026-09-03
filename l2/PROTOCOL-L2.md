@@ -61,6 +61,11 @@ dell'harness rlm (mcp 2.x ha rinominato `streamablehttp_client`).
 Deviazioni che vanno dichiarate nel testo: modello 2B+LoRA, budget ridotto (step, rollouts,
 finestra), eval finale con budget di training (16k/4096/12) invece di quello del paper.
 
+Note di schema al pin (scoperte col `--dry-run`): `batch_size` conta i ROLLOUT per step e deve
+essere divisibile per `group_size` (64 = 8 prompt × 8; nel fork del paper contava i prompt);
+`[ckpt.weights]` non è un campo condiviso, quindi l'adapter LoRA non viene salvato a parte —
+la valutazione usa i pesi HF fusi in `weights/step_N` (l'adapter resta nel checkpoint del trainer).
+
 ## 4. Gate: lo smoke test (`node_l2_smoke.sh`)
 
 | stadio | cosa | PASS |

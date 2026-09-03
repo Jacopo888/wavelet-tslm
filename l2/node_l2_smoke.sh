@@ -112,17 +112,37 @@ arm, path, out = sys.argv[1:4]
 rows = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
 assert len(rows) == 2, f"expected 2 rows, got {len(rows)}"
 ws = os.path.splitext(path)[0] + "/workspaces"
-msgs = ""
-for f in glob.glob(ws + "/*/session/messages.jsonl"):
-    msgs += open(f, encoding="utf-8", errors="replace").read()
+# rlm session records: {"type":"assistant","tool_calls":[{"name":"ipython","args":{"code":...}}]} and
+# {"type":"tool_result","tool":"ipython","content":...}; the skill, when enabled, is materialised as
+# session/wavelet_zoom.py (that file is what makes the system prompt advertise it).
+repl_calls = 0; skill_calls = 0; final_answers = 0; skill_files = 0; sessions = 0
+for sdir in glob.glob(ws + "/*/session"):
+    sessions += 1
+    skill_files += int(os.path.exists(os.path.join(sdir, "wavelet_zoom.py")))
+    mp = os.path.join(sdir, "messages.jsonl")
+    if os.path.exists(mp):
+        for line in open(mp, encoding="utf-8", errors="replace"):
+            try: rec = json.loads(line)
+            except json.JSONDecodeError: continue
+            if rec.get("type") == "assistant":
+                for tc in rec.get("tool_calls") or []:
+                    if tc.get("name") == "ipython":
+                        repl_calls += 1
+                        if "wavelet_zoom(" in str((tc.get("args") or {}).get("code", "")): skill_calls += 1
+    meta = os.path.join(sdir, "meta.json")
+    if os.path.exists(meta):
+        final_answers += int(bool(json.load(open(meta, encoding="utf-8")).get("answer_preview")))
 res = {"arm": arm, "n": len(rows), "errors": [r.get("error") for r in rows], "turns": [r.get("num_turns") for r in rows],
        "rewards": [r.get("reward") for r in rows], "seconds": [r.get("seconds") for r in rows],
-       "repl_calls": msgs.count("call_python_repl"), "wavelet_zoom_calls": msgs.count("wavelet_zoom("),
-       "skill_advertised": "wavelet_zoom" in msgs}
-res["pass"] = all(e is None for e in res["errors"]) and all((t or 0) >= 1 for t in res["turns"])
+       "sessions": sessions, "repl_calls": repl_calls, "wavelet_zoom_calls": skill_calls,
+       "skill_enabled_sessions": skill_files, "final_answers_nonempty": final_answers}
+res["pass"] = (all(e is None for e in res["errors"]) and all((t or 0) >= 1 for t in res["turns"])
+               and sessions == len(rows) and repl_calls >= 1)
 if arm == "wavelet":
-    res["pass"] = res["pass"] and res["skill_advertised"]
-    res["note"] = "wavelet_zoom_calls==0 is allowed at zero-shot (the policy has not learned it yet) but the skill must be advertised"
+    res["pass"] = res["pass"] and skill_files == sessions
+    res["note"] = "wavelet_zoom_calls==0 is allowed at zero-shot; the skill must be enabled in every session"
+else:
+    res["pass"] = res["pass"] and skill_files == 0
 json.dump(res, open(out, "w"), indent=1); print(json.dumps(res))
 assert res["pass"], "stage b failed for arm " + arm
 PY

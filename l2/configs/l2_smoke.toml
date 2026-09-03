@@ -4,8 +4,9 @@
 max_steps = 2
 output_dir = "/root/l2/smoke/rl_tiny"
 
+# batch_size = rollouts per step at this pin (divisible by group_size): 8 = 2 prompts x 4
 [orchestrator]
-batch_size = 2
+batch_size = 8
 group_size = 4
 max_inflight_rollouts = 8
 
