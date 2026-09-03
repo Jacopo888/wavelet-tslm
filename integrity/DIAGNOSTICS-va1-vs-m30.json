@@ -1,0 +1,264 @@
+{
+ "a": {
+  "name": "va1-ep5",
+  "n": 800,
+  "categories": {
+   "classify_with_evidence": {
+    "n": 200,
+    "primary": {
+     "mean": 0.06419807425172712,
+     "ci95": [
+      0.04199271127179207,
+      0.08864665228886436
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   },
+   "lead_lag_with_magnitude": {
+    "n": 100,
+    "primary": {
+     "mean": 0.16641448974609374,
+     "ci95": [
+      0.10083038330078126,
+      0.239744873046875
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   },
+   "localize": {
+    "n": 200,
+    "primary": {
+     "mean": 0.24102580416198,
+     "ci95": [
+      0.18933146222571634,
+      0.296464732921885
+     ]
+    },
+    "null_baseline": 0.195,
+    "strict_violations": {},
+    "decomposition": {
+     "confusion": {
+      "tp": 142,
+      "fp": 6,
+      "fn": 19,
+      "tn": 33
+     },
+     "n_gold_positive": 161,
+     "n_gold_negative": 39,
+     "negatives_accuracy": 0.8461538461538461,
+     "positives_mean_iou": 0.0944419927478013,
+     "matched_mean_iou": 0.10707859741123948,
+     "n_matched": 142,
+     "positives_acc_at_iou": {
+      "0.1": 0.19875776397515527,
+      "0.3": 0.14285714285714285,
+      "0.5": 0.08074534161490683
+     },
+     "presence_recall": 0.8819875776397516,
+     "presence_precision": 0.9594594594594594
+    }
+   },
+   "localize_all_channels": {
+    "n": 100,
+    "primary": {
+     "mean": 0.2613333333333333,
+     "ci95": [
+      0.18,
+      0.3443333333333334
+     ]
+    },
+    "null_baseline": 0.23,
+    "strict_violations": {},
+    "decomposition": {
+     "n_empty_gold": 23,
+     "empty_accuracy": 0.9130434782608695,
+     "n_nonempty_gold": 77,
+     "nonempty_mean_f1": 0.06666666666666667
+    }
+   },
+   "measure_magnitude": {
+    "n": 200,
+    "primary": {
+     "mean": 0.5783179880632653,
+     "ci95": [
+      0.5291917980725167,
+      0.6252197497102848
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   }
+  },
+  "strict_violations_total": {},
+  "primary_overall": {
+   "mean": 0.27435394450417155,
+   "ci95": [
+    0.24739242841610312,
+    0.3013735172883478
+   ]
+  }
+ },
+ "b": {
+  "name": "m30-ep4",
+  "n": 800,
+  "categories": {
+   "classify_with_evidence": {
+    "n": 200,
+    "primary": {
+     "mean": 0.0037142857142857142,
+     "ci95": [
+      0.0,
+      0.011142857142857144
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   },
+   "lead_lag_with_magnitude": {
+    "n": 100,
+    "primary": {
+     "mean": 0.3043438720703125,
+     "ci95": [
+      0.217877197265625,
+      0.3924578857421875
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   },
+   "localize": {
+    "n": 200,
+    "primary": {
+     "mean": 0.18135802469135803,
+     "ci95": [
+      0.13,
+      0.23635802469135803
+     ]
+    },
+    "null_baseline": 0.195,
+    "strict_violations": {},
+    "decomposition": {
+     "confusion": {
+      "tp": 131,
+      "fp": 3,
+      "fn": 30,
+      "tn": 36
+     },
+     "n_gold_positive": 161,
+     "n_gold_negative": 39,
+     "negatives_accuracy": 0.9230769230769231,
+     "positives_mean_iou": 0.0016869871942335709,
+     "matched_mean_iou": 0.0020733201394779,
+     "n_matched": 131,
+     "positives_acc_at_iou": {
+      "0.1": 0.006211180124223602,
+      "0.3": 0.0,
+      "0.5": 0.0
+     },
+     "presence_recall": 0.8136645962732919,
+     "presence_precision": 0.9776119402985075
+    }
+   },
+   "localize_all_channels": {
+    "n": 100,
+    "primary": {
+     "mean": 0.03,
+     "ci95": [
+      0.0,
+      0.07
+     ]
+    },
+    "null_baseline": 0.23,
+    "strict_violations": {
+     "no_json_object": 55,
+     "anomalies_not_list": 5
+    },
+    "decomposition": {
+     "n_empty_gold": 23,
+     "empty_accuracy": 0.13043478260869565,
+     "n_nonempty_gold": 77,
+     "nonempty_mean_f1": 0.0
+    }
+   },
+   "measure_magnitude": {
+    "n": 200,
+    "primary": {
+     "mean": 0.510238899137218,
+     "ci95": [
+      0.4632991217169774,
+      0.5562738267772253
+     ]
+    },
+    "null_baseline": null,
+    "strict_violations": {}
+   }
+  },
+  "strict_violations_total": {
+   "no_json_object": 55,
+   "anomalies_not_list": 5
+  },
+  "primary_overall": {
+   "mean": 0.2156207863945044,
+   "ci95": [
+    0.18994537284227878,
+    0.24175984894598357
+   ]
+  }
+ },
+ "paired": {
+  "paired_n": 800,
+  "overall": {
+   "mean_diff": 0.05873315810966703,
+   "ci95": [
+    0.03565862915121829,
+    0.08168743121512699
+   ],
+   "significant": true
+  },
+  "per_category": {
+   "classify_with_evidence": {
+    "mean_diff": 0.06048378853744141,
+    "ci95": [
+     0.03682294196850404,
+     0.08586039630786375
+    ],
+    "significant": true
+   },
+   "lead_lag_with_magnitude": {
+    "mean_diff": -0.13792938232421875,
+    "ci95": [
+     -0.22936248779296875,
+     -0.04492523193359375
+    ],
+    "significant": true
+   },
+   "localize": {
+    "mean_diff": 0.059667779470622,
+    "ci95": [
+     0.01942648996056789,
+     0.09980266070980998
+    ],
+    "significant": true
+   },
+   "localize_all_channels": {
+    "mean_diff": 0.23133333333333328,
+    "ci95": [
+     0.15466666666666667,
+     0.31299999999999994
+    ],
+    "significant": true
+   },
+   "measure_magnitude": {
+    "mean_diff": 0.06807908892604753,
+    "ci95": [
+     0.02845953311897212,
+     0.1070871938143244
+    ],
+    "significant": true
+   }
+  },
+  "direction": "va1-ep5 minus m30-ep4"
+ }
+}

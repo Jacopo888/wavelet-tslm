@@ -19,6 +19,6 @@ Cartella di lavoro dedicata (isolata dalla vecchia proposta ADMIT, ora in `../ad
 
 ## Stato modelli
 
-- Best ufficiale (mono/bi-canale): m30 epoca 4 — volume Modal `wavelet-vol`, sessions/m30 (test: primary 0.211, localize 0.181)
-- Evidenza multicanale: full1 epoca 5 (all_channels 0.180, curriculum accidentale)
-- Da fare al prossimo GPU Vultr: re-run con copertura garantita (ordine Jacopo 02/09)
+- **Riferimento Livello 1: va1 epoca 5** (re-run a copertura totale su Vultr A40, 03/09) — test 800 hfpin: primary **0.2744**, localize 0.241 (IoU positivi 0.094), MMag 0.578, all_channels 0.261, classify 0.064, lead_lag 0.166 (al caso). Dettagli in `vultr/RISULTATI-VA1.md`, artefatti in `integrity/artifacts/va1/`, checkpoint sul nodo.
+- Storici (controllo): m30 epoca 4 (0.2156 hfpin; ha perso tutte le celle 16ch), full1 post-top-up (0.2417 hfpin).
+- Prossimo: Livello 2 (GRPO prime-rl al pin, kit in `l2/`, modello Qwen3.5-2B su A40-24Q) — la A40 resta al lato wavelet (ordine 03/09).

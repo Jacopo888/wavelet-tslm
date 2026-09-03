@@ -171,3 +171,35 @@ Letture:
   vuoti); Toto va incluso nei confronti (con nota sulla classe 32B vs 4B).
 - Bug upstream per il report agli autori: ora 7 (4 già noti + Option B
   leak, bool("false"), eventi malformati scartati).
+
+## 9. Re-run L1 a copertura totale (va1, Vultr A40, 03/09) — NUOVO RIFERIMENTO
+
+Dettagli, provenienza e decomposizioni in `vultr/RISULTATI-VA1.md`;
+artefatti per-esempio in `artifacts/va1/`; bootstrap appaiato in
+`DIAGNOSTICS-va1-vs-m30.json` e `DIAGNOSTICS-va1-vs-full1.json`.
+
+- Copertura certificata: 5 epoche × `trained 4488, failed 0, expected 4488`
+  (16 canali incluse), 22.440/22.440 step, EXIT:0, preflight strict sui
+  byte HF pinnati, Qwen revision pinnata, loss memory-efficient bit-identica.
+- Selezione come il paper (val con generazioni): 0.170/0.226/0.248/0.293/
+  **0.311 → epoca 5**.
+- Test ufficiale 800/800 (eval-only, hfpin, 0 errori, 0 violazioni strict):
+
+| Categoria | **va1 ep5** | m30 ep4 | full1 post-top-up |
+|---|---:|---:|---:|
+| primary | **0.2744** CI [0.247, 0.301] | 0.2156 | 0.2417 |
+| localize | **0.2410** (IoU positivi 0.094, TP142/FP6/FN19/TN33) | 0.1814 (IoU 0.002) | 0.1755 |
+| classify | **0.0642** | 0.0037 | 0.0089 |
+| measure_magnitude | **0.5783** CI [0.529, 0.625] | 0.5102 | 0.5326 |
+| all_channels | **0.2613** (empty-acc 0.913, F1 non-vuoti 0.067) | 0.0300 | 0.2000 |
+| lead_lag | 0.1664 (direzione al caso: 0.30) | 0.3043 (al caso: 0.33) | 0.2993 |
+
+- Appaiato: va1 − m30 **+0.059** [0.036, 0.082]; va1 − full1-topup **+0.033**
+  [0.013, 0.052]. all_channels +0.231 vs m30.
+- lead_lag: nessun run supera il caso sulla direzione; il calo di va1 è un
+  artefatto dello scorer (m30 diceva "independent" 67 volte su 100 e
+  incassava i 35 gold independent). Va dichiarato come "al caso" ovunque.
+- Lettura: il fenotipo "detection sì / posizione no" si attenua ma non
+  sparisce (IoU 0.094, acc@IoU0.3 0.143): la copertura multicanale completa
+  sblocca all_channels e un primo segnale di localizzazione fine; il resto
+  è materia per v2 (posizioni fp32) e per il Livello 2.

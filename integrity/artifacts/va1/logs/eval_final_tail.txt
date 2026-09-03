@@ -1,0 +1,60 @@
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/root/venv/lib/python3.12/site-packages/transformers/optimization.py", line 25, in <module>
+    from .trainer_utils import SchedulerType
+  File "/root/venv/lib/python3.12/site-packages/transformers/trainer_utils.py", line 66, in <module>
+    from peft import PeftMixedModel, PeftModel
+  File "/root/venv/lib/python3.12/site-packages/peft/__init__.py", line 17, in <module>
+    from .auto import (
+  File "/root/venv/lib/python3.12/site-packages/peft/auto.py", line 31, in <module>
+    from .config import PeftConfig
+  File "/root/venv/lib/python3.12/site-packages/peft/config.py", line 30, in <module>
+    from .utils import CONFIG_NAME, PeftType, TaskType
+  File "/root/venv/lib/python3.12/site-packages/peft/utils/__init__.py", line 17, in <module>
+    from .other import (
+  File "/root/venv/lib/python3.12/site-packages/peft/utils/other.py", line 37, in <module>
+    from transformers import PreTrainedModel
+  File "/root/venv/lib/python3.12/site-packages/transformers/utils/import_utils.py", line 2184, in __getattr__
+    raise ModuleNotFoundError(
+ModuleNotFoundError: Could not import module 'PreTrainedModel'. Are this object's requirements defined correctly?
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/timerlm/sft/tslm/train.py", line 32, in <module>
+    from transformers import get_cosine_schedule_with_warmup, get_linear_schedule_with_warmup
+  File "/root/venv/lib/python3.12/site-packages/transformers/utils/import_utils.py", line 2184, in __getattr__
+    raise ModuleNotFoundError(
+ModuleNotFoundError: Could not import module 'get_cosine_schedule_with_warmup'. Are this object's requirements defined correctly?
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading dataset 'anomaly_xl_precise' (AnomalyXLDataset)...
+  Dataset kwargs: {'variant': 'precise', 'train_dir': 'anomalyXL/datasets/anomalyxl-train/anomalyxl-precise', 'EOS_TOKEN': '<|im_end|>'}
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+  Train samples: 4488
+  Validation samples: 520
+  Test samples: 800
+
+Loading checkpoint from: results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+
+                                                                                                   
+  [EvalCoverage] evalonly_test_epoch_5_end: 800/800 examples accounted for
+EVALONLY_RESULT: {"loss": 0.35340173219068677, "num_batches": 800, "eval_errors": 0, "eval_jsonl": "results/anomaly_xl_precise/anomaly_xl_wavelet_va1/output_logs/evalonly_test_epoch_5_end_epoch_0.jsonl", "samples_evaluated": 800, "primary": 0.2743539445041715, "category_primary": {"localize": 0.24102580416198, "classify_with_evidence": 0.06419807425172712, "measure_magnitude": 0.5783179880632653, "localize_all_channels": 0.2613333333333333, "lead_lag_with_magnitude": 0.16641448974609374}, "checkpoint": "results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt", "split": "test"}

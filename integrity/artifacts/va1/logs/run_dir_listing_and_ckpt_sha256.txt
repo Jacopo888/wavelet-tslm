@@ -1,0 +1,12 @@
+total 3692
+drwxr-xr-x 4 root root    4096 Sep  3 18:20 .
+drwxr-xr-x 3 root root    4096 Sep  2 19:53 ..
+-rw-r--r-- 1 root root     930 Sep  3 18:19 artifacts.jsonl
+drwxr-xr-x 2 root root    4096 Sep  3 18:19 checkpoints
+-rw-r--r-- 1 root root    1826 Sep  2 19:54 config.json
+-rw-r--r-- 1 root root    1340 Sep  2 19:54 config.yaml
+-rw-r--r-- 1 root root    2763 Sep  3 18:19 experiment.log
+-rw-r--r-- 1 root root     385 Sep  3 18:19 history.json
+-rw-r--r-- 1 root root 3735331 Sep  3 18:19 metrics.jsonl
+drwxr-xr-x 2 root root    4096 Sep  3 20:40 output_logs
+-rw-r--r-- 1 root root     956 Sep  2 19:53 RUN_MANIFEST.json

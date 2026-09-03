@@ -1,0 +1,28 @@
+{
+ "timerlm_commit": "31fcd847b7cb37a1f1e6859b1dca7973ed0eae74",
+ "torch": "2.6.0+cu124",
+ "torchvision": "0.21.0+cu124",
+ "qwen_model_id": "Qwen/Qwen3.5-4B",
+ "qwen_revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+ "data_manifest": {
+  "repo": "nz00shuuuu/AnomalyXL",
+  "revision": "df363a467f855e55aaad414b0bdd58590829df9a",
+  "files": {
+   "precise/train": {
+    "path": "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/train.parquet",
+    "rows": 4488,
+    "sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+   },
+   "precise/val": {
+    "path": "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/val.parquet",
+    "rows": 520,
+    "sha256": "90b805b8f40e203b76873a9cf3a0f986e21700c9185c74acc33c44a183b1d977"
+   },
+   "precise/test": {
+    "path": "anomalyXL/datasets/anomalyxl-precise/data.parquet",
+    "rows": 800,
+    "sha256": "7b37269d106f70ba7bee5feb504c00059bc880217a56a8279a2631c8bf5e1524"
+   }
+  }
+ }
+}
