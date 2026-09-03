@@ -100,8 +100,17 @@ DONE solo con 800/800. Confronto appaiato (bootstrap sui 800 id) fatto in locale
 
 ## 7. Rischi aperti che solo lo smoke chiude
 
-- vLLM 0.23 cu129 e FA2 cu128 sul driver 550 (compatibilità minore: torch OK, vLLM da vedere).
+- vLLM 0.23 cu129 e FA2 cu128 sul driver 550: **chiusi dallo stadio a** (server sano in 210 s,
+  tool call parsata, picco 9 GB a util 0.42).
 - vGPU senza VMM: `enable_sleep_mode=false`; nessun `expandable_segments`.
+- **NCCL non si inizializza sul vGPU (scoperto allo stadio c)**: la slice GRID non espone memory
+  pool CUDA, VMM, eventi IPC (`cudaDeviceGetAttribute` → 0 per tutti; `cudaDeviceGetDefaultMemPool`
+  → 801 not supported). NCCL ≥ 2.27 fallisce in `ncclCommInitRank` ("Cuda failure 'operation not
+  supported'", nessuna variabile NCCL_* lo evita); NCCL 2.21 (torch 2.6) funziona ma torch 2.11
+  linka simboli 2.28 (`ncclDevCommCreate`) e non si può degradare. Soluzione: trainer a rank
+  singolo su **gloo** (`PRIME_RL_DIST_BACKEND=cpu:gloo,cuda:gloo`, override env-gated di 6 righe in
+  `trainer/utils.py`, overlay `l2/overlay/prime-rl/`): FSDP2 + mixed precision + clip + AdamW
+  verificati su gloo con tensori CUDA. Costo: collettive via CPU, ma a rank 1 sono no-op logici.
 - Parser `qwen3_coder` con Qwen3.5-2B (il paper lo usa col 4B).
 - Memoria: 0.42×24 GB per vLLM + trainer LoRA 2B a 32k con AC pieno; picco misurato in c.
 - Weight sync LoRA via filesystem + `/load_lora_adapter` a ogni step: costo misurato in d.

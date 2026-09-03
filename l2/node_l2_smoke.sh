@@ -20,6 +20,8 @@ PORT=8000; BASE_URL="http://127.0.0.1:$PORT/v1"
 MODEL_NAME="/root/timerlm/l2/model_snapshot"   # served name == [model].name in every config
 PEAK_MIB="${L2_PEAK_MIB:-23000}"
 export PATH="$HOME/.local/bin:$PATH" HF_HUB_OFFLINE=1 WANDB_MODE=disabled TOKENIZERS_PARALLELISM=false
+# vGPU: no CUDA memory pools -> NCCL cannot init; single-rank FSDP2 on gloo (see overlay/prime-rl)
+export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
 mkdir -p "$SMOKE" "$LOGS"
 STAGES=("$@"); [ ${#STAGES[@]} -eq 0 ] && STAGES=(a b c d)
 
@@ -201,4 +203,9 @@ PY
   log "stage d PASS"
 fi
 log "ALL REQUESTED STAGES PASSED: ${STAGES[*]}"
-echo "SMOKE_OK ${STAGES[*]}" > "$SMOKE/SMOKE_OK"
+# SMOKE_OK accumulates the stages that passed (stages may be run in separate invocations);
+# the run driver requires a, b and c to be recorded and the file to be newer than the env manifest.
+prev=""; [ -f "$SMOKE/SMOKE_OK" ] && prev="$(sed 's/^SMOKE_OK//' "$SMOKE/SMOKE_OK")"
+all="$(printf '%s\n' $prev "${STAGES[@]}" | grep -E '^[abcd]$' | sort -u | tr '\n' ' ')"
+echo "SMOKE_OK ${all% }" > "$SMOKE/SMOKE_OK"
+log "SMOKE_OK now records: ${all% }"

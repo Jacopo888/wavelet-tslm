@@ -79,6 +79,19 @@ SUBS="$(git -C "$PR" submodule status deps/verifiers deps/renderers deps/pydanti
 echo "$SUBS"
 echo "$SUBS" | grep -qE '^[+-]' && die "a submodule is not cleanly checked out (see +/- above)"
 
+# ---------------------------------------------------------------- 1b. prime-rl overlay (env-gated gloo backend for vGPU)
+# The pinned checkout is kept pristine except for l2/overlay/prime-rl/ (see the file header
+# comments): PRIME_RL_DIST_BACKEND override in trainer/utils.py, needed because GRID vGPUs have
+# no CUDA memory pools and NCCL >= 2.27 cannot initialise. Applied idempotently, diff logged.
+PR_OVERLAY="${L2_PR_OVERLAY:-$HOME/l2/kit/overlay/prime-rl}"
+if [ -d "$PR_OVERLAY" ]; then
+  ( cd "$PR_OVERLAY" && find . -type f | sort | while read -r f; do cp "$f" "$PR/$f"; echo "prime-rl overlay $f"; done )
+  git -C "$PR" diff --stat | tail -3
+  grep -q "PRIME_RL_DIST_BACKEND" "$PR/src/prime_rl/trainer/utils.py" || die "prime-rl overlay not applied"
+else
+  die "prime-rl overlay missing: $PR_OVERLAY (scp l2/overlay/prime-rl there first)"
+fi
+
 # ---------------------------------------------------------------- 2. locked venv + FA2 extra
 cd "$PR"
 log "uv sync --frozen --extra flash-attn (heavy: torch cu128 + vllm + fla + flash-attn wheel)"
