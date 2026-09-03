@@ -163,8 +163,10 @@ rl_run() {  # $1 name, $2 arm, $3 extra args...
   server_up || start_server
   start_sampler "$SMOKE/${name}_mem.csv"
   local t0=$(date +%s)
-  ( cd "$PR" && uv run --no-sync rl @ "../l2/configs/l2_pilot_${arm}.toml" "$@" --output-dir "$outdir" ) \
-      > "$LOGS/smoke_${name}.log" 2>&1 || { stop_sampler; tail -60 "$LOGS/smoke_${name}.log"; fail "rl run $name exited non-zero"; }
+  # bounded: a 2-step run that does not finish within L2_RL_SMOKE_WALL_S (default 90 min) is a
+  # failure (e.g. every rollout erroring so the batch never fills), not something to wait on.
+  ( cd "$PR" && timeout "${L2_RL_SMOKE_WALL_S:-5400}" uv run --no-sync rl @ "../l2/configs/l2_pilot_${arm}.toml" "$@" --output-dir "$outdir" ) \
+      > "$LOGS/smoke_${name}.log" 2>&1 || { stop_sampler; tail -60 "$LOGS/smoke_${name}.log"; grep -aE "Rollout failed|WARNING|ERROR" "$outdir/logs/orchestrator.log" 2>/dev/null | tail -5 | cut -c1-300; fail "rl run $name exited non-zero or exceeded the wall limit"; }
   local dt=$(( $(date +%s) - t0 ))
   stop_sampler
   [ -d "$outdir/checkpoints/step_2" ] || { ls -la "$outdir" "$outdir/checkpoints" 2>/dev/null; fail "$name: no checkpoints/step_2"; }
