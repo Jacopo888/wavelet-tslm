@@ -22,6 +22,8 @@ WALL_H="${L2_EVAL_WALL_H:-30}"; CONC="${L2_EVAL_CONCURRENCY:-16}"
 export PATH="$HOME/.local/bin:$PATH" HF_HUB_OFFLINE=1 WANDB_MODE=disabled TOKENIZERS_PARALLELISM=false
 # vGPU: no CUDA memory pools -> NCCL cannot init; single-rank FSDP2 on gloo (see overlay/prime-rl)
 export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
+# vGPU: no CUDA VMM -> the launcher must not set expandable_segments for the trainer (overlay/prime-rl rl.py)
+export PRIME_RL_TRAINER_ALLOC_CONF=""
 mkdir -p "$OUT" "$LOGS"
 log() { echo "[l2-eval/$TAG $(date -u +%H:%M:%S)] $*" | tee -a "$OUT/driver.log"; }
 fail() { log "FAILED: $*"; echo "$(date -u +%FT%TZ) $*" > "$OUT/FAILED"; tmux kill-session -t l2evalsrv 2>/dev/null || true; exit 1; }

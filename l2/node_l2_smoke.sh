@@ -22,6 +22,8 @@ PEAK_MIB="${L2_PEAK_MIB:-23000}"
 export PATH="$HOME/.local/bin:$PATH" HF_HUB_OFFLINE=1 WANDB_MODE=disabled TOKENIZERS_PARALLELISM=false
 # vGPU: no CUDA memory pools -> NCCL cannot init; single-rank FSDP2 on gloo (see overlay/prime-rl)
 export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
+# vGPU: no CUDA VMM -> the launcher must not set expandable_segments for the trainer (overlay/prime-rl rl.py)
+export PRIME_RL_TRAINER_ALLOC_CONF=""
 mkdir -p "$SMOKE" "$LOGS"
 STAGES=("$@"); [ ${#STAGES[@]} -eq 0 ] && STAGES=(a b c d)
 
