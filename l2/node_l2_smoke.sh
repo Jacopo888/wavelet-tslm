@@ -24,6 +24,8 @@ export PATH="$HOME/.local/bin:$PATH" HF_HUB_OFFLINE=1 WANDB_MODE=disabled TOKENI
 export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
 # vGPU: no CUDA VMM -> the launcher must not set expandable_segments for the trainer (overlay/prime-rl rl.py)
 export PRIME_RL_TRAINER_ALLOC_CONF=""
+# flash-linear-attention routes GatedDeltaNet chunk kernels to TileLang (JIT via nvcc, absent here): force the Triton path
+export FLA_TILELANG=0
 mkdir -p "$SMOKE" "$LOGS"
 STAGES=("$@"); [ ${#STAGES[@]} -eq 0 ] && STAGES=(a b c d)
 
