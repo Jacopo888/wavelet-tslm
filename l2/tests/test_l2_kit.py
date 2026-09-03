@@ -65,6 +65,7 @@ def test_arm_configs_keep_the_paper_semantics():
         assert c["orchestrator"]["advantage"]["length_penalty"]["gate_by_correctness"] is False
         env = c["orchestrator"]["train"]["env"][0]
         assert env["taskset"]["id"] == "timeseries-qa-v1"
+        assert env["taskset"]["repo_or_path"].endswith("/l2/data/val"), "scorer dataset must be the pinned local copy"
         assert env["harness"]["id"] == "timeseries-qa-v1"
         henv = env["harness"]["env"]
         assert int(henv["RLM_MAX_TURNS"]) <= 15 and int(henv["RLM_MAX_TOKENS"]) < c["seq_len"]

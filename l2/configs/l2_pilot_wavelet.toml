@@ -45,7 +45,10 @@ max_completion_tokens = 2048
 
 [[orchestrator.train.env]]
 name = "anomalyxl-generator"
-taskset = { id = "timeseries-qa-v1", generator = { num_tasks = 100000, run_seed = 20260903 } }
+# repo_or_path: the generator synthesises every task, but the taskset still instantiates the v0
+# AnomalyXL dataset for the scorer/schema; unset it resolves the HF shard (blocked offline, and
+# unpinned) -> point it at the pinned local val directory (never read for training tasks).
+taskset = { id = "timeseries-qa-v1", repo_or_path = "/root/timerlm/l2/data/val", generator = { num_tasks = 100000, run_seed = 20260903 } }
 harness = { id = "timeseries-qa-v1", summarize_at_tokens = 22000, env = { RLM_MAX_TOKENS = "16384", RLM_MAX_OUTPUT = "4096", RLM_MAX_TURNS = "12", RLM_SKILLS = "wavelet_zoom" } }
 
 # Online eval every 10 steps on the pinned local precise VALIDATION split (first 100 rows =

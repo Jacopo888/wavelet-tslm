@@ -111,6 +111,9 @@ DONE solo con 800/800. Confronto appaiato (bootstrap sui 800 id) fatto in locale
   singolo su **gloo** (`PRIME_RL_DIST_BACKEND=cpu:gloo,cuda:gloo`, override env-gated di 6 righe in
   `trainer/utils.py`, overlay `l2/overlay/prime-rl/`): FSDP2 + mixed precision + clip + AdamW
   verificati su gloo con tensori CUDA. Costo: collettive via CPU, ma a rank 1 sono no-op logici.
+- **Il launcher `rl` forza `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` sul trainer**
+  (`entrypoints/rl.py`): sul vGPU la prima allocazione fallisce ("CUDA driver error: operation not
+  supported"). Override env-gated `PRIME_RL_TRAINER_ALLOC_CONF=""` (overlay `l2/overlay/prime-rl/`).
 - Parser `qwen3_coder` con Qwen3.5-2B (il paper lo usa col 4B).
 - Memoria: 0.42×24 GB per vLLM + trainer LoRA 2B a 32k con AC pieno; picco misurato in c.
 - Weight sync LoRA via filesystem + `/load_lora_adapter` a ogni step: costo misurato in d.
