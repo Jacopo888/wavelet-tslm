@@ -1,0 +1,41 @@
+# L2 standalone policy server (prime-rl c5afcaa2e schema). One vLLM engine on GPU 0, shared
+# with the LoRA trainer; sized so weights + KV stay inside ~0.42 x 24 GB (the smoke measures
+# the real peak). Started BEFORE `rl` from ~/timerlm/prime-rl:
+#   uv run --no-sync inference @ ../l2/configs/inference_l2.toml
+# Tool calling must be on (qwen3_coder parser, auto tool choice is derived from it): the RLM
+# harness drives the policy through tool calls and a server without them scores zero.
+# LoRA is served as a hot-loaded adapter (/load_lora_adapter, filesystem weight broadcast):
+# enable_lora/max_lora_rank mirror trainer.model.lora (rank 32). No sleep mode: the vGPU has
+# no CUDA VMM. served model name == the trainer/orchestrator [model].name (absolute path).
+output_dir = "/root/l2/runs/inference"
+enable_lora = true
+max_lora_rank = 32
+max_loras = 1
+max_cpu_loras = 4
+enable_prefix_caching = true
+gpu_memory_utilization = 0.42
+seed = 20260903
+
+[server]
+host = "127.0.0.1"
+port = 8000
+liveness_timeout_seconds = 60
+
+[model]
+name = "/root/timerlm/l2/model_snapshot"
+dtype = "bfloat16"
+max_model_len = 32768
+enforce_eager = false
+tool_call_parser = "qwen3_coder"
+reasoning_parser = "qwen3"
+
+[parallel]
+tp = 1
+dp = 1
+
+[weight_broadcast]
+type = "filesystem"
+
+[vllm_extra]
+max_num_seqs = 16
+enable_sleep_mode = false

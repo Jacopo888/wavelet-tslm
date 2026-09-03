@@ -1,0 +1,20 @@
+# Smoke overlay: compose AFTER an arm config (`rl @ l2_pilot_code.toml @ l2_smoke.toml`).
+# Changes load only (2 steps, 2 prompts x 4 rollouts, no online eval), never the model or
+# server settings, so the memory peak it measures is the real run's peak per rollout.
+max_steps = 2
+output_dir = "/root/l2/smoke/rl_tiny"
+
+[orchestrator]
+batch_size = 2
+group_size = 4
+max_inflight_rollouts = 8
+
+[orchestrator.eval]
+interval = 1000
+num_examples = 1
+skip_first_step = true
+
+[ckpt]
+interval = 2
+keep_last = 1
+keep_interval = 2

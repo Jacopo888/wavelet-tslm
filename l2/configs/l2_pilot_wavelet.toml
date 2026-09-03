@@ -1,0 +1,90 @@
+# L2 pilot — arm `wavelet`: byte-for-byte the `code` arm (l2_pilot_code.toml) plus the
+# rlm built-in skill `wavelet_zoom` enabled in the harness env (RLM_SKILLS). The task-note
+# variant (one extra sentence) is selected by the launch env TIMERLM_NOTE_VARIANT=wavelet in
+# node_l2_run.sh. l2/tests/test_configs.py asserts the two files differ only in output_dir,
+# wandb.name and RLM_SKILLS. Run from ~/timerlm/prime-rl.
+
+max_steps = 60
+seq_len = 32768
+output_dir = "/root/l2/runs/wavelet"
+
+[deployment]
+num_train_gpus = 1
+num_infer_gpus = 0
+
+[model]
+name = "/root/timerlm/l2/model_snapshot"
+
+[weight_broadcast]
+type = "filesystem"
+
+[orchestrator.renderer]
+name = "qwen3.5"
+
+[wandb]
+project = "timerlm-l2"
+name = "l2-pilot-wavelet-qwen35-2b"
+
+[orchestrator]
+batch_size = 8
+group_size = 8
+max_inflight_rollouts = 16
+max_off_policy_steps = 8
+
+[orchestrator.advantage]
+type = "default"
+
+[orchestrator.advantage.length_penalty]
+coef = 0.1
+gate_by_correctness = false
+
+[orchestrator.train.sampling]
+max_completion_tokens = 2048
+
+[[orchestrator.train.env]]
+name = "anomalyxl-generator"
+taskset = { id = "timeseries-qa-v1", generator = { num_tasks = 100000, run_seed = 20260903 } }
+harness = { id = "timeseries-qa-v1", summarize_at_tokens = 22000, env = { RLM_MAX_TOKENS = "16384", RLM_MAX_OUTPUT = "4096", RLM_MAX_TURNS = "12", RLM_SKILLS = "wavelet_zoom" } }
+
+# Online eval every 10 steps on the pinned local precise VALIDATION split (first 100 rows =
+# eval pool, 32 sampled), through the v0 eval env exactly like the paper.
+[[orchestrator.eval.env]]
+id = "timeseries-qa"
+name = "anomalyxl-rlm-text-eval"
+args = { dataset = "anomalyxl", repo_or_path = "/root/timerlm/l2/data/val", mode = "rlm", use_image = false, use_local_executor = true, eval_size = 100, max_turns = 12 }
+
+[orchestrator.eval]
+interval = 10
+num_examples = 32
+skip_first_step = true
+
+[orchestrator.student.client]
+base_url = ["http://localhost:8000/v1"]
+
+[trainer.optim]
+lr = 2e-5
+
+[trainer.model]
+attn = "flash_attention_2"
+optimization_dtype = "bfloat16"
+reduce_dtype = "bfloat16"
+optim_cpu_offload = true
+fused_lm_head_token_chunk_size = "auto"
+
+[trainer.model.ac]
+mode = "full"
+
+[trainer.model.lora]
+rank = 32
+alpha = 64
+target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "in_proj_qkv", "in_proj_z", "in_proj_b", "in_proj_a", "out_proj"]
+
+# Phase boundary of the negatives schedule = step 35 (paper: 220/400 = 55%; 35/60 = 58%,
+# the nearest checkpoint multiple). keep_interval keeps step_35 for the phase-2 resume.
+[ckpt]
+interval = 5
+keep_last = 3
+keep_interval = 35
+
+[ckpt.weights]
+save_adapter_separately = true
