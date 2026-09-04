@@ -50,13 +50,15 @@ dell'harness rlm (mcp 2.x ha rinominato `streamablehttp_client`).
 | RLM_MAX_TOKENS / OUTPUT / TURNS | 24576 / 8192 / 15 | 16384 / 4096 / 12 | finestra dimezzata |
 | max_completion_tokens | 4096 | 2048 | idem |
 | rollouts/step | 1024 (128×8) | **64 (8×8)** | tempo per step su vGPU |
-| max_inflight | 128 | 16 (= max_num_seqs vLLM) | KV cache |
+| max_inflight | 128 | 12 (= max_num_seqs vLLM) | KV cache |
+| LM head chunk | "auto" (8192 token) | 1024 token | 8192 × 248k vocab = 4 GB di logit per chunk: troppo accanto a vLLM su 24 GB |
+| vLLM gpu_memory_utilization | 0.85 (server dedicato) | 0.33 (GPU condivisa col trainer) | smoke c6: 22.3/24.5 GB e OOM nel backward a 0.42 |
 | step | 400 | **60** | ~1.5% del compute del paper: è un pilot |
 | negativi | OFF fino a 220, poi ON (resume) | OFF fino a **35**, poi ON (resume da step_35) | stessa proporzione (58% vs 55%) |
 | eval online | ogni 20 step, 50 esempi (val HF) | ogni 10, 32 esempi (val locale pinnata) | provenienza |
 | length penalty | coef 0.1, gate off | uguale | |
 | renderer / generator θ / celle | qwen3.5 / θ fisso / lunghezze fino a 131k | uguali (`run_seed` 20260903) | |
-| server | 2× `vllm serve` standalone | 1× `uv run inference` standalone (util 0.42, prefix caching, LoRA hot-load) | |
+| server | 2× `vllm serve` standalone | 1× `uv run inference` standalone (util 0.33, prefix caching, LoRA hot-load) | |
 
 Deviazioni che vanno dichiarate nel testo: modello 2B+LoRA, budget ridotto (step, rollouts,
 finestra), eval finale con budget di training (16k/4096/12) invece di quello del paper.
