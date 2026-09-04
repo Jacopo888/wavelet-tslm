@@ -186,25 +186,33 @@ def _monitor():
     return mod
 
 
-def test_monitor_parses_step_line_and_metrics(tmp_path):
+def test_monitor_parses_step_line_and_rollouts(tmp_path):
     m = _monitor()
     out = tmp_path / "run"
     (out / "logs").mkdir(parents=True)
     (out / "logs" / "orchestrator.log").write_text(
         "2026-09-04 [SUCCESS] Step 3 |  12m 4s | Reward 0.1234 | Trainable 60/62 (96.8%) | Turns 7.5 | "
         "Branches 1.0 | Max Off-Policy 2 | Error 3.1% | Truncation 4.8%\n", encoding="utf-8")
-    (out / "orchestrator_metrics.jsonl").write_text(json.dumps({
-        "step": 3, "progress/rollouts": 64, "progress/tasks": 8, "time/step": 724.0,
-        "dispatcher/errored/train": 2, "train/agg/effective/policy/reward/mean": 0.1234,
-        "train/agg/effective/policy/forced_final_penalty/mean": -0.02,
-        "train/agg/effective/policy/filters/zero_advantage/mean": 0.125,
-    }) + "\n", encoding="utf-8")
-    metrics = m.parse_metrics_jsonl(out / "orchestrator_metrics.jsonl")
+    rdir = out / "run_default" / "rollouts" / "step_3"; rdir.mkdir(parents=True)
+    def rec(idx, cat, reward, forced, calls, zoom=0, err=None):
+        tcs = [{"name": "call_python_repl", "arguments": {"code": "await wavelet_zoom(mode=\"overview\")" if i < zoom else "print(1)"}} for i in range(calls)]
+        nodes = [{"message": {"role": "system", "content": "s"}}, {"message": {"role": "user", "content": "u"}},
+                 {"message": {"role": "assistant", "content": "", "tool_calls": tcs}, "usage": {"prompt_tokens": 100, "completion_tokens": 40}}]
+        return {"task": {"idx": idx, "category": cat}, "rewards": {"correct_answer": reward, "forced_final_penalty": -0.25 if forced else 0.0},
+                "nodes": nodes, "stop_condition": "max_turns" if forced else "agent_completed", "errors": [err] if err else [],
+                "is_completed": True, "timing": {"generation": {"start": 0.0, "end": 30.0}}}
+    rows = [rec(1, "localize", 1.0, False, 3, zoom=1), rec(1, "localize", 0.0, True, 5), rec(2, "measure_magnitude", 0.0, True, 4), rec(2, "measure_magnitude", 0.0, True, 4, err="boom")]
+    (rdir / "train_rollouts.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
     logs = m.parse_log_steps(out / "logs" / "orchestrator.log")
     assert logs[3]["error_rate"] == pytest.approx(0.031) and logs[3]["trainable"] == 60
-    row = m.coverage_row(3, metrics[3], logs[3], expect_rollouts=64)
-    assert row["rollouts"] == 64 and not row["rollouts_short"]
+    summary = m.summarize_step(3, rdir / "train_rollouts.jsonl")
+    assert summary["rollouts"] == 4 and summary["errored"] == 1 and summary["forced_final"] == 3
+    assert summary["reward_positive"] == 1 and summary["wavelet_zoom_calls"] == 1
+    assert summary["per_category"]["localize"]["n"] == 2 and summary["groups"] == 2 and summary["zero_variance_groups"] == 1
+    assert summary["tool_calls_mean"] == pytest.approx(4.0) and summary["completion_tokens_mean"] == pytest.approx(40.0)
+    row = m.coverage_row(3, summary, logs[3], expect_rollouts=4)
+    assert not row["rollouts_short"]
     line = m.fmt(row)
-    assert "[L2-Coverage] step 3" in line and "rollouts 64/64" in line and "forced_final -0.02" in line
-    short = m.coverage_row(3, {**metrics[3], "progress/rollouts": 40}, logs[3], expect_rollouts=64)
+    assert "[L2-Coverage] step 3" in line and "rollouts 4/4" in line and "wavelet_zoom 1" in line and "zero_var_groups 1/2" in line
+    short = m.coverage_row(3, summary, logs[3], expect_rollouts=64)
     assert short["rollouts_short"] and "ROLLOUTS_SHORT" in m.fmt(short)
