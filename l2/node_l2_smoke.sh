@@ -163,9 +163,10 @@ PY
 fi
 
 # ------------------------------------------------------------------ c: rl 2 steps, tiny batch, memory peak
-rl_run() {  # $1 name, $2 arm, $3 extra args...
-  local name="$1" arm="$2"; shift 2
+rl_run() {  # $1 name, $2 arm, $3 expected rollouts/step, $4... extra args
+  local name="$1" arm="$2" expected_rollouts="$3"; shift 3
   local outdir="$HOME/l2/smoke/$name"; rm -rf "$outdir"
+  local coverage="$SMOKE/${name}_coverage.jsonl"; rm -f "$coverage"
   server_up || start_server
   start_sampler "$SMOKE/${name}_mem.csv"
   local t0=$(date +%s)
@@ -175,34 +176,39 @@ rl_run() {  # $1 name, $2 arm, $3 extra args...
       > "$LOGS/smoke_${name}.log" 2>&1 || { stop_sampler; tail -60 "$LOGS/smoke_${name}.log"; grep -aE "Rollout failed|WARNING|ERROR" "$outdir/logs/orchestrator.log" 2>/dev/null | tail -5 | cut -c1-300; fail "rl run $name exited non-zero or exceeded the wall limit"; }
   local dt=$(( $(date +%s) - t0 ))
   stop_sampler
-  [ -d "$outdir/checkpoints/step_2" ] || { ls -la "$outdir" "$outdir/checkpoints" 2>/dev/null; fail "$name: no checkpoints/step_2"; }
-  "$VENV_PY" "$KIT/l2_monitor.py" "$outdir" --jsonl "$SMOKE/${name}_coverage.jsonl" || fail "$name: monitor reported violations"
-  "$VENV_PY" - "$outdir" "$SMOKE/${name}_mem.csv" "$dt" "$PEAK_MIB" "$SMOKE/${name}.json" <<'PY'
-import json, sys, statistics
-outdir, memcsv, dt, peak_lim, out = sys.argv[1:6]
+  [ -s "$outdir/checkpoints/step_2/trainer/.metadata" ] || fail "$name: trainer checkpoint step_2 missing or empty"
+  [ -s "$outdir/weights/step_2/model.safetensors" ] || fail "$name: HF weights step_2 missing or empty"
+  "$VENV_PY" "$KIT/l2_monitor.py" "$outdir" --jsonl "$coverage" --expect-rollouts "$expected_rollouts" || fail "$name: monitor reported violations"
+  "$VENV_PY" - "$coverage" "$SMOKE/${name}_mem.csv" "$dt" "$PEAK_MIB" "$SMOKE/${name}.json" <<'PY'
+import json, sys
+coverage, memcsv, dt, peak_lim, out = sys.argv[1:6]
 mem = [int(x) for x in open(memcsv).read().split() if x.strip().isdigit()]
-rows = [json.loads(l) for l in open(outdir + "/orchestrator_metrics.jsonl", encoding="utf-8") if l.strip()]
+rows = [json.loads(l) for l in open(coverage, encoding="utf-8") if l.strip()]
 steps = {r["step"]: r for r in rows if "step" in r}
-st = [steps[s].get("time/step") for s in sorted(steps)]
-roll = [steps[s].get("progress/rollouts") for s in sorted(steps)]
-err = [steps[s].get("dispatcher/errored/train") for s in sorted(steps)]
+def duration_s(text):
+    import re
+    units = {"h": 3600, "m": 60, "s": 1}
+    return sum(float(n) * units[u] for n, u in re.findall(r"([0-9.]+)\s*([hms])", text or ""))
+st = [duration_s(steps[s].get("log_step_time_txt")) for s in sorted(steps)]
+roll = [steps[s].get("rollouts") for s in sorted(steps)]
+err = [steps[s].get("errored") for s in sorted(steps)]
 res = {"wall_s": int(dt), "steps": sorted(steps), "time_per_step_s": st, "rollouts_per_step": roll, "errored_train": err,
        "gpu_peak_mib": max(mem) if mem else None, "gpu_peak_limit_mib": int(peak_lim),
-       "pass": bool(steps) and len(steps) >= 2 and (max(mem) if mem else 10**9) < int(peak_lim)}
+       "pass": sorted(steps) == [0, 1] and all(x > 0 for x in st) and (max(mem) if mem else 10**9) < int(peak_lim)}
 json.dump(res, open(out, "w"), indent=1); print(json.dumps(res))
 assert res["pass"], "stage failed: " + json.dumps(res)
 PY
 }
 if has_stage c; then
   log "stage c: rl 2 steps tiny batch (memory gate)"
-  rl_run c_rl_tiny code @ ../l2/configs/l2_smoke.toml
+  rl_run c_rl_tiny code 8 @ ../l2/configs/l2_smoke.toml
   log "stage c PASS"
 fi
 
 # ------------------------------------------------------------------ d: rl 2 steps, real batch (timing)
 if has_stage d; then
   log "stage d: rl 2 steps real batch (timing)"
-  rl_run d_rl_full code --max-steps 2 --ckpt.interval 2 --orchestrator.eval.interval 1000
+  rl_run d_rl_full code "${L2_EXPECT_ROLLOUTS:-64}" --max-steps 2 --ckpt.interval 2 --orchestrator.eval.interval 1000
   "$VENV_PY" - "$SMOKE/d_rl_full.json" <<'PY'
 import json, sys
 r = json.load(open(sys.argv[1]))

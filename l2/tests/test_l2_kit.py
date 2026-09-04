@@ -93,6 +93,16 @@ def test_smoke_overlay_changes_only_load():
     assert s["orchestrator.batch_size"] % s["orchestrator.group_size"] == 0
 
 
+def test_smoke_postcheck_uses_current_rollout_monitor():
+    """The smoke gate and monitor must use the same artifact contract."""
+    src = (L2 / "node_l2_smoke.sh").read_text(encoding="utf-8")
+    assert "orchestrator_metrics.jsonl" not in src
+    assert '--expect-rollouts "$expected_rollouts"' in src
+    assert 'checkpoints/step_2/trainer/.metadata' in src
+    assert 'weights/step_2/model.safetensors' in src
+    assert 'rl_run c_rl_tiny code 8 ' in src
+
+
 def test_inference_config_matches_arms():
     inf = _load(CFG / "inference_l2.toml")
     arm = _load(CFG / "l2_pilot_code.toml")
@@ -178,6 +188,20 @@ def test_eval_script_defaults_are_the_paper_protocol():
     assert 'os.environ.get("RLM_MAX_TURNS", "15")' in src
 
 
+def test_pilot_restarts_inference_server_for_each_arm():
+    """Sequential arms must not share a loaded LoRA adapter or prefix cache."""
+    src = (L2 / "node_l2_run.sh").read_text(encoding="utf-8")
+    assert "if ! server_up" not in src
+    assert "tmux kill-session -t l2srv" in src
+    assert "starting a fresh inference server for arm $ARM" in src
+    assert "refusing a non-isolated run" in src
+
+
+def test_pilot_requires_the_full_batch_smoke_gate():
+    src = (L2 / "node_l2_run.sh").read_text(encoding="utf-8")
+    assert "for s in a b c d; do" in src
+
+
 # ---------------------------------------------------------------- monitor
 def _monitor():
     spec = importlib.util.spec_from_file_location("l2_monitor", L2 / "l2_monitor.py")
@@ -211,8 +235,10 @@ def test_monitor_parses_step_line_and_rollouts(tmp_path):
     assert summary["per_category"]["localize"]["n"] == 2 and summary["groups"] == 2 and summary["zero_variance_groups"] == 1
     assert summary["tool_calls_mean"] == pytest.approx(4.0) and summary["completion_tokens_mean"] == pytest.approx(40.0)
     row = m.coverage_row(3, summary, logs[3], expect_rollouts=4)
-    assert not row["rollouts_short"]
+    assert not row["rollouts_mismatch"] and not row["rollout_data_missing"] and not row["log_step_missing"]
     line = m.fmt(row)
     assert "[L2-Coverage] step 3" in line and "rollouts 4/4" in line and "wavelet_zoom 1" in line and "zero_var_groups 1/2" in line
-    short = m.coverage_row(3, summary, logs[3], expect_rollouts=64)
-    assert short["rollouts_short"] and "ROLLOUTS_SHORT" in m.fmt(short)
+    mismatch = m.coverage_row(3, summary, logs[3], expect_rollouts=3)
+    assert mismatch["rollouts_mismatch"] and "ROLLOUTS_MISMATCH" in m.fmt(mismatch)
+    missing = m.coverage_row(3, None, logs[3], expect_rollouts=4)
+    assert missing["rollout_data_missing"] and missing["rollouts_mismatch"] and "SOURCE_MISSING" in m.fmt(missing)

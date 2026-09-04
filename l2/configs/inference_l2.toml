@@ -1,5 +1,5 @@
 # L2 standalone policy server (prime-rl c5afcaa2e schema). One vLLM engine on GPU 0, shared
-# with the LoRA trainer; sized so weights + KV stay inside ~0.42 x 24 GB (the smoke measures
+# with the LoRA trainer; sized so weights + KV stay inside 0.33 x 24 GB (the smoke measures
 # the real peak). Started BEFORE `rl` from ~/timerlm/prime-rl:
 #   uv run --no-sync inference @ ../l2/configs/inference_l2.toml
 # Tool calling must be on (qwen3_coder parser, auto tool choice is derived from it): the RLM

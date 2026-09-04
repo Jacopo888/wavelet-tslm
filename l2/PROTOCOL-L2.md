@@ -74,24 +74,25 @@ la valutazione usa i pesi HF fusi in `weights/step_N` (l'adapter resta nel check
 |---|---|---|
 | a | server vLLM + `/v1/models` + una completion con tool call | tool call parsata dal parser `qwen3_coder` |
 | b | 2 rollout reali per braccio via `eval_v1_rlm.py` (val pinnata) | 0 errori, ≥1 turno; braccio wavelet: skill pubblicizzata nel prompt di sistema (chiamate ≥0 a zero-shot) |
-| c | `rl` 2 step, 2×4 rollout, sampler nvidia-smi 1 s | `checkpoints/step_2` presente, picco GPU < 23 000 MiB, monitor senza violazioni |
-| d | `rl` 2 step al batch reale 8×8 | come c; misura s/step → ore per braccio = s/step × 60 / 3600 |
+| c | `rl` 2 step, 2×4 rollout, sampler nvidia-smi 1 s | checkpoint trainer + pesi HF presenti, picco GPU < 23 000 MiB, 8/8 rollout per step |
+| d | `rl` 2 step al batch reale 8×8 | PASS: 64/64 per step, 0 errori, picco 22 206 MiB; massimo 1 280 s/step |
 
 Solo con `SMOKE_OK` (più recente del manifest d'ambiente) il driver accetta di partire.
 
 ## 5. Esecuzione e copertura
 
-`node_l2_run.sh <braccio>`: server → fase 1 (`ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN_K=1`
+`node_l2_run.sh <braccio>`: riavvio del server dal modello base (nessun adapter o prefix cache
+del braccio precedente) → fase 1 (`ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN_K=1`
 esportati nell'env di lancio, sonda che li verifica) → checkpoint step_35 obbligatorio → fase 2
 (`--ckpt.resume-step 35 --max-steps 60`, sonda P_PRESENT=0.8) → `weights/step_60` → coverage
 post-hoc su tutti i 60 step (`[L2-Coverage] step N: rollouts C/64, errored, forced_final,
-reward, turni, token, zero-adv dropped, eval`) → `DONE`. Qualunque processo morto, attesa
-oltre 45 h per fase, checkpoint mancante, tasso d'errore > 25% in uno step o rollout sotto
-i 64 attesi → `FAILED` con motivo. Mai un DONE di comodo.
+reward, turni, token, gruppi a varianza zero`) → `DONE`. Qualunque processo morto, attesa
+oltre 45 h per fase, checkpoint mancante, fonte di coverage assente, tasso d'errore > 25% o
+conteggio rollout diverso da 64 in uno step → `FAILED` con motivo. Mai un DONE di comodo.
 
-Stima tempo: dal paper e dalla vGPU (~L4), 64 rollout da ~12 turni con 16 in parallelo →
-~25-35 min/step → 25-35 h per braccio, ~$25-30 di crediti l'uno; eval finale 800 righe ×
-~4 target ≈ 6-8 h l'una. Lo smoke d sostituisce la stima con la misura.
+Misura smoke d: 796 e 1 280 s per la raccolta dei due step; il trainer ha chiuso gli update
+in 31m01s e 20m04s end-to-end grazie alla pipeline concorrente. Proiezione di base dal massimo
+osservato: **21,3 h per braccio da 60 step**, più l'overhead degli eval online e finali.
 
 ## 6. Valutazione finale
 
@@ -102,8 +103,8 @@ DONE solo con 800/800. Confronto appaiato (bootstrap sui 800 id) fatto in locale
 
 ## 7. Rischi aperti che solo lo smoke chiude
 
-- vLLM 0.23 cu129 e FA2 cu128 sul driver 550: **chiusi dallo stadio a** (server sano in 210 s,
-  tool call parsata, picco 9 GB a util 0.42).
+- vLLM 0.23 cu129 e FA2 cu128 sul driver 550: **chiusi dallo stadio a** (server sano in 75 s,
+  tool call parsata, picco 7 630 MiB a util 0.33).
 - vGPU senza VMM: `enable_sleep_mode=false`; nessun `expandable_segments`.
 - **NCCL non si inizializza sul vGPU (scoperto allo stadio c)**: la slice GRID non espone memory
   pool CUDA, VMM, eventi IPC (`cudaDeviceGetAttribute` → 0 per tutti; `cudaDeviceGetDefaultMemPool`

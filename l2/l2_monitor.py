@@ -13,7 +13,7 @@ Usage:
   l2_monitor.py <output_dir> [--follow] [--jsonl <path>] [--expect-rollouts N] [--max-error-rate F]
 
 Exit codes (the run driver uses them as a fail-closed gate): 0 fine; 3 a step exceeded the error
-rate or shipped fewer rollouts than expected; 4 no step seen. The JSONL written with --jsonl is
+rate, had incomplete sources, or shipped a different rollout count; 4 no step seen. The JSONL written with --jsonl is
 the durable coverage record of the run.
 """
 
@@ -161,20 +161,22 @@ def fmt(row: dict) -> str:
         f"step_time {row.get('log_step_time_txt')}",
         f"cats[{cats}]",
     ]
-    if row.get("rollouts_short"):
-        parts.append("ROLLOUTS_SHORT")
+    if row.get("rollouts_mismatch"):
+        parts.append("ROLLOUTS_MISMATCH")
+    if row.get("rollout_data_missing") or row.get("log_step_missing"):
+        parts.append("SOURCE_MISSING")
     return " | ".join(parts)
 
 
 def coverage_row(step: int, summary: dict | None, lg: dict | None, expect_rollouts: int | None) -> dict:
-    row: dict = {"step": step}
+    row: dict = {"step": step, "rollout_data_missing": summary is None, "log_step_missing": lg is None}
     if summary:
         row.update(summary)
     if lg:
         row.update({f"log_{k}": v for k, v in lg.items()})
-    if expect_rollouts is not None and row.get("rollouts") is not None:
+    if expect_rollouts is not None:
         row["rollouts_expected"] = expect_rollouts
-        row["rollouts_short"] = row["rollouts"] < expect_rollouts
+        row["rollouts_mismatch"] = row.get("rollouts") != expect_rollouts
     return row
 
 
@@ -223,9 +225,10 @@ def main() -> int:
                 er = row.get("log_error_rate")
                 n = row.get("rollouts")
                 err_frac = (row.get("errored") / n) if n else None
-                if (er is not None and er > args.max_error_rate) or (err_frac is not None and err_frac > args.max_error_rate) or row.get("rollouts_short"):
+                source_missing = row.get("rollout_data_missing") or row.get("log_step_missing")
+                if (er is not None and er > args.max_error_rate) or (err_frac is not None and err_frac > args.max_error_rate) or row.get("rollouts_mismatch") or source_missing:
                     violations += 1
-                    print(f"[L2-Coverage] VIOLATION at step {s}: log_error_rate={er} errored_frac={err_frac} rollouts_short={row.get('rollouts_short')}", flush=True)
+                    print(f"[L2-Coverage] VIOLATION at step {s}: log_error_rate={er} errored_frac={err_frac} rollouts_mismatch={row.get('rollouts_mismatch')} source_missing={source_missing}", flush=True)
             if not args.follow:
                 break
             time.sleep(args.interval)

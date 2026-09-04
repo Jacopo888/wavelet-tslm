@@ -1,8 +1,8 @@
 # L2 pilot — arm `wavelet`: byte-for-byte the `code` arm (l2_pilot_code.toml) plus the
 # rlm built-in skill `wavelet_zoom` enabled in the harness env (RLM_SKILLS). The task-note
 # variant (one extra sentence) is selected by the launch env TIMERLM_NOTE_VARIANT=wavelet in
-# node_l2_run.sh. l2/tests/test_configs.py asserts the two files differ only in output_dir,
-# wandb.name and RLM_SKILLS. Run from ~/timerlm/prime-rl.
+# node_l2_run.sh. l2/tests/test_l2_kit.py asserts the two files differ only in output_dir
+# and RLM_SKILLS. Run from ~/timerlm/prime-rl.
 
 max_steps = 60
 seq_len = 32768

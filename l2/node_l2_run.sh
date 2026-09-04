@@ -9,7 +9,7 @@
 # Arm `wavelet` additionally exports TIMERLM_NOTE_VARIANT=wavelet (task-note sentence); the
 # RLM_SKILLS harness entry lives in its config. Everything else is identical between arms.
 #
-# Gates: env manifest + SMOKE_OK (stages a b c) must exist; a run dir with DONE/FAILED is
+# Gates: env manifest + SMOKE_OK (stages a b c d) must exist; a run dir with DONE/FAILED is
 # never reused silently. Every wait is bounded. Any process death, missing checkpoint, or
 # failed resume writes FAILED with the reason and exits non-zero. Coverage: l2_monitor.py
 # follows the run (tmux l2mon) and the post-hoc pass must report zero violations for DONE.
@@ -39,7 +39,7 @@ fail() { log "FAILED: $*"; mkdir -p "$RUN"; echo "$(date -u +%FT%TZ) $*" > "$RUN
 # ------------------------------------------------------------------ gates
 [ -f "$MANIFEST" ] || fail "no env manifest (run node_l2_env.sh)"
 [ -f "$SMOKE_OK" ] || fail "no SMOKE_OK (run node_l2_smoke.sh a b c d first)"
-for s in a b c; do grep -q " $s" "$SMOKE_OK" || grep -q "SMOKE_OK $s" "$SMOKE_OK" || grep -qE "(^| )$s( |$)" "$SMOKE_OK" || fail "smoke stage $s not recorded in SMOKE_OK"; done
+for s in a b c d; do grep -q " $s" "$SMOKE_OK" || grep -q "SMOKE_OK $s" "$SMOKE_OK" || grep -qE "(^| )$s( |$)" "$SMOKE_OK" || fail "smoke stage $s not recorded in SMOKE_OK"; done
 [ "$SMOKE_OK" -nt "$MANIFEST" ] || fail "SMOKE_OK is older than the env manifest: re-run the smoke"
 [ -x "$VENV_PY" ] || fail "prime-rl venv missing"
 mkdir -p "$L2/configs" && cp "$KIT"/configs/*.toml "$L2/configs/"
@@ -51,14 +51,21 @@ fi
 rm -rf "$RUN"; mkdir -p "$RUN"
 tmux kill-session -t "l2$ARM" 2>/dev/null || true; tmux kill-session -t l2mon 2>/dev/null || true
 
-# ------------------------------------------------------------------ server (shared GPU)
+# ------------------------------------------------------------------ server (fresh per arm)
 server_up() { curl -sf "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; }
-if ! server_up; then
-  tmux kill-session -t l2srv 2>/dev/null || true
-  tmux new-session -d -s l2srv "cd '$PR' && uv run --no-sync inference @ ../l2/configs/inference_l2.toml > '$LOGS/inference_${ARM}.log' 2>&1; echo EXIT:\$? >> '$LOGS/inference_${ARM}.log'"
-  t=0; until server_up; do sleep 5; t=$((t+5)); grep -q "EXIT:" "$LOGS/inference_${ARM}.log" 2>/dev/null && fail "server died at startup"; [ $t -ge 900 ] && fail "server not healthy after 900s"; done
-  log "server healthy after ${t}s"
-fi
+# Never reuse another arm's vLLM process: it may still hold that arm's LoRA adapter or
+# prefix cache. The two phases of this arm intentionally keep using the server started here.
+tmux kill-session -t l2srv 2>/dev/null || true
+t=0
+while server_up; do
+  sleep 1; t=$((t+1))
+  [ $t -ge 60 ] && fail "previous inference server still healthy after 60s; refusing a non-isolated run"
+done
+rm -f "$LOGS/inference_${ARM}.log"
+log "starting a fresh inference server for arm $ARM"
+tmux new-session -d -s l2srv "cd '$PR' && uv run --no-sync inference @ ../l2/configs/inference_l2.toml > '$LOGS/inference_${ARM}.log' 2>&1; echo EXIT:\$? >> '$LOGS/inference_${ARM}.log'"
+t=0; until server_up; do sleep 5; t=$((t+5)); grep -q "EXIT:" "$LOGS/inference_${ARM}.log" 2>/dev/null && fail "server died at startup"; [ $t -ge 900 ] && fail "server not healthy after 900s"; done
+log "fresh server healthy after ${t}s"
 MODEL_NAME="$("$VENV_PY" -c "import tomllib;print(tomllib.load(open('$L2/configs/inference_l2.toml','rb'))['model']['name'])")"
 curl -sf "http://127.0.0.1:$PORT/v1/models" | grep -q "$MODEL_NAME" || fail "server does not serve $MODEL_NAME"
 

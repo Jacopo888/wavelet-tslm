@@ -12,8 +12,8 @@
 #   - seq_len 32768 (was 65536), 12-turn cap (was 15), 16k completion budget (was 24k)
 #   - 64 rollouts/step = 8 prompts x 8 (was 1024 = 128 x 8), 60 steps (was 400)
 #   - ONE standalone vLLM server on the same GPU (was two servers on two GPUs)
-# The wavelet arm (l2_pilot_wavelet.toml) differs from this file ONLY in: output_dir,
-# wandb name, and the RLM_SKILLS harness env entry. The task-note variant is selected by
+# The wavelet arm (l2_pilot_wavelet.toml) differs from this file ONLY in output_dir and
+# the RLM_SKILLS harness env entry. The task-note variant is selected by
 # the launch env (TIMERLM_NOTE_VARIANT), not here. Run from ~/timerlm/prime-rl.
 
 max_steps = 60
