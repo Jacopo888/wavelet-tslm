@@ -26,6 +26,8 @@ export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
 export PRIME_RL_TRAINER_ALLOC_CONF=""
 # flash-linear-attention routes GatedDeltaNet chunk kernels to TileLang (JIT via nvcc, absent here): force the Triton path
 export FLA_TILELANG=0
+# torch._grouped_mm backward asserts 16-byte strides here: plain per-adapter matmul (overlay/prime-rl multi_linear.py)
+export PRIME_RL_LORA_GROUPED_MM=0
 # smoke only: C++ frames in trainer tracebacks (kernel-level errors are otherwise anonymous)
 export TORCH_SHOW_CPP_STACKTRACES=1
 mkdir -p "$SMOKE" "$LOGS"

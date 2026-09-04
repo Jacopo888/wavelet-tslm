@@ -26,6 +26,8 @@ export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
 export PRIME_RL_TRAINER_ALLOC_CONF=""
 # flash-linear-attention routes GatedDeltaNet chunk kernels to TileLang (JIT via nvcc, absent here): force the Triton path
 export FLA_TILELANG=0
+# torch._grouped_mm backward asserts 16-byte strides here: plain per-adapter matmul (overlay/prime-rl multi_linear.py)
+export PRIME_RL_LORA_GROUPED_MM=0
 mkdir -p "$OUT" "$LOGS"
 log() { echo "[l2-eval/$TAG $(date -u +%H:%M:%S)] $*" | tee -a "$OUT/driver.log"; }
 fail() { log "FAILED: $*"; echo "$(date -u +%FT%TZ) $*" > "$OUT/FAILED"; tmux kill-session -t l2evalsrv 2>/dev/null || true; exit 1; }

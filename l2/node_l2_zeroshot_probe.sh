@@ -17,6 +17,8 @@ export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
 export PRIME_RL_TRAINER_ALLOC_CONF=""
 # flash-linear-attention routes GatedDeltaNet chunk kernels to TileLang (JIT via nvcc, absent here): force the Triton path
 export FLA_TILELANG=0
+# torch._grouped_mm backward asserts 16-byte strides here: plain per-adapter matmul (overlay/prime-rl multi_linear.py)
+export PRIME_RL_LORA_GROUPED_MM=0
 mkdir -p "$OUT" "$LOGS"
 log() { echo "[zeroshot $(date -u +%H:%M:%S)] $*"; }
 server_up() { curl -sf "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; }
