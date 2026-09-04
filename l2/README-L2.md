@@ -7,7 +7,8 @@ Protocollo, deviazioni, pin e rischi: `PROTOCOL-L2.md`. File:
 - `node_l2_smoke.sh [a b c d]` — gate misurato prima di spendere GPU (vedi PROTOCOL §4).
 - `node_l2_run.sh <code|wavelet>` — driver a due fasi fail-closed, coverage per step.
 - `node_l2_eval.sh <code|wavelet|base> [--skill]` — eval finale sul test ufficiale (800).
-- `l2_monitor.py` — riga `[L2-Coverage]` per step da `orchestrator_metrics.jsonl` + log.
+- `l2_monitor.py` — riga `[L2-Coverage]` per step dai rollout salvati dal pin (`<run>/run_default/rollouts/step_N/train_rollouts.jsonl`: categoria, reward, forced-final, gruppi a varianza zero, tool call, chiamate `wavelet_zoom`, token) + la riga `Step N | …` di `logs/orchestrator.log`.
+- `overlay/prime-rl/` — tre override env-gated del pin (backend gloo, allocator del trainer, LoRA senza grouped_mm), applicati da `node_l2_env.sh`; unset = comportamento upstream.
 - `tests/test_l2_kit.py` — test CPU (config, variante nota, monitor): `python -m pytest l2/tests -q`.
 - `overlay/timerlm/` — copie tracciate dei file wavelet/RL che vivono nel checkout ignorato `timerlm/` (skill rlm, tool v0, `taskset.py` con la variante nota, `eval_v1_rlm.py`, pyproject dell'harness con `mcp<2`, PRIME_RL_PIN.md).
 
