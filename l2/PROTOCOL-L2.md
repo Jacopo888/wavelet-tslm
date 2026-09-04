@@ -119,6 +119,10 @@ DONE solo con 800/800. Confronto appaiato (bootstrap sui 800 id) fatto in locale
   il batch non si riempiva mai. Fissato alla val locale pinnata (mai letta per i task).
 - **fla 0.5.2 instrada il backward di GatedDeltaNet su TileLang** (JIT CUDA via nvcc, assente):
   `FLA_TILELANG=0` nei launcher forza i kernel Triton (env-gated di fla, nessuna patch).
+- **LoRA di prime-rl = `torch._grouped_mm`** (multi-adapter): il backward asserisce stride multipli
+  di 16 byte (`GroupedMMUtils.h`) e fallisce su questo setup (un solo adapter, token impacchettati,
+  sm_86). Override env-gated `PRIME_RL_LORA_GROUPED_MM=0` (overlay `multi_linear.py`): un matmul
+  per adapter, numerica identica, nessun costo con un adapter.
 - Parser `qwen3_coder` con Qwen3.5-2B (il paper lo usa col 4B).
 - Memoria: 0.42×24 GB per vLLM + trainer LoRA 2B a 32k con AC pieno; picco misurato in c.
 - Weight sync LoRA via filesystem + `/load_lora_adapter` a ogni step: costo misurato in d.

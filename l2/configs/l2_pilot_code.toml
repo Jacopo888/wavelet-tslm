@@ -42,7 +42,7 @@ name = "l2-pilot-code-qwen35-2b"
 [orchestrator]
 batch_size = 64
 group_size = 8
-max_inflight_rollouts = 16
+max_inflight_rollouts = 12
 max_off_policy_steps = 8
 
 [orchestrator.advantage]
@@ -86,7 +86,8 @@ attn = "flash_attention_2"
 optimization_dtype = "bfloat16"
 reduce_dtype = "bfloat16"
 optim_cpu_offload = true
-fused_lm_head_token_chunk_size = "auto"
+# "auto" resolves to 8192 tokens x 248k vocab = 4 GB of logits per chunk: too much next to vLLM on 24 GB
+fused_lm_head_token_chunk_size = 1024
 
 [trainer.model.ac]
 mode = "full"
