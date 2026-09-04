@@ -114,6 +114,11 @@ DONE solo con 800/800. Confronto appaiato (bootstrap sui 800 id) fatto in locale
 - **Il launcher `rl` forza `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` sul trainer**
   (`entrypoints/rl.py`): sul vGPU la prima allocazione fallisce ("CUDA driver error: operation not
   supported"). Override env-gated `PRIME_RL_TRAINER_ALLOC_CONF=""` (overlay `l2/overlay/prime-rl/`).
+- **Scorer offline**: il taskset del generatore istanzia comunque il dataset v0 per lo scorer; con
+  `repo_or_path` vuoto e `HF_HUB_OFFLINE=1` ogni rollout finiva in `TasksetError` allo scoring e
+  il batch non si riempiva mai. Fissato alla val locale pinnata (mai letta per i task).
+- **fla 0.5.2 instrada il backward di GatedDeltaNet su TileLang** (JIT CUDA via nvcc, assente):
+  `FLA_TILELANG=0` nei launcher forza i kernel Triton (env-gated di fla, nessuna patch).
 - Parser `qwen3_coder` con Qwen3.5-2B (il paper lo usa col 4B).
 - Memoria: 0.42×24 GB per vLLM + trainer LoRA 2B a 32k con AC pieno; picco misurato in c.
 - Weight sync LoRA via filesystem + `/load_lora_adapter` a ogni step: costo misurato in d.

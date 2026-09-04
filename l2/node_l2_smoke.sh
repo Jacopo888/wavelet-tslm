@@ -26,6 +26,8 @@ export PRIME_RL_DIST_BACKEND="cpu:gloo,cuda:gloo"
 export PRIME_RL_TRAINER_ALLOC_CONF=""
 # flash-linear-attention routes GatedDeltaNet chunk kernels to TileLang (JIT via nvcc, absent here): force the Triton path
 export FLA_TILELANG=0
+# smoke only: C++ frames in trainer tracebacks (kernel-level errors are otherwise anonymous)
+export TORCH_SHOW_CPP_STACKTRACES=1
 mkdir -p "$SMOKE" "$LOGS"
 STAGES=("$@"); [ ${#STAGES[@]} -eq 0 ] && STAGES=(a b c d)
 
