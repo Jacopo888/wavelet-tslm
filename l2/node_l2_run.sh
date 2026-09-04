@@ -86,10 +86,11 @@ run_phase() {  # $1 phase label, $2.. extra rl args; expects env already exporte
   [ "$code" = "EXIT:0" ] || { tail -40 "$plog"; fail "$phase: rl exited $code"; }
   log "$phase finished EXIT:0"
 }
-require_ckpt() {  # $1 step
+require_ckpt() {  # $1 step — at this pin the trainer checkpoint lives in checkpoints/step_N/trainer
   [ -d "$RUN/checkpoints/step_$1/trainer" ] || fail "missing $RUN/checkpoints/step_$1/trainer"
-  [ -d "$RUN/checkpoints/step_$1/orchestrator" ] || fail "missing $RUN/checkpoints/step_$1/orchestrator"
-  log "checkpoint step_$1 present"
+  ls "$RUN/checkpoints/step_$1/trainer"/* >/dev/null 2>&1 || fail "empty trainer checkpoint step_$1"
+  [ -f "$RUN/weights/step_$1/model.safetensors" ] || fail "missing weights/step_$1/model.safetensors"
+  log "checkpoint step_$1 present (trainer + HF weights)"
 }
 
 # ------------------------------------------------------------------ phase 1: negatives OFF

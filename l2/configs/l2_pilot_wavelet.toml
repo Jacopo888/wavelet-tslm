@@ -21,9 +21,8 @@ type = "filesystem"
 [orchestrator.renderer]
 name = "qwen3.5"
 
-[wandb]
-project = "timerlm-l2"
-name = "l2-pilot-wavelet-qwen35-2b"
+# no [wandb] block: with WANDB_MODE=disabled the pin's WandbMonitor crashes at teardown
+# (wandb.summary._as_dict on a disabled run); metrics come from logs + run_default/rollouts.
 
 # At this pin `batch_size` counts ROLLOUTS (samples) per step and must be divisible by
 # group_size: 64 rollouts = 8 prompts x 8. (The paper's fork counted prompts: "64x8 = 512".)

@@ -40,7 +40,6 @@ def _flatten(d: dict, prefix: str = "") -> dict:
 # ---------------------------------------------------------------- arm configs
 ALLOWED_DIFF = {
     "output_dir",
-    "wandb.name",
     "orchestrator.train.env[0].harness.env.RLM_SKILLS",
 }
 
@@ -73,6 +72,7 @@ def test_arm_configs_keep_the_paper_semantics():
         assert c["orchestrator"]["renderer"]["name"] == "qwen3.5"
         assert c["deployment"]["num_infer_gpus"] == 0 and c["deployment"]["num_train_gpus"] == 1
         assert "inference" not in c, "the server is standalone; no [inference] block"
+        assert "wandb" not in c, "no [wandb] block (disabled-run teardown crash at the pin)"
         assert c["weight_broadcast"]["type"] == "filesystem"
         assert c["trainer"]["model"]["lora"]["rank"] == 32
         assert c["ckpt"]["keep_interval"] % c["ckpt"]["interval"] == 0, "phase boundary must be a checkpoint"
