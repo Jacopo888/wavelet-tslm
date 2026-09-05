@@ -1,0 +1,81 @@
+# End-to-end A40 smoke for v3untied: four deterministic local train rows,
+# one epoch, one local validation row. The launcher creates and verifies the
+# mini-parquets before train.py starts; no max-step/time budget is used.
+
+name: anomaly_xl_wavelet_v3smoke_untied
+seed: 42
+
+dataset:
+  name: anomaly_xl_precise
+  extra_kwargs:
+    variant: precise
+    train_dir: anomalyXL/datasets/anomalyxl-v3smoke
+
+model:
+  architecture: wavelet_v3
+
+  encoder:
+    type: wavelet_v3
+    output_dim: 512
+    num_tokens: 256
+    coarse_blocks: 128
+    n_pos_freqs: 16
+    freeze: false
+    level_topm: 1024
+    n_heads: 8
+    mlp_ratio: 4
+    dropout: 0.0
+    level_gate: true
+    noise_tau: 1.0
+    pos_dtype: input
+    max_levels: 10
+    tied: false
+    depth_mode: full
+
+  projector:
+    type: mlp
+
+  extra_kwargs:
+    encoding_method: raw
+    freeze_lm_embeddings: true
+
+backbone:
+  name: qwen
+  model_id: Qwen/Qwen3.5-4B
+
+training:
+  backbone_training: lora
+  batch_size: 1
+  num_epochs: 1
+
+  learning_rate:
+    default: 1.0e-4
+
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  warmup_ratio: 0.03
+
+  early_stopping:
+    enabled: false
+    patience: 3
+    metric: val_loss
+    mode: min
+
+  logging:
+    wandb:
+      enabled: false
+
+  checkpointing:
+    save_every_n_steps: 0
+    save_best: true
+    metric: val_loss
+    mode: min
+
+  dataloader:
+    num_workers: 0
+    pin_memory: false
+
+runtime:
+  output_dir: results
+  run_name: anomaly_xl_wavelet_v3smoke_untied
+  max_samples: null

@@ -3,9 +3,9 @@
 Variante **separata** dell'encoder del Livello 1. La v1 (`kaggle/patch/wavelet_encoder.py`,
 riferimento va1) non viene toccata: la v3 vive in questa cartella, viene sovrapposta sul nodo
 come file nuovi (`src/models/wavelet_encoder_v3.py`, `src/models/wavelet_v3.py`) e si seleziona
-con `model.architecture: wavelet_v3`. L'unica modifica fuori cartella sono 8 righe in
-`kaggle/patch/train.py` che registrano la classe se il file esiste (la chiave `wavelet` resta
-identica).
+con `model.architecture: wavelet_v3`. Le sole modifiche fuori cartella sono in `kaggle/patch/train.py`: la registrazione condizionale
+della classe (la chiave `wavelet` resta identica) e il log `[StepTiming]` protetto da
+`TSLM_STEP_TIMING=1`, usato soltanto dallo smoke end-to-end.
 
 ## Idea in una riga
 
@@ -82,13 +82,16 @@ in più rispetto a v1: se a epoca 1 la val è sotto va1 non è un segnale, conta
 - `patch/wavelet_encoder_v3.py` — encoder; `patch/wavelet_v3.py` — `WaveletV3TSModel`
   (costruisce il modello v1 e sostituisce solo `ts_encoder`); `patch/test_encoder_v3.py` — test CPU.
 - `configs/wavelet_precise_{v3tied,v3untied,v3sdepth}.yaml` — generati da `wavelet_precise_va1.yaml`,
-  diff = solo blocco encoder e nomi.
+  diff = solo blocco encoder e nomi; `configs/wavelet_precise_v3smoke_{untied,tied}.yaml` —
+  config da un'epoca sui mini-parquet deterministici creati dallo smoke.
 - `node/node_prep_v3.sh` (pacchetti + GPU positiva), `node/node_env_v3.sh` (env L1 invariato +
   overlay v3 + test CPU + smoke GPU checkpointed 16×131k con tetto 8 GiB +
   `RUN_MANIFEST_V3.json` con sha256 dell'overlay; `V3_ROCM=1` su MI300X e verifica
-  che il venv usi davvero wheel ROCm 6.3), `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per
-  chiamata, sessioni tmux separate), `node/node_eval_worker_v3.sh` (fail-closed: coverage dal log,
-  5 val, best, test 800, poi curva di profondità sulla val).
+  che il venv usi davvero wheel ROCm 6.3), `node/node_smoke_v3.sh` (A40, untied poi tied:
+  train.py reale, casi 16 canali/131072, memoria, timing, checkpoint ed eval-only fail-closed),
+  `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per chiamata, sessioni tmux
+  separate), `node/node_eval_worker_v3.sh` (fail-closed: coverage dal log, 5 val, best, test 800,
+  poi curva di profondità sulla val).
 - `ops/gpu_watch.py` + `ops/start_watch.ps1` — watcher/grab detached (Vultr A40-24 / L40S-48 in
   qualunque regione, DO MI300X in qualunque regione; stato in `%LOCALAPPDATA%\wavelet-v3\`);
   `ops/ship_v3.sh <ip>` — spedizione sul nodo da WSL.
@@ -99,7 +102,9 @@ in più rispetto a v1: se a epoca 1 la val è sotto va1 non è un segnale, conta
 # dal PC (WSL): bash ops/ship_v3.sh <ip>
 bash ~/node_prep_v3.sh                       # PREP_OK
 bash ~/node_env_v3.sh                        # V3_ENV_OK  (V3_ROCM=1 bash ~/node_env_v3.sh su MI300X)
-bash ~/node_train_v3.sh v3tied               # A40: una alla volta; MI300X: anche v3untied e v3sdepth subito
+bash ~/node_smoke_v3.sh                      # A40: deve terminare con SMOKE_OK
+python3 -m json.tool ~/logs/v3smoke.ok        # entrambe le varianti pass=true, picco <= 23000 MiB
+bash ~/node_train_v3.sh v3tied               # solo dopo il gate; A40 una run alla volta
 cat ~/evalq/v3tied_BEST_EPOCH ~/evalq/v3tied_FINAL_test.json   # dopo FINAL_DONE in ~/logs/evw_v3tied.log
 ```
 

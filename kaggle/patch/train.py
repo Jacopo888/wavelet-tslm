@@ -503,8 +503,20 @@ def train_epoch(
         "cuda", enabled=use_amp and amp_dtype == torch.float16)
 
     pbar = tqdm(train_loader, desc=f"Epoch {epoch} [Train]", leave=False)
+    # Opt-in smoke diagnostic.  Synchronization is deliberately restricted to
+    # this env gate so production runs keep their normal asynchronous timing.
+    log_step_timing = os.environ.get("TSLM_STEP_TIMING") == "1"
+
+    def _log_step_timing(step_started_: float) -> None:
+        if not log_step_timing:
+            return
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        print(f"[StepTiming] step={global_step} seconds="
+              f"{time.perf_counter() - step_started_:.6f}", flush=True)
 
     for batch_idx, batch in enumerate(pbar):
+        step_started = time.perf_counter() if log_step_timing else 0.0
 
         optimizer.zero_grad()
 
@@ -555,6 +567,7 @@ def train_epoch(
                     "train/avg_loss": avg_loss,
                 }, step=global_step)
             global_step += 1
+            _log_step_timing(step_started)
 
             # Save intra-epoch checkpoint every N batches
             ckpt_interval = config.checkpoint_interval
@@ -641,6 +654,7 @@ def train_epoch(
                         total_loss += loss.item()
                         num_batches += 1
                         global_step += 1
+                        _log_step_timing(step_started)
                         print(f"\n  [CkptFallback] batch {batch_idx} recovered "
                               f"with gradient checkpointing", flush=True)
                 except Exception as e2:

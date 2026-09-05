@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ambiente v3 = ambiente Livello 1 (~/node_env.sh del kit vultr/, INVARIATO)
-# + overlay v3 (2 file modello, train.py con la registrazione, 3 config).
+# + overlay v3 (2 file modello, train.py registrato, config train + smoke).
 # Prerequisiti (li mette ops/ship_v3.sh): ~/patch/ = kaggle/patch/* +
 # v3-recurrent/patch/* + v3-recurrent/configs/*; ~/node_env.sh; ~/node_*_v3.sh.
 # ROCm (droplet MI300X): V3_ROCM=1 -> stesso node_env.sh con i pin torch rocm6.3
