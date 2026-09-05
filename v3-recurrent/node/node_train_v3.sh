@@ -26,6 +26,16 @@ rm -f ~/logs/${RUN}.done ~/evalq/${RUN}_WORKER_FAILED ~/evalq/${RUN}_BEST_EPOCH 
       ~/evalq/${RUN}_ep*_val*.json ~/evalq/${RUN}_FINAL_test.json
 rm -rf "$RUN_DIR"
 mkdir -p "$RUN_DIR" ~/logs ~/evalq
+
+# Intra-epoch checkpoints include Adam state.  The untied encoder adds about
+# 0.56 GiB per checkpoint (fp32 parameters + optimizer moments), so fail
+# before launch rather than fill the filesystem late in the run.
+REQUIRED_FREE_GIB=15
+[ "$RUN" = "v3untied" ] && REQUIRED_FREE_GIB=35
+AVAILABLE_BYTES=$(df --output=avail -B1 "$RUN_DIR" | tail -1 | tr -d ' ')
+[ "$AVAILABLE_BYTES" -ge $((REQUIRED_FREE_GIB * 1024 * 1024 * 1024)) ] || {
+  echo "spazio insufficiente: servono almeno ${REQUIRED_FREE_GIB} GiB liberi"; exit 4;
+}
 cp ~/RUN_MANIFEST_V3.json "$RUN_DIR/RUN_MANIFEST.json"
 
 QWEN_REV=$(~/venv/bin/python -c "import json,os;print(json.load(open(os.path.expanduser('~/RUN_MANIFEST_V3.json')))['qwen_revision'])")
@@ -41,11 +51,12 @@ TSLM_REQUIRE_FULL_COVERAGE=1 TSLM_EVAL_STRICT=1 TSLM_SKIP_FINAL_TEST=1 \
 TSLM_QWEN_REVISION=$QWEN_REV \
 TSLM_SAVE_TRAINABLE_ONLY=1 \
 TSLM_SAVE_OPT_STATE=1 TSLM_VAL_GEN=0 TSLM_KEEP_EPOCH_CKPTS=1 \
-HF_HUB_DISABLE_PROGRESS_BARS=1"
+TSLM_V3_GATE_LOG_EVERY=100 HF_HUB_DISABLE_PROGRESS_BARS=1"
 # vGPU Vultr: NIENTE expandable_segments (VMM non supportata dai profili GRID).
 
 tmux new-session -d -s "$RUN" \
   "cd ~/timerlm/sft/tslm && env $COMMON_ENV CUDA_VISIBLE_DEVICES=$GPU \
+   HIP_VISIBLE_DEVICES=$GPU ROCR_VISIBLE_DEVICES=$GPU \
    ~/venv/bin/python train.py --config $CFG --no-wandb > ~/logs/${RUN}.log 2>&1; \
    echo EXIT:\$? > ~/logs/${RUN}.done"
 tmux new-session -d -s "evw_$RUN" \

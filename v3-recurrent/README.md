@@ -29,25 +29,30 @@ sia la profondità.
    il lettore ne vede 1024, non zero e non tutti).
 3. **Il loop**: 256 latenti appresi; a ogni iterazione `z ← z + step_embed(t)`, poi un blocco
    pre-LN *cross-attention (z → token del livello) · self-attention fra latenti · MLP*. Con
-   `tied: true` il blocco è uno solo per tutte le iterazioni (4,2 M parametri); con `tied: false`
-   ce n'è uno per iterazione (46 M).
+   `tied: true` il blocco è uno solo per tutte le iterazioni (blocco 4,2 M; encoder completo
+   4,63 M parametri); con `tied: false` ce n'è uno per iterazione (encoder completo 46,68 M).
 4. **Gate per livello** (`level_gate: true`): uno scalare sigmoid per (serie, iterazione) calcolato
    da [media dei latenti, media dei token del livello, statistiche del livello: frazione sopra
    2σ e 3σ, log del massimo, indice], che moltiplica la lettura. Inizializzato quasi aperto
-   (0,88). È il modo *morbido* di ignorare un livello inutile; i valori vengono loggati
-   (`last_gates`) e sono la prima evidenza empirica su "quali livelli usa".
+   (0,88). È il modo *morbido* di ignorare un livello inutile; i valori restano in
+   `last_gates` e il launcher emette `[V3Gates]` ogni 100 chiamate: sono la prima
+   evidenza empirica su "quali livelli usa".
 5. **Profondità** (`depth_mode`): `full` = tutte le iterazioni; `sdepth` = in training si tronca
    a una profondità casuale per esempio (stile Huginn), così a inferenza ogni profondità è
    valida e la curva metrica-vs-profondità si ottiene gratis; `noise_gate` = una serie non
    legge un livello di dettaglio se il suo coefficiente massimo normalizzato è sotto la soglia
    universale σ·√(2 ln n) (Donoho–Johnstone: il massimo atteso di n coefficienti di puro rumore).
-   In eval `TSLM_V3_DEPTH=r` tronca a r iterazioni per qualsiasi modello.
+   In eval `TSLM_V3_DEPTH=r` tronca a r iterazioni per qualsiasi modello. `sdepth` estrae una
+   sola profondità per chiamata (quindi condivisa dai canali dell'esempio con batch 1) dal RNG
+   globale torch: il seed del trainer la rende riproducibile, ma la sequenza RNG diverge da `full`.
 6. Uscita: LayerNorm sui latenti → (B, 256, 512) → proiettore MLP di v1 → Qwen.
 
-Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali: trascurabile rispetto a
-Qwen-4B. Test CPU: `py v3-recurrent/patch/test_encoder_v3.py` (12/12: forme, budget per livello,
-override profondità, stochastic depth solo in training, noise-gate che salta i livelli di rumore
-ma legge le anomalie, tied/untied, gradienti ovunque, bf16, determinismo).
+Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali. Con
+`TSLM_GRAD_CKPT=1` ogni iterazione ricomputa embedding del livello, gate e blocco: non restano
+vive le grandi attivazioni `(16,1024,512)` di tutti i livelli; restano soprattutto i confini
+ricorrenti `(16,256,512)`. Test CPU: `py v3-recurrent/patch/test_encoder_v3.py` (18 test:
+forme, budget, override, sdepth riproducibile, noise-gate, tied/untied, gradienti, bf16, serie
+costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip).
 
 Perché i D_1 "troppo fini" non sono un problema di budget ma di rumore: non entrano in Qwen;
 possono però sporcare i latenti se la cross-attention si diluisce su chiavi di rumore. Le tre
@@ -79,8 +84,9 @@ in più rispetto a v1: se a epoca 1 la val è sotto va1 non è un segnale, conta
 - `configs/wavelet_precise_{v3tied,v3untied,v3sdepth}.yaml` — generati da `wavelet_precise_va1.yaml`,
   diff = solo blocco encoder e nomi.
 - `node/node_prep_v3.sh` (pacchetti + GPU positiva), `node/node_env_v3.sh` (env L1 invariato +
-  overlay v3 + test CPU + smoke GPU 16×131k + `RUN_MANIFEST_V3.json` con sha256 dell'overlay;
-  `V3_ROCM=1` su MI300X), `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per
+  overlay v3 + test CPU + smoke GPU checkpointed 16×131k con tetto 8 GiB +
+  `RUN_MANIFEST_V3.json` con sha256 dell'overlay; `V3_ROCM=1` su MI300X e verifica
+  che il venv usi davvero wheel ROCm 6.3), `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per
   chiamata, sessioni tmux separate), `node/node_eval_worker_v3.sh` (fail-closed: coverage dal log,
   5 val, best, test 800, poi curva di profondità sulla val).
 - `ops/gpu_watch.py` + `ops/start_watch.ps1` — watcher/grab detached (Vultr A40-24 / L40S-48 in
@@ -97,5 +103,5 @@ bash ~/node_train_v3.sh v3tied               # A40: una alla volta; MI300X: anch
 cat ~/evalq/v3tied_BEST_EPOCH ~/evalq/v3tied_FINAL_test.json   # dopo FINAL_DONE in ~/logs/evw_v3tied.log
 ```
 
-Stato: codice scritto il 05/09, test CPU 12/12, **in attesa di revisione Codex e di una GPU**
-(watcher attivo). Nessuna run lanciata.
+Stato: revisione Codex incorporata; suite CPU estesa a 18 test e smoke GPU obbligatorio nel
+setup del nodo. Nessuna run GPU lanciata.

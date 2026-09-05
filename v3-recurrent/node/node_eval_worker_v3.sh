@@ -6,26 +6,34 @@
 # v3sdepth), la curva metrica-vs-profondita' SULLA VAL con il best checkpoint
 # (TSLM_V3_DEPTH=r): il test resta uno solo, a profondita' piena.
 # Ogni fallimento scrive ~/evalq/${RUN}_WORKER_FAILED con la ragione.
-set -u
+set -uo pipefail
 RUN="${RUN:?RUN mancante (v3tied|v3untied|v3sdepth)}"
 GPU="${V3_GPU:-0}"
-cd ~/timerlm/sft/tslm
-CFG=configs/wavelet_precise_${RUN}.yaml
-ENV="TSLM_TORCH_DTYPE=bfloat16 TSLM_AMP=1 TSLM_AMP_DTYPE=bfloat16 \
-TSLM_ATTN_IMPL=sdpa TSLM_SAVE_TRAINABLE_ONLY=1 TSLM_EVAL_STRICT=1 \
-TSLM_QWEN_REVISION=${TSLM_QWEN_REVISION:-} \
-HF_HUB_DISABLE_PROGRESS_BARS=1"
-EXPECTED_EPOCHS=5
-MAX_WAIT_HOURS=72
-SWEEP_DEFAULT=0; [ "$RUN" = "v3sdepth" ] && SWEEP_DEFAULT=1
-DEPTH_SWEEP="${V3_DEPTH_SWEEP:-$SWEEP_DEFAULT}"
-DEPTHS="${V3_DEPTHS:-1 2 3 4 6 8 11}"
+mkdir -p ~/evalq ~/logs
 
 fail() {
   echo "WORKER_FAILED: $1"
   echo "$1" > ~/evalq/${RUN}_WORKER_FAILED
   exit 1
 }
+
+case "$RUN" in
+  v3tied|v3untied|v3sdepth) ;;
+  *) fail "run sconosciuta: $RUN" ;;
+esac
+[ -n "${TSLM_QWEN_REVISION:-}" ] || fail "TSLM_QWEN_REVISION mancante"
+cd ~/timerlm/sft/tslm || fail "directory TimeRLM assente"
+CFG=configs/wavelet_precise_${RUN}.yaml
+[ -f "$CFG" ] || fail "config assente: $CFG"
+ENV="TSLM_TORCH_DTYPE=bfloat16 TSLM_AMP=1 TSLM_AMP_DTYPE=bfloat16 \
+TSLM_ATTN_IMPL=sdpa TSLM_SAVE_TRAINABLE_ONLY=1 TSLM_EVAL_STRICT=1 \
+TSLM_QWEN_REVISION=${TSLM_QWEN_REVISION} \
+HF_HUB_DISABLE_PROGRESS_BARS=1"
+EXPECTED_EPOCHS=5
+MAX_WAIT_HOURS=72
+SWEEP_DEFAULT=0; [ "$RUN" = "v3sdepth" ] && SWEEP_DEFAULT=1
+DEPTH_SWEEP="${V3_DEPTH_SWEEP:-$SWEEP_DEFAULT}"
+DEPTHS="${V3_DEPTHS:-1 2 3 4 6 8 11}"
 
 waited=0
 while [ ! -f ~/logs/${RUN}.done ]; do
@@ -50,11 +58,17 @@ done
 n_ck=$(ls "$ckdir"/epoch_*_end.pt 2>/dev/null | wc -l)
 [ "$n_ck" -eq "$EXPECTED_EPOCHS" ] || fail "trovati $n_ck checkpoint, attesi $EXPECTED_EPOCHS"
 
-# Coverage per epoca DAL LOG (regola d'oro): 5 righe trained 4488 / failed 0.
-n_cov=$(grep -c "\[Coverage\].*trained 4488" ~/logs/${RUN}.log || true)
-n_fail=$(grep -c "\[Coverage\].*failed [1-9]" ~/logs/${RUN}.log || true)
-[ "$n_cov" -ge "$EXPECTED_EPOCHS" ] || fail "coverage: solo $n_cov epoche con trained 4488"
-[ "$n_fail" -eq 0 ] || fail "coverage: $n_fail righe con failed>0"
+# Coverage per epoca DAL LOG (regola d'oro): una riga esatta per ciascuna
+# epoca, trained 4488 / failed 0 / expected 4488.
+[ -f ~/logs/${RUN}.log ] || fail "log training assente"
+for ep in $(seq 1 $EXPECTED_EPOCHS); do
+  n_ep=$(grep -Ec "^[[:space:]]*\[Coverage\] epoch ${ep}: trained 4488, failed 0, expected 4488$" \
+      ~/logs/${RUN}.log || true)
+  [ "$n_ep" -eq 1 ] || fail "coverage epoca $ep: trovate $n_ep righe esatte, attesa 1"
+done
+n_cov=$(grep -Ec "^[[:space:]]*\[Coverage\] epoch [0-9]+: trained 4488, failed 0, expected 4488$" \
+    ~/logs/${RUN}.log || true)
+[ "$n_cov" -eq "$EXPECTED_EPOCHS" ] || fail "coverage: $n_cov righe esatte, attese $EXPECTED_EPOCHS"
 
 unset TSLM_V3_DEPTH
 for ck in "$ckdir"/epoch_*_end.pt; do
@@ -62,7 +76,8 @@ for ck in "$ckdir"/epoch_*_end.pt; do
   out=~/evalq/${RUN}_ep${ep}_val.json
   [ -f "$out" ] && { echo "val epoch $ep gia' presente"; continue; }
   echo "val eval epoch $ep"
-  env $ENV CUDA_VISIBLE_DEVICES=$GPU ~/venv/bin/python train.py --config $CFG --no-wandb \
+  env $ENV CUDA_VISIBLE_DEVICES=$GPU HIP_VISIBLE_DEVICES=$GPU ROCR_VISIBLE_DEVICES=$GPU \
+      ~/venv/bin/python train.py --config $CFG --no-wandb \
       --eval-only --checkpoint "$ck" --split val --out-json "$out" \
       >> ~/logs/eval_${RUN}_ep${ep}.log 2>&1 || fail "val eval epoch $ep fallita (log eval_${RUN}_ep${ep}.log)"
   [ -f "$out" ] || fail "val eval epoch $ep: nessun out-json"
@@ -71,7 +86,7 @@ n_val=$(ls ~/evalq/${RUN}_ep*_val.json 2>/dev/null | wc -l)
 [ "$n_val" -eq "$EXPECTED_EPOCHS" ] || fail "presenti $n_val val json, attesi $EXPECTED_EPOCHS"
 
 best=$(RUN=$RUN ~/venv/bin/python - <<'EOF'
-import glob, json, os, sys
+import glob, json, math, os, sys
 run = os.environ["RUN"]
 files = glob.glob(os.path.expanduser(f"~/evalq/{run}_ep*_val.json"))
 if len(files) != 5:
@@ -81,7 +96,11 @@ for f in files:
     d = json.load(open(f))
     if "primary" not in d:
         sys.exit(f"{f} senza campo primary")
-    c.append((d["primary"], f))
+    primary = d["primary"]
+    if (isinstance(primary, bool) or not isinstance(primary, (int, float))
+            or not math.isfinite(primary) or not 0.0 <= primary <= 1.0):
+        sys.exit(f"{f} primary non valido: {primary!r}")
+    c.append((primary, f))
 c.sort(reverse=True)
 print(c[0][1].split("_ep")[1].split("_")[0])
 EOF
@@ -89,13 +108,14 @@ EOF
 [ -n "$best" ] || fail "best epoch vuoto"
 echo "BEST_EPOCH=$best (per val primary)"
 
-env $ENV CUDA_VISIBLE_DEVICES=$GPU ~/venv/bin/python train.py --config $CFG --no-wandb \
+env $ENV CUDA_VISIBLE_DEVICES=$GPU HIP_VISIBLE_DEVICES=$GPU ROCR_VISIBLE_DEVICES=$GPU \
+      ~/venv/bin/python train.py --config $CFG --no-wandb \
     --eval-only --checkpoint "$ckdir/epoch_${best}_end.pt" --split test \
     --out-json ~/evalq/${RUN}_FINAL_test.json >> ~/logs/eval_${RUN}_final.log 2>&1 \
   || fail "test finale (epoch $best) fallito"
 [ -f ~/evalq/${RUN}_FINAL_test.json ] || fail "test finale senza out-json"
 echo "BEST_EPOCH=$best" > ~/evalq/${RUN}_BEST_EPOCH
-echo "FINAL_DONE"
+echo "FINAL_TEST_DONE"
 
 if [ "$DEPTH_SWEEP" = "1" ]; then
   # Curva metrica-vs-profondita' sulla VAL (best checkpoint): r iterazioni del
@@ -104,10 +124,13 @@ if [ "$DEPTH_SWEEP" = "1" ]; then
     out=~/evalq/${RUN}_ep${best}_val_depth${r}.json
     [ -f "$out" ] && continue
     echo "depth sweep r=$r"
-    env $ENV TSLM_V3_DEPTH=$r CUDA_VISIBLE_DEVICES=$GPU ~/venv/bin/python train.py --config $CFG --no-wandb \
+    env $ENV TSLM_V3_DEPTH=$r CUDA_VISIBLE_DEVICES=$GPU \
+        HIP_VISIBLE_DEVICES=$GPU ROCR_VISIBLE_DEVICES=$GPU ~/venv/bin/python train.py --config $CFG --no-wandb \
         --eval-only --checkpoint "$ckdir/epoch_${best}_end.pt" --split val --out-json "$out" \
         >> ~/logs/eval_${RUN}_depth${r}.log 2>&1 || fail "depth sweep r=$r fallito"
     [ -f "$out" ] || fail "depth sweep r=$r senza out-json"
   done
   echo "DEPTH_SWEEP_DONE"
 fi
+
+echo "FINAL_DONE"

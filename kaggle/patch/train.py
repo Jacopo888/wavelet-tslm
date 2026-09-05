@@ -69,8 +69,11 @@ MODEL_CLASSES: dict[str, type[BaseModel]] = {
 try:
     from src.models.wavelet_v3 import WaveletV3TSModel
     MODEL_CLASSES["wavelet_v3"] = WaveletV3TSModel
-except ImportError:
-    pass
+except ModuleNotFoundError as exc:
+    # The base va1 overlay legitimately has no v3 module.  Do not hide a
+    # broken dependency *inside* wavelet_v3: that must abort during import.
+    if exc.name != "src.models.wavelet_v3":
+        raise
 
 
 # ==============================================================================

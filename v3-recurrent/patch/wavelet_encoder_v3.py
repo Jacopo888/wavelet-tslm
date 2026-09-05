@@ -50,6 +50,7 @@ import os
 
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint
 
 from src.models.wavelet_encoder import haar_pyramid  # v1 file, untouched
 
@@ -111,6 +112,22 @@ class RecurrentWaveletTSEncoder(nn.Module):
             raise ValueError(f"depth_mode must be full|sdepth|noise_gate, got {depth_mode!r}")
         if pos_dtype not in ("input", "fp32"):
             raise ValueError(f"pos_dtype must be input|fp32, got {pos_dtype!r}")
+        if int(output_dim) <= 0 or int(num_tokens) <= 0:
+            raise ValueError("output_dim and num_tokens must be positive")
+        if int(max_levels) < 1 or int(coarse_blocks) < 1:
+            raise ValueError("max_levels and coarse_blocks must be >= 1")
+        if int(n_pos_freqs) < 1 or int(level_topm) < 1:
+            raise ValueError("n_pos_freqs and level_topm must be >= 1")
+        if int(n_heads) < 1 or int(output_dim) % int(n_heads) != 0:
+            raise ValueError("n_heads must be positive and divide output_dim")
+        if int(mlp_ratio) < 1:
+            raise ValueError("mlp_ratio must be >= 1")
+        if not 0.0 <= float(dropout) < 1.0:
+            raise ValueError("dropout must be in [0, 1)")
+        if int(sdepth_min) < 1:
+            raise ValueError("sdepth_min must be >= 1")
+        if float(noise_tau) < 0.0 or not math.isfinite(float(noise_tau)):
+            raise ValueError("noise_tau must be finite and >= 0")
         self.output_dim = int(output_dim)
         self.num_tokens = int(num_tokens)
         self.max_levels = int(max_levels)
@@ -150,7 +167,17 @@ class RecurrentWaveletTSEncoder(nn.Module):
             nn.init.constant_(self.gate_head.bias, 2.0)  # sigmoid(2) ~ 0.88: starts almost open
         self.ln_out = nn.LayerNorm(D)
 
-        # diagnostics
+        # Diagnostics stay out of state_dict.  Logging is opt-in because it
+        # belongs to the run harness, not to the model architecture.
+        try:
+            self.gate_log_every = int(
+                os.environ.get("TSLM_V3_GATE_LOG_EVERY", "0")
+            )
+        except ValueError as exc:
+            raise ValueError("TSLM_V3_GATE_LOG_EVERY must be an integer >= 0") from exc
+        if self.gate_log_every < 0:
+            raise ValueError("TSLM_V3_GATE_LOG_EVERY must be >= 0")
+        self._forward_calls = 0
         self.last_depth = 0
         self.last_steps = 0
         self.last_gates: list[float] = []
@@ -177,29 +204,104 @@ class RecurrentWaveletTSEncoder(nn.Module):
 
     def _requested_depth(self, n_steps: int) -> int:
         env = os.environ.get("TSLM_V3_DEPTH")
-        if env:
-            return max(1, min(n_steps, int(env)))
+        if env is not None and env != "":
+            try:
+                requested = int(env)
+            except ValueError as exc:
+                raise ValueError(
+                    f"TSLM_V3_DEPTH must be an integer >= 1, got {env!r}"
+                ) from exc
+            if requested < 1:
+                raise ValueError(
+                    f"TSLM_V3_DEPTH must be >= 1, got {requested}"
+                )
+            return min(n_steps, requested)
         if self.depth_mode == "sdepth" and self.training:
             lo = min(self.sdepth_min, n_steps)
             return int(torch.randint(lo, n_steps + 1, (1,)).item())
         return n_steps
 
+    def _iteration(
+        self,
+        z: torch.Tensor,
+        values: torch.Tensor,
+        positions: torch.Tensor,
+        stats: torch.Tensor,
+        band: int,
+        step: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Build one level's tokens and apply one recurrent iteration.
+
+        Token construction stays inside this function so activation
+        checkpointing recomputes both the value MLP and the attention block;
+        otherwise all <=11 level embeddings remain live until backward.
+        """
+        e = self._tokens(values, positions, band)
+        z_in = z + self.step_embed.weight[step].to(z.dtype)
+        gate = None
+        if self.gate_head is not None:
+            g_in = torch.cat([z_in.mean(dim=1), e.mean(dim=1), stats], dim=-1)
+            gate = torch.sigmoid(self.gate_head(g_in)).unsqueeze(-1)
+        z_new = self._block(step)(z_in, e, gate)
+        gate_out = gate if gate is not None else z_new.new_empty((0,))
+        return z_new, gate_out
+
+    def _num_levels(self, input_length: int) -> int:
+        return max(
+            1,
+            min(
+                self.max_levels,
+                math.ceil(math.log2(max(2, input_length / self.coarse_blocks))),
+            ),
+        )
+
     # ------------------------------------------------------------------
-    def _encode_channel(self, x: torch.Tensor) -> torch.Tensor:
+    def _encode_channel(
+        self,
+        x: torch.Tensor,
+        depth_override: int | None = None,
+    ) -> torch.Tensor:
         """x: (B, L) -> (B, num_tokens, output_dim)."""
         B, L = x.shape
+        if B < 1 or L < 1:
+            raise ValueError(f"expected non-empty (B, L), got {tuple(x.shape)}")
+        if not torch.is_floating_point(x):
+            raise TypeError(f"expected floating-point input, got {x.dtype}")
         dev = x.device
-        levels = max(1, min(self.max_levels,
-                            math.ceil(math.log2(max(2, L / self.coarse_blocks)))))
+        levels = self._num_levels(L)
+        n_steps = levels + 1
+        depth = (
+            self._requested_depth(n_steps)
+            if depth_override is None
+            else depth_override
+        )
+        if not 1 <= depth <= n_steps:
+            raise ValueError(
+                f"depth_override must be in [1, {n_steps}], got {depth}"
+            )
 
         med = x.median(dim=-1, keepdim=True).values
         mad = (x - med).abs().median(dim=-1, keepdim=True).values
         scale = 1.4826 * mad + 1e-8
         xn = (x - med) / scale
+        if not bool(torch.isfinite(xn).all()):
+            raise ValueError(
+                "input or robust normalization produced NaN/inf; "
+                "check the time-series data and input dtype"
+            )
         details, coarse = haar_pyramid(xn, levels)
+        pyramid_finite = torch.stack(
+            [torch.isfinite(coarse).all()]
+            + [torch.isfinite(detail).all() for detail in details]
+        ).all()
+        if not bool(pyramid_finite):
+            raise ValueError("Haar pyramid produced NaN/inf")
 
         # ---- per-level token sets, coarse-to-fine ----------------------------
-        # each entry: (tokens (B, m, D), stats (B, 4), band, has_signal (B,) bool)
+        # Keep only scalars/selected coefficients here.  The large (B,m,D)
+        # token embeddings are built inside each loop iteration so encoder
+        # activation checkpointing can discard and recompute them.
+        # entry: (values, positions, stats, band, has_signal)
         pdt = x.dtype if self.pos_dtype == "input" else torch.float32
         schedule = []
         nc = coarse.shape[-1]
@@ -208,13 +310,19 @@ class RecurrentWaveletTSEncoder(nn.Module):
         cstats = torch.stack([torch.ones(B, device=dev), torch.ones(B, device=dev),
                               torch.zeros(B, device=dev),
                               torch.zeros(B, device=dev)], dim=-1).to(x.dtype)
-        schedule.append((self._tokens(coarse, cpos, 0), cstats, 0,
+        schedule.append((coarse, cpos, cstats, 0,
                          torch.ones(B, dtype=torch.bool, device=dev)))
         for li in range(levels, 0, -1):  # D_L (coarsest detail) ... D_1 (finest)
+            if len(schedule) >= depth:
+                break
             d = details[li - 1]
             nd = d.shape[-1]
             sigma = 1.4826 * d.abs().median(dim=-1, keepdim=True).values + 1e-8
             score = d.abs() / sigma
+            if not bool(torch.isfinite(score).all()):
+                raise ValueError(
+                    f"detail level {li} produced non-finite MAD scores"
+                )
             dblock = 2 ** li
             pos = ((torch.arange(nd, device=dev, dtype=pdt) * dblock + dblock / 2) / L).expand(B, nd)
             m = min(self.level_topm, nd)
@@ -232,41 +340,77 @@ class RecurrentWaveletTSEncoder(nn.Module):
             # noise floor of the level: universal threshold sigma*sqrt(2 ln n)
             # (Donoho-Johnstone); pure noise stays below it, an anomaly does not.
             thr = self.noise_tau * math.sqrt(2.0 * math.log(max(2, nd)))
-            schedule.append((self._tokens(v, p, li), stats, li, smax > thr))
-
-        n_steps = len(schedule)
-        depth = self._requested_depth(n_steps)
+            schedule.append((v, p, stats, li, smax > thr))
 
         # ---- the loop --------------------------------------------------------
         z = self.latents.to(x.dtype).unsqueeze(0).expand(B, -1, -1)
-        gates, active = [], []
+        gate_means: list[torch.Tensor] = []
+        active_means: list[torch.Tensor] = []
+        use_checkpoint = (
+            self.training
+            and torch.is_grad_enabled()
+            and z.requires_grad
+            and os.environ.get("TSLM_GRAD_CKPT") == "1"
+        )
         for step in range(depth):
-            e, stats, band, has_signal = schedule[step]
-            z_in = z + self.step_embed.weight[step].to(z.dtype)
-            gate = None
+            values, positions, stats, band, has_signal = schedule[step]
+            if use_checkpoint:
+                # Bind loop indices as defaults: checkpoint invokes this
+                # function again during backward, after the loop has advanced.
+                def run_step(z_, v_, p_, s_, _band=band, _step=step):
+                    return self._iteration(z_, v_, p_, s_, _band, _step)
+
+                z_new, gate_out = checkpoint(
+                    run_step, z, values, positions, stats,
+                    use_reentrant=False,
+                    preserve_rng_state=True,
+                )
+            else:
+                z_new, gate_out = self._iteration(
+                    z, values, positions, stats, band, step
+                )
             if self.gate_head is not None:
-                g_in = torch.cat([z_in.mean(dim=1), e.mean(dim=1), stats], dim=-1)
-                gate = torch.sigmoid(self.gate_head(g_in)).unsqueeze(-1)  # (B,1,1)
-                gates.append(float(gate.detach().float().mean()))
-            z_new = self._block(step)(z_in, e, gate)
+                gate_means.append(gate_out.detach().float().mean())
             if self.depth_mode == "noise_gate" and band > 0:
                 # series whose level is below the noise floor do not read it
                 keep = has_signal.view(B, 1, 1)
                 z = torch.where(keep, z_new, z)
-                active.append(float(keep.float().mean()))
+                active_means.append(keep.float().mean())
             else:
                 z = z_new
-                active.append(1.0)
+                active_means.append(torch.ones((), device=dev))
 
         self.last_depth, self.last_steps = depth, n_steps
-        self.last_gates, self.last_active = gates, active
+        self.last_gates = (
+            torch.stack(gate_means).cpu().tolist() if gate_means else []
+        )
+        self.last_active = torch.stack(active_means).cpu().tolist()
+        self._forward_calls += 1
+        if (
+            self.gate_log_every
+            and self._forward_calls % self.gate_log_every == 0
+        ):
+            gates_text = ",".join(f"{value:.4f}" for value in self.last_gates)
+            active_text = ",".join(f"{value:.4f}" for value in self.last_active)
+            print(
+                f"[V3Gates] call={self._forward_calls} depth={depth}/{n_steps} "
+                f"gates=[{gates_text}] active=[{active_text}]",
+                flush=True,
+            )
         return self.ln_out(z)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.multi_variable:
             if x.dim() != 3:
                 raise ValueError(f"expected (B, L, V), got {tuple(x.shape)}")
-            chans = [self._encode_channel(x[..., v]) for v in range(x.shape[-1])]
+            # Resolve stochastic depth once per public forward call so all
+            # variables in the same example see the same scale horizon.
+            n_steps = self._num_levels(x.shape[1]) + 1
+            depth = self._requested_depth(n_steps)
+            chans = [
+                self._encode_channel(x[..., v], depth_override=depth)
+                for v in range(x.shape[-1])
+            ]
             return torch.stack(chans, dim=1)
         if x.dim() != 2:
             raise ValueError(f"expected (B, L), got {tuple(x.shape)}")

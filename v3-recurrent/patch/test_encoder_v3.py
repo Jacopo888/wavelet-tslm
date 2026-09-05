@@ -40,6 +40,7 @@ def _install_pkg() -> None:
 
 
 _install_pkg()
+from src.models.wavelet_encoder import WaveletTSEncoder, haar_pyramid  # noqa: E402
 from src.models.wavelet_encoder_v3 import RecurrentWaveletTSEncoder  # noqa: E402
 
 D, K = 512, 256
@@ -52,6 +53,21 @@ def make(**kw) -> RecurrentWaveletTSEncoder:
 
 def expected_steps(L: int, coarse_blocks: int = 128, max_levels: int = 10) -> int:
     return 1 + max(1, min(max_levels, math.ceil(math.log2(max(2, L / coarse_blocks)))))
+
+
+def make_small(**kw) -> RecurrentWaveletTSEncoder:
+    torch.manual_seed(0)
+    defaults = dict(
+        output_dim=32,
+        num_tokens=16,
+        max_levels=3,
+        coarse_blocks=8,
+        level_topm=16,
+        n_heads=4,
+        mlp_ratio=2,
+    )
+    defaults.update(kw)
+    return RecurrentWaveletTSEncoder(**defaults).eval()
 
 
 def test_shapes_and_steps():
@@ -77,36 +93,79 @@ def test_multichannel_and_multivariable():
         y = enc_mv(torch.randn(2, 2048, 3))
     assert y.shape == (2, 3, K, D)
 
+    enc_mv = make_small(multi_variable=True, depth_mode="sdepth").train()
+    calls = 0
+    requested_depth = enc_mv._requested_depth
+
+    def counted(n_steps):
+        nonlocal calls
+        calls += 1
+        return requested_depth(n_steps)
+
+    enc_mv._requested_depth = counted  # type: ignore[method-assign]
+    with torch.no_grad():
+        enc_mv(torch.randn(1, 64, 3))
+    assert calls == 1
+
 
 def test_depth_override_env():
     enc = make()
     x = torch.randn(2, 8192)
     with torch.no_grad():
         full = enc(x)
+        full_steps = enc.last_steps
         os.environ["TSLM_V3_DEPTH"] = "1"
         try:
             shallow = enc(x)
             assert enc.last_depth == 1
         finally:
             del os.environ["TSLM_V3_DEPTH"]
+        os.environ["TSLM_V3_DEPTH"] = str(full_steps)
+        try:
+            explicit_full = enc(x)
+        finally:
+            del os.environ["TSLM_V3_DEPTH"]
         again = enc(x)
     assert enc.last_depth == enc.last_steps
     assert not torch.allclose(full, shallow)
-    assert torch.allclose(full, again)
+    assert torch.equal(full, explicit_full)
+    assert torch.equal(full, again)
+
+
+def test_invalid_depth_override_fails_fast():
+    enc = make_small()
+    for bad in ("0", "-1", "abc"):
+        os.environ["TSLM_V3_DEPTH"] = bad
+        try:
+            try:
+                enc(torch.randn(1, 64))
+            except ValueError as exc:
+                assert "TSLM_V3_DEPTH" in str(exc)
+            else:
+                raise AssertionError(f"invalid depth accepted: {bad}")
+        finally:
+            del os.environ["TSLM_V3_DEPTH"]
 
 
 def test_stochastic_depth_only_in_training():
     enc = make(depth_mode="sdepth", sdepth_min=1)
     x = torch.randn(1, 8192)
     enc.train()
-    torch.manual_seed(1)
-    depths = set()
-    with torch.no_grad():
-        for _ in range(12):
-            enc(x)
-            depths.add(enc.last_depth)
-    assert len(depths) > 1, depths
-    assert max(depths) <= enc.last_steps
+
+    def sequence(seed):
+        torch.manual_seed(seed)
+        out = []
+        with torch.no_grad():
+            for _ in range(12):
+                enc(x)
+                out.append(enc.last_depth)
+        return out
+
+    depths_a = sequence(1)
+    depths_b = sequence(1)
+    assert depths_a == depths_b
+    assert len(set(depths_a)) > 1, depths_a
+    assert max(depths_a) <= enc.last_steps
     enc.eval()
     with torch.no_grad():
         enc(x)
@@ -186,11 +245,128 @@ def test_bf16_forward_cpu():
     assert y.dtype == torch.bfloat16 and torch.isfinite(y.float()).all()
 
 
+def test_constant_and_short_series_are_finite():
+    enc = make_small(depth_mode="noise_gate").to(torch.bfloat16)
+    x = torch.full((2, 64), 7.0, dtype=torch.bfloat16)
+    with torch.no_grad():
+        y = enc(x)
+    assert y.shape == (2, 16, 32)
+    assert torch.isfinite(y.float()).all()
+    assert enc.last_steps == 1 + 3
+    assert enc.last_active[0] == 1.0
+    assert all(a == 0.0 for a in enc.last_active[1:]), enc.last_active
+
+
+def test_nonfinite_input_fails_fast():
+    enc = make_small()
+    x = torch.zeros(1, 64)
+    x[0, 3] = float("nan")
+    try:
+        enc(x)
+    except ValueError as exc:
+        assert "NaN/inf" in str(exc)
+    else:
+        raise AssertionError("non-finite input was accepted")
+
+
 def test_deterministic_eval():
     enc = make()
     x = torch.randn(2, 4096)
     with torch.no_grad():
         assert torch.equal(enc(x), enc(x))
+
+
+def test_v1_level_featurization_parity_input_dtype():
+    # L=64 and one Haar level expose all 32 coarse + 32 detail values in v1,
+    # so the two contiguous slices can be compared with v3._tokens directly.
+    torch.manual_seed(4)
+    v1 = WaveletTSEncoder(
+        output_dim=32, num_tokens=64, max_levels=1, coarse_blocks=128,
+        n_pos_freqs=4,
+    ).to(torch.bfloat16).eval()
+    v3 = RecurrentWaveletTSEncoder(
+        output_dim=32, num_tokens=64, max_levels=1, coarse_blocks=128,
+        n_pos_freqs=4, n_heads=4, mlp_ratio=2, pos_dtype="input",
+    ).to(torch.bfloat16).eval()
+    v3.value_proj.load_state_dict(v1.value_proj.state_dict())
+    v3.band_embed.load_state_dict(v1.band_embed.state_dict())
+
+    x = torch.randn(2, 64, dtype=torch.bfloat16)
+    med = x.median(dim=-1, keepdim=True).values
+    mad = (x - med).abs().median(dim=-1, keepdim=True).values
+    xn = (x - med) / (1.4826 * mad + 1e-8)
+    details, coarse = haar_pyramid(xn, 1)
+    cpos = ((torch.arange(32, dtype=x.dtype) * 2 + 1) / 64).expand(2, 32)
+    dpos = cpos
+    with torch.no_grad():
+        v1_tokens = v1(x)
+        coarse_v3 = v3._tokens(coarse, cpos, 0)
+        detail_v3 = v3._tokens(details[0], dpos, 1)
+    assert torch.equal(v1_tokens[:, :32], coarse_v3)
+    assert torch.equal(v1_tokens[:, 32:64], detail_v3)
+
+
+def test_state_dict_roundtrip_and_slim_key_coverage():
+    enc = make_small(level_gate=True)
+    state = enc.state_dict()
+    parameter_names = {name for name, _ in enc.named_parameters()}
+    assert set(state) == parameter_names
+    assert "pos_freqs" not in state
+    required = {
+        "latents", "step_embed.weight", "gate_head.weight", "gate_head.bias",
+        "ln_out.weight", "ln_out.bias",
+    }
+    assert required <= set(state)
+
+    restored = make_small(level_gate=True)
+    missing, unexpected = restored.load_state_dict(state, strict=True)
+    assert not missing and not unexpected
+    x = torch.randn(2, 64)
+    with torch.no_grad():
+        assert torch.equal(enc(x), restored(x))
+
+    # Mirror train.py's trainable-only filter on a minimal parent model.  The
+    # encoder keys must all retain their ts_encoder.* prefix, while frozen
+    # tensors are the only keys reported missing by strict=False at eval.
+    parent = torch.nn.Module()
+    parent.ts_encoder = enc
+    parent.frozen = torch.nn.Linear(3, 3)
+    parent.frozen.requires_grad_(False)
+    trainable = {name for name, p in parent.named_parameters() if p.requires_grad}
+    slim = {key: value for key, value in parent.state_dict().items() if key in trainable}
+    assert all(key.startswith("ts_encoder.") for key in slim)
+    assert {f"ts_encoder.{name}" for name in parameter_names} == set(slim)
+    assert not any("pos_freqs" in key for key in slim)
+
+    loaded = torch.nn.Module()
+    loaded.ts_encoder = make_small(level_gate=True)
+    loaded.frozen = torch.nn.Linear(3, 3)
+    missing, unexpected = loaded.load_state_dict(slim, strict=False)
+    assert not unexpected
+    assert set(missing) == {"frozen.weight", "frozen.bias"}
+
+
+def test_loop_activation_checkpoint_matches_plain_backward():
+    plain = make_small(dropout=0.0).train()
+    checked = make_small(dropout=0.0).train()
+    checked.load_state_dict(plain.state_dict())
+    x = torch.randn(2, 64)
+    target = torch.randn(2, 16, 32)
+
+    os.environ.pop("TSLM_GRAD_CKPT", None)
+    (plain(x) * target).sum().backward()
+    os.environ["TSLM_GRAD_CKPT"] = "1"
+    try:
+        (checked(x) * target).sum().backward()
+    finally:
+        del os.environ["TSLM_GRAD_CKPT"]
+
+    for (name_a, p_a), (name_b, p_b) in zip(
+        plain.named_parameters(), checked.named_parameters(), strict=True
+    ):
+        assert name_a == name_b
+        assert p_a.grad is not None and p_b.grad is not None
+        assert torch.allclose(p_a.grad, p_b.grad, rtol=1e-4, atol=1e-5), name_a
 
 
 def test_config_kwargs_like_yaml():

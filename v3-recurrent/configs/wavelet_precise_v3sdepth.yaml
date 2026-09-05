@@ -6,8 +6,8 @@
 # max_samples null -> full val split for selection, FULL 800-row gold test
 # for the final eval => directly comparable with Table 1.
 # Documented deviations: bfloat16 AMP (their A100 class; Kaggle chain was
-# fp32), best-model selected by val LOSS (TSLM_VAL_GEN=0 skips per-epoch val
-# generations), single GPU.
+# fp32), per-epoch generations delegated to the fail-closed worker, which
+# selects the best checkpoint by val PRIMARY; single GPU per run.
 
 name: anomaly_xl_wavelet_v3sdepth
 seed: 42
