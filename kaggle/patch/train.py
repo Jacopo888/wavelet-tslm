@@ -64,6 +64,14 @@ MODEL_CLASSES: dict[str, type[BaseModel]] = {
     "wavelet": WaveletTSModel,
 }
 
+# v3 (variante ricorrente, cartella v3-recurrent/): registrata solo se il file
+# e' presente nell'overlay del nodo; la v1 (`wavelet`) resta identica.
+try:
+    from src.models.wavelet_v3 import WaveletV3TSModel
+    MODEL_CLASSES["wavelet_v3"] = WaveletV3TSModel
+except ImportError:
+    pass
+
 
 # ==============================================================================
 # Utility Functions

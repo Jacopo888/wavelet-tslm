@@ -9,6 +9,7 @@ Cartella di lavoro dedicata (isolata dalla vecchia proposta ADMIT, ora in `../ad
 - `kaggle/` — kernel s1-s4 della catena Kaggle + risultati (RISULTATI-SESSIONI-WAVELET.md)
 - `modal/` — app Modal (modal_train.py: train_session + select_and_eval), risultati run full1 e m30 (RISULTATI-FULL-RUN.md, RISULTATI-M30-UFFICIALE.md)
 - `vultr/` — kit nodo bare metal (setup driver+fabricmanager, env, train multi-GPU, eval worker, status)
+- `v3-recurrent/` — **variante v3, separata dalla v1**: percettore wavelet ricorrente (looped layer sulla scala), 3 ablazioni a protocollo va1 identico, watcher GPU e kit nodo (README nella cartella)
 - `colab/` — kit Colab (piano C, declassato)
 - `lvl0/` — pilot Livello 0 (agente wavelet-zoom vs code)
 - `demo/` — video demo della tokenizzazione
