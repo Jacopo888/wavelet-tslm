@@ -119,6 +119,8 @@ cinque checkpoint, eval strict, best-by-val-primary e un solo test.
 
 Il worker valida positivamente run/config/revisione, liveness, timeout, `EXIT:0`, insieme
 esatto dei checkpoint, una coverage esatta per epoca, JSON e `primary` finita in [0,1].
+Il gate coverage normalizza i carriage return di tqdm prima dei match esatti e il worker
+rimuove all’avvio un eventuale marker `WORKER_FAILED` stantio, così da poter essere rieseguito.
 Per v3sdepth la curva `1,2,3,4,6,8,11` usa la val e il checkpoint best; `FINAL_DONE` viene
 emesso solo dopo lo sweep. Il test non seleziona la profondità.
 

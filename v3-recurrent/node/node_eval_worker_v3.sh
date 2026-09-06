@@ -21,6 +21,7 @@ case "$RUN" in
   v3tied|v3untied|v3sdepth) ;;
   *) fail "run sconosciuta: $RUN" ;;
 esac
+rm -f ~/evalq/${RUN}_WORKER_FAILED
 [ -n "${TSLM_QWEN_REVISION:-}" ] || fail "TSLM_QWEN_REVISION mancante"
 cd ~/timerlm/sft/tslm || fail "directory TimeRLM assente"
 CFG=configs/wavelet_precise_${RUN}.yaml
@@ -62,12 +63,12 @@ n_ck=$(ls "$ckdir"/epoch_*_end.pt 2>/dev/null | wc -l)
 # epoca, trained 4488 / failed 0 / expected 4488.
 [ -f ~/logs/${RUN}.log ] || fail "log training assente"
 for ep in $(seq 1 $EXPECTED_EPOCHS); do
-  n_ep=$(grep -Ec "^[[:space:]]*\[Coverage\] epoch ${ep}: trained 4488, failed 0, expected 4488$" \
-      ~/logs/${RUN}.log || true)
+  n_ep=$(tr '\r' '\n' < ~/logs/${RUN}.log | \
+      grep -Ec "^[[:space:]]*\[Coverage\] epoch ${ep}: trained 4488, failed 0, expected 4488[[:space:]]*$" || true)
   [ "$n_ep" -eq 1 ] || fail "coverage epoca $ep: trovate $n_ep righe esatte, attesa 1"
 done
-n_cov=$(grep -Ec "^[[:space:]]*\[Coverage\] epoch [0-9]+: trained 4488, failed 0, expected 4488$" \
-    ~/logs/${RUN}.log || true)
+n_cov=$(tr '\r' '\n' < ~/logs/${RUN}.log | \
+    grep -Ec "^[[:space:]]*\[Coverage\] epoch [0-9]+: trained 4488, failed 0, expected 4488[[:space:]]*$" || true)
 [ "$n_cov" -eq "$EXPECTED_EPOCHS" ] || fail "coverage: $n_cov righe esatte, attese $EXPECTED_EPOCHS"
 
 unset TSLM_V3_DEPTH
