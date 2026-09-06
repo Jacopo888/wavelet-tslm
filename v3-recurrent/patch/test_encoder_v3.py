@@ -41,7 +41,10 @@ def _install_pkg() -> None:
 
 _install_pkg()
 from src.models.wavelet_encoder import WaveletTSEncoder, haar_pyramid  # noqa: E402
-from src.models.wavelet_encoder_v3 import RecurrentWaveletTSEncoder  # noqa: E402
+from src.models.wavelet_encoder_v3 import (  # noqa: E402
+    RecurrentWaveletTSEncoder,
+    token_diversity,
+)
 
 D, K = 512, 256
 
@@ -68,6 +71,88 @@ def make_small(**kw) -> RecurrentWaveletTSEncoder:
     )
     defaults.update(kw)
     return RecurrentWaveletTSEncoder(**defaults).eval()
+
+
+def make_diversity_case():
+    """Deterministic 256-slot case: small D/L keeps the CPU gate quick."""
+    torch.manual_seed(11)
+    enc = RecurrentWaveletTSEncoder(
+        output_dim=64,
+        num_tokens=256,
+        max_levels=2,
+        coarse_blocks=32,
+        level_topm=64,
+        n_pos_freqs=16,
+        n_heads=4,
+        mlp_ratio=2,
+    )
+    torch.manual_seed(12)
+    base = torch.randn(1, 512)
+    different = torch.sin(torch.linspace(0, 80, 512)).unsqueeze(0)
+    different[:, 311:327] += 20.0
+    early = base.clone()
+    late = base.clone()
+    early[:, 96:120] += 30.0
+    late[:, 392:416] += 30.0
+    return enc, base, different, early, late
+
+
+def assert_diverse(metrics: dict[str, float]) -> None:
+    assert metrics["mean_token_cosine"] < 0.5, metrics
+    assert metrics["between_total_std_ratio"] >= 0.3, metrics
+
+
+def test_token_diversity_and_input_dependence_at_init():
+    enc, base, different, early, late = make_diversity_case()
+    different_metrics = token_diversity(enc, base, different)
+    location_metrics = token_diversity(enc, early, late)
+    default_metrics = token_diversity(enc, early)
+
+    assert_diverse(different_metrics)
+    assert different_metrics["input_relative_difference"] > 0.1, different_metrics
+    assert location_metrics["input_relative_difference"] > 0.1, location_metrics
+    assert default_metrics["input_relative_difference"] > 0.1, default_metrics
+    assert abs(enc.latents.float().std().item() - 1.0) < 0.05
+    assert enc.step_embed.weight.float().std().item() < 0.03
+
+
+def test_diversity_and_latent_gradient_survive_synthetic_optimization():
+    enc, base, different, early, late = make_diversity_case()
+    enc.train()
+    x = torch.cat([early, late], dim=0)
+    positions = (torch.arange(256, dtype=torch.float32) + 0.5) / 256
+    centers = torch.tensor([0.2, 0.8])
+    target = torch.exp(
+        -((positions.unsqueeze(0) - centers.unsqueeze(1)) / 0.05).square()
+    )
+    probe = torch.nn.Linear(64, 1, bias=False)
+    optimizer = torch.optim.Adam(
+        list(enc.parameters()) + list(probe.parameters()), lr=1e-3
+    )
+    gradient_ratios = []
+    for _ in range(4):
+        optimizer.zero_grad()
+        logits = probe(enc(x)).squeeze(-1)
+        loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, target)
+        loss.backward()
+        value_grads = torch.cat([
+            parameter.grad.float().reshape(-1)
+            for parameter in enc.value_proj.parameters()
+            if parameter.grad is not None
+        ])
+        latent_grad = enc.latents.grad
+        assert latent_grad is not None
+        gradient_ratios.append(
+            (latent_grad.float().norm() / value_grads.norm()).item()
+        )
+        optimizer.step()
+
+    assert min(gradient_ratios) > 1e-2, gradient_ratios
+    different_metrics = token_diversity(enc, base, different)
+    location_metrics = token_diversity(enc, early, late)
+    assert_diverse(different_metrics)
+    assert different_metrics["input_relative_difference"] > 0.1, different_metrics
+    assert location_metrics["input_relative_difference"] > 0.1, location_metrics
 
 
 def test_shapes_and_steps():

@@ -374,6 +374,10 @@ import json
 import sys
 
 import torch
+from src.models.wavelet_encoder_v3 import (
+    RecurrentWaveletTSEncoder,
+    token_diversity,
+)
 
 path, variant, out = sys.argv[1:4]
 checkpoint = torch.load(path, map_location="cpu", weights_only=False)
@@ -399,6 +403,25 @@ pos_freqs = [key for key in keys if "pos_freqs" in key]
 assert not pos_freqs, f"pos_freqs must not be in slim checkpoint: {pos_freqs}"
 tied = bool(checkpoint["config"]["model"]["encoder"]["tied"])
 assert tied == (variant == "v3tied"), (variant, tied)
+
+# Rebuild only the encoder and load only ts_encoder.* from the slim checkpoint.
+# A spatially localized +30 sigma event is then rolled by token_diversity's
+# default comparison, so an input-independent/global-mode encoder fails.
+encoder_config = dict(checkpoint["config"]["model"]["encoder"])
+encoder_config.pop("type", None)
+encoder_config.pop("model_id", None)
+encoder = RecurrentWaveletTSEncoder(**encoder_config).eval()
+encoder_state = {
+    key.removeprefix("ts_encoder."): value
+    for key, value in state.items()
+    if key.startswith("ts_encoder.")
+}
+missing, unexpected = encoder.load_state_dict(encoder_state, strict=True)
+assert not missing and not unexpected, (missing, unexpected)
+torch.manual_seed(20260906)
+probe = torch.randn(1, 4096)
+probe[:, 896:1024] += 30.0
+diversity = token_diversity(encoder, probe)
 doc = {
     "checkpoint": path,
     "tensor_count": len(keys),
@@ -410,11 +433,15 @@ doc = {
     },
     "pos_freqs_keys": pos_freqs,
     "tied": tied,
+    "token_diversity": diversity,
 }
 with open(out, "w", encoding="utf-8") as handle:
     json.dump(doc, handle, indent=2)
     handle.write("\n")
-print("CHECKPOINT_OK", json.dumps(doc, separators=(",", ":")))
+print("CHECKPOINT_DIAGNOSTICS", json.dumps(doc, separators=(",", ":")))
+assert diversity["mean_token_cosine"] <= 0.9, diversity
+assert diversity["input_relative_difference"] > 0.1, diversity
+print("CHECKPOINT_OK")
 PYCKPT
 
   CURRENT_STAGE="${variant}_eval_only"
@@ -526,6 +553,7 @@ doc = {
     "checkpoint_prefix_counts": checkpoint["required_prefix_counts"],
     "checkpoint_tensor_count": checkpoint["tensor_count"],
     "checkpoint_has_pos_freqs": bool(checkpoint["pos_freqs_keys"]),
+    "token_diversity": checkpoint["token_diversity"],
     "eval": {
         "EVALONLY_RESULT": True,
         "split": evaluation["split"],

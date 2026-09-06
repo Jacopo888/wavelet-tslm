@@ -23,12 +23,19 @@ sia la profondità.
    (`haar_pyramid` importata dal file v1), `levels = ceil(log2(L/128))` limitato a 10; con
    L = 131k sono 10 livelli di dettaglio + banda grossolana = 11 iterazioni.
 2. **Token per livello, featurizzazione identica a v1**: valore (clamp ±20) + posizione di Fourier
-   (16 frequenze) → `value_proj`, più `band_embed(livello)`. La banda grossolana entra intera
+   (16 frequenze) → `value_proj`, più `band_embed(livello)`. Il `band_embed` parte a std 0,02:
+   è un condizionamento e non deve coprire valore e posizione dentro lo stesso livello. La banda grossolana entra intera
    (128 blocchi); ogni livello di dettaglio espone al massimo `level_topm = 1024` coefficienti,
    i più grandi per lo stesso punteggio |d|/σ di v1 (D_1 di una serie da 131k ha 65k coefficienti:
    il lettore ne vede 1024, non zero e non tutti).
-3. **Il loop**: 256 latenti appresi; a ogni iterazione `z ← z + step_embed(t)`, poi un blocco
-   pre-LN *cross-attention (z → token del livello) · self-attention fra latenti · MLP*. Con
+3. **Il loop senza simmetria di slot**: le 256 query sono inizializzate dalle feature di Fourier
+   centrate delle posizioni `(i+0,5)/256`, proiettate isometricamente a 512 dimensioni e
+   normalizzate a RMS 1. `step_embed(t)` parte invece a std 0,02. Le query posizionali
+   condizionano a ogni iterazione uno stato di contenuto inizialmente nullo; una prior locale
+   heavy-tailed nella cross-attention assegna subito ogni slot alla sua regione ma consente ai
+   logit appresi di allargare la lettura. Il residuo di contenuto attraversa *cross-attention ·
+   self-attention · MLP*; in uscita la componente broadcast è attenuata, non eliminata, e viene
+   aggiunta l'ancora posizionale centrata prima della LayerNorm. Con
    `tied: true` il blocco è uno solo per tutte le iterazioni (blocco 4,2 M; encoder completo
    4,63 M parametri); con `tied: false` ce n'è uno per iterazione (encoder completo 46,68 M).
 4. **Gate per livello** (`level_gate: true`): uno scalare sigmoid per (serie, iterazione) calcolato
@@ -45,14 +52,18 @@ sia la profondità.
    In eval `TSLM_V3_DEPTH=r` tronca a r iterazioni per qualsiasi modello. `sdepth` estrae una
    sola profondità per chiamata (quindi condivisa dai canali dell'esempio con batch 1) dal RNG
    globale torch: il seed del trainer la rende riproducibile, ma la sequenza RNG diverge da `full`.
-6. Uscita: LayerNorm sui latenti → (B, 256, 512) → proiettore MLP di v1 → Qwen.
+6. Uscita: LayerNorm sui 256 stati locali → (B, 256, 512) → proiettore MLP di v1 → Qwen.
 
-Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali. Con
-`TSLM_GRAD_CKPT=1` ogni iterazione ricomputa embedding del livello, gate e blocco: non restano
+Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali. La prior posizionale
+usa una matrice target×source per ciascun batch/head. Con `TSLM_GRAD_CKPT=1` ogni iterazione
+ricomputa embedding del livello, prior locale, gate e blocco: non restano
 vive le grandi attivazioni `(16,1024,512)` di tutti i livelli; restano soprattutto i confini
-ricorrenti `(16,256,512)`. Test CPU: `py v3-recurrent/patch/test_encoder_v3.py` (18 test:
+ricorrenti `(16,256,512)`. Test CPU: `py v3-recurrent/patch/test_encoder_v3.py` (20 test:
 forme, budget, override, sdepth riproducibile, noise-gate, tied/untied, gradienti, bf16, serie
-costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip).
+costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip,
+diversità/input-dependence a init e dopo quattro step sintetici). `token_diversity(enc, x)`
+riporta coseno medio off-diagonal, std tra token/std totale e differenza relativa rispetto a
+una serie di confronto (per default la stessa serie traslata temporalmente).
 
 Perché i D_1 "troppo fini" non sono un problema di budget ma di rumore: non entrano in Qwen;
 possono però sporcare i latenti se la cross-attention si diluisce su chiavi di rumore. Le tre
@@ -88,8 +99,9 @@ in più rispetto a v1: se a epoca 1 la val è sotto va1 non è un segnale, conta
   overlay v3 + test CPU + smoke GPU checkpointed 16×131k con tetto 8 GiB +
   `RUN_MANIFEST_V3.json` con sha256 dell'overlay; `V3_ROCM=1` su MI300X e verifica
   che il venv usi davvero wheel ROCm 6.3), `node/node_smoke_v3.sh` (A40, untied poi tied:
-  train.py reale, casi 16 canali/131072, memoria, timing, checkpoint ed eval-only fail-closed),
-  `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per chiamata, sessioni tmux
+  train.py reale, casi 16 canali/131072, memoria, timing, checkpoint ed eval-only fail-closed,
+  diagnostica post-training sullo slim checkpoint con soglie coseno/input-dependence e numeri
+  nei JSON), `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per chiamata, sessioni tmux
   separate), `node/node_eval_worker_v3.sh` (fail-closed: coverage dal log, 5 val, best, test 800,
   poi curva di profondità sulla val).
 - `ops/gpu_watch.py` + `ops/start_watch.ps1` — watcher/grab detached (Vultr A40-24 / L40S-48 in
@@ -108,5 +120,5 @@ bash ~/node_train_v3.sh v3tied               # solo dopo il gate; A40 una run al
 cat ~/evalq/v3tied_BEST_EPOCH ~/evalq/v3tied_FINAL_test.json   # dopo FINAL_DONE in ~/logs/evw_v3tied.log
 ```
 
-Stato: revisione Codex incorporata; suite CPU estesa a 18 test e smoke GPU obbligatorio nel
-setup del nodo. Nessuna run GPU lanciata.
+Stato: fix del collasso incorporato; suite CPU estesa a 20 test e smoke GPU con diagnostica
+dello slim checkpoint obbligatorio nel setup del nodo. Nessuna nuova run GPU lanciata.

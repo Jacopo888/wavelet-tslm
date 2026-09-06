@@ -34,13 +34,14 @@ Depth ("when to stop", see README):
                              iterations (r >= 1) — the eval sweep for the curve.
 
 Token featurisation (value clamp, Fourier positions, band embedding) is copied
-from v1 on purpose so that ablation 1 (v3 vs v1) changes exactly one thing.
+from v1; only the conditioning embedding's initial scale is reduced so it does
+not hide value/position differences inside a level.
 `pos_dtype="input"` keeps v1's dtype behaviour for positions; "fp32" is the
 v2 fix and is NOT enabled by default (it would confound the comparison).
 
-Diagnostics for logs/tests (set on every forward): last_depth, last_steps,
-last_gates (mean gate per iteration), last_active (fraction of series that
-actually read each iteration).
+Diagnostics for logs/tests: forward sets last_depth, last_steps, last_gates
+(mean gate per iteration), and last_active (fraction of series that actually
+read each iteration); token_diversity measures slot diversity/input dependence.
 """
 
 from __future__ import annotations
@@ -50,6 +51,7 @@ import os
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
 
 from src.models.wavelet_encoder import haar_pyramid  # v1 file, untouched
@@ -61,6 +63,7 @@ class _LoopBlock(nn.Module):
 
     def __init__(self, dim: int, n_heads: int, mlp_ratio: int, dropout: float):
         super().__init__()
+        self.n_heads = n_heads
         self.ln_q = nn.LayerNorm(dim)
         self.ln_kv = nn.LayerNorm(dim)
         self.cross = nn.MultiheadAttention(dim, n_heads, dropout=dropout, batch_first=True)
@@ -71,9 +74,24 @@ class _LoopBlock(nn.Module):
             nn.Linear(dim, mlp_ratio * dim), nn.GELU(), nn.Linear(mlp_ratio * dim, dim)
         )
 
-    def forward(self, z: torch.Tensor, e: torch.Tensor, gate: torch.Tensor | None) -> torch.Tensor:
-        q, kv = self.ln_q(z), self.ln_kv(e)
-        read, _ = self.cross(q, kv, kv, need_weights=False)
+    def forward(
+        self,
+        z: torch.Tensor,
+        query: torch.Tensor,
+        e: torch.Tensor,
+        gate: torch.Tensor | None,
+        position_bias: torch.Tensor,
+    ) -> torch.Tensor:
+        # ``query`` carries the positional/step anchors, whereas ``z`` is the
+        # content residual.  Keeping them separate prevents a fixed learned
+        # query from dominating the norm of every emitted token.
+        q, kv = self.ln_q(query), self.ln_kv(e)
+        # MultiheadAttention accepts a per-example additive mask only in
+        # (B * heads, target, source) form.
+        attn_mask = position_bias.repeat_interleave(self.n_heads, dim=0)
+        read, _ = self.cross(
+            q, kv, kv, attn_mask=attn_mask, need_weights=False
+        )
         if gate is not None:
             read = read * gate
         z = z + read
@@ -150,12 +168,41 @@ class RecurrentWaveletTSEncoder(nn.Module):
         in_dim = 1 + 2 * self.n_pos_freqs
         self.value_proj = nn.Sequential(nn.Linear(in_dim, D), nn.GELU(), nn.Linear(D, D))
         self.band_embed = nn.Embedding(n_steps, D)  # 0 = coarse, li = detail level li
+        # A band label is conditioning, not the token content itself.  Keep it
+        # at the same small scale as the step label so position/value features
+        # remain visible to cross-attention within a level.
+        nn.init.normal_(self.band_embed.weight, mean=0.0, std=0.02)
         freqs = 2.0 ** torch.arange(self.n_pos_freqs)
         self.register_buffer("pos_freqs", freqs * math.pi, persistent=False)
+        latent_positions = (
+            torch.arange(self.num_tokens, dtype=torch.float32) + 0.5
+        ) / self.num_tokens
+        self.register_buffer(
+            "latent_positions", latent_positions, persistent=False
+        )
 
         # --- the loop -------------------------------------------------------
-        self.latents = nn.Parameter(torch.randn(self.num_tokens, D) * 0.02)
+        # Give every output slot a positional identity before the first read.
+        # The old N(0, .02) latents were swamped by nn.Embedding's default
+        # O(1) step vector in ``z + step_embed[step]``; after ln_q all queries
+        # were consequently almost equal.  A centred Fourier basis, projected
+        # isometrically to D and RMS-normalised, keeps the slots separated at
+        # O(1) scale while retaining exactly the position frequencies used by
+        # the level-token featurisation.
+        latent_ang = self.latent_positions.unsqueeze(-1) * self.pos_freqs.float()
+        latent_features = torch.cat(
+            [torch.sin(latent_ang), torch.cos(latent_ang)], dim=-1
+        )
+        latent_features = latent_features - latent_features.mean(dim=0, keepdim=True)
+        latent_projection = torch.empty(latent_features.shape[-1], D)
+        nn.init.orthogonal_(latent_projection)
+        latent_init = latent_features @ latent_projection
+        latent_init = latent_init / latent_init.square().mean(
+            dim=-1, keepdim=True
+        ).sqrt().clamp_min(1e-6)
+        self.latents = nn.Parameter(latent_init)
         self.step_embed = nn.Embedding(n_steps, D)  # tells the shared block which iteration it is
+        nn.init.normal_(self.step_embed.weight, mean=0.0, std=0.02)
         blocks = 1 if self.tied else n_steps
         self.blocks = nn.ModuleList(
             [_LoopBlock(D, n_heads, mlp_ratio, dropout) for _ in range(blocks)]
@@ -237,12 +284,26 @@ class RecurrentWaveletTSEncoder(nn.Module):
         otherwise all <=11 level embeddings remain live until backward.
         """
         e = self._tokens(values, positions, band)
-        z_in = z + self.step_embed.weight[step].to(z.dtype)
+        query = (
+            z
+            + self.latents.to(z.dtype).unsqueeze(0)
+            + self.step_embed.weight[step].to(z.dtype)
+        )
         gate = None
         if self.gate_head is not None:
-            g_in = torch.cat([z_in.mean(dim=1), e.mean(dim=1), stats], dim=-1)
+            g_in = torch.cat([query.mean(dim=1), e.mean(dim=1), stats], dim=-1)
             gate = torch.sigmoid(self.gate_head(g_in)).unsqueeze(-1)
-        z_new = self._block(step)(z_in, e, gate)
+        # A narrow heavy-tailed locality prior makes slot i read near
+        # (i+.5)/N from the first forward.  Its logarithmic tails keep distant
+        # coefficients reachable, so learned content logits can zoom out.
+        qpos = self.latent_positions.to(
+            device=positions.device, dtype=torch.float32
+        ).view(1, self.num_tokens, 1)
+        kpos = positions.float().unsqueeze(1)
+        locality_sigma = 2.0 / self.num_tokens
+        position_bias = -torch.log1p(((qpos - kpos) / locality_sigma).square())
+        position_bias = position_bias.to(e.dtype)
+        z_new = self._block(step)(z, query, e, gate, position_bias)
         gate_out = gate if gate is not None else z_new.new_empty((0,))
         return z_new, gate_out
 
@@ -343,13 +404,17 @@ class RecurrentWaveletTSEncoder(nn.Module):
             schedule.append((v, p, stats, li, smax > thr))
 
         # ---- the loop --------------------------------------------------------
-        z = self.latents.to(x.dtype).unsqueeze(0).expand(B, -1, -1)
+        # The learned Fourier latents are query anchors, not output content.
+        # The recurrent residual starts empty and can therefore not hide a
+        # collapsed, input-independent encoder behind a large fixed norm.
+        z = torch.zeros(
+            B, self.num_tokens, self.output_dim, dtype=x.dtype, device=dev
+        )
         gate_means: list[torch.Tensor] = []
         active_means: list[torch.Tensor] = []
         use_checkpoint = (
             self.training
             and torch.is_grad_enabled()
-            and z.requires_grad
             and os.environ.get("TSLM_GRAD_CKPT") == "1"
         )
         for step in range(depth):
@@ -397,6 +462,13 @@ class RecurrentWaveletTSEncoder(nn.Module):
                 f"gates=[{gates_text}] active=[{active_text}]",
                 flush=True,
             )
+        # Suppress the broadcast component created by shared band/MLP biases
+        # without discarding it entirely.  Most of each emitted token is its
+        # local residual; 10% of the pooled state carries global context.
+        z = z - 0.9 * z.mean(dim=1, keepdim=True)
+        anchors = self.latents.to(z.dtype)
+        anchors = anchors - anchors.mean(dim=0, keepdim=True)
+        z = z + 0.85 * anchors.unsqueeze(0)
         return self.ln_out(z)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -415,3 +487,67 @@ class RecurrentWaveletTSEncoder(nn.Module):
         if x.dim() != 2:
             raise ValueError(f"expected (B, L), got {tuple(x.shape)}")
         return self._encode_channel(x)
+
+
+@torch.no_grad()
+def token_diversity(
+    encoder: RecurrentWaveletTSEncoder,
+    x: torch.Tensor,
+    comparison: torch.Tensor | None = None,
+) -> dict[str, float]:
+    """Measure slot diversity and input dependence without changing mode.
+
+    ``comparison`` may be a genuinely different series or the same series
+    with an anomaly moved elsewhere.  By default the time axis is rolled by
+    one third, which makes the function directly useful in deployment smoke
+    tests while preserving the input shape and marginal distribution.
+    """
+    if not isinstance(encoder, RecurrentWaveletTSEncoder):
+        raise TypeError("encoder must be a RecurrentWaveletTSEncoder")
+    expected_dim = 3 if encoder.multi_variable else 2
+    if x.dim() != expected_dim:
+        expected = "(B, L, V)" if encoder.multi_variable else "(B, L)"
+        raise ValueError(f"expected {expected}, got {tuple(x.shape)}")
+    time_dim = -2 if encoder.multi_variable else -1
+    if comparison is None:
+        shift = max(1, x.shape[time_dim] // 3)
+        comparison = torch.roll(x, shifts=shift, dims=time_dim)
+    if comparison.shape != x.shape:
+        raise ValueError(
+            f"comparison shape {tuple(comparison.shape)} != input shape {tuple(x.shape)}"
+        )
+
+    was_training = encoder.training
+    try:
+        encoder.eval()
+        output = encoder(x).float()
+        other = encoder(comparison).float()
+    finally:
+        encoder.train(was_training)
+
+    # Token axis is penultimate for both public output contracts.  Flatten
+    # batch and optional variable axes so each series/channel contributes one
+    # cosine matrix, rather than mixing tokens belonging to different inputs.
+    flat = output.reshape(-1, output.shape[-2], output.shape[-1])
+    if flat.shape[1] < 2:
+        raise ValueError("token diversity requires num_tokens >= 2")
+    unit = F.normalize(flat, dim=-1, eps=1e-12)
+    cosine = unit @ unit.transpose(-1, -2)
+    off_diagonal = ~torch.eye(
+        flat.shape[1], dtype=torch.bool, device=flat.device
+    )
+    mean_cosine = cosine[:, off_diagonal].mean()
+    between_token_std = flat.std(dim=1, unbiased=False).mean()
+    total_std = flat.std(unbiased=False)
+    eps = torch.finfo(output.dtype).eps
+    output_norm = torch.linalg.vector_norm(output).clamp_min(eps)
+    relative_difference = torch.linalg.vector_norm(output - other) / output_norm
+    return {
+        "mean_token_cosine": float(mean_cosine.cpu()),
+        "between_token_std": float(between_token_std.cpu()),
+        "total_std": float(total_std.cpu()),
+        "between_total_std_ratio": float(
+            (between_token_std / total_std.clamp_min(eps)).cpu()
+        ),
+        "input_relative_difference": float(relative_difference.cpu()),
+    }
