@@ -1,4 +1,4 @@
-# v3 recurrent perceiver - v3untied: tied=false (un blocco per livello), depth full.
+# v3 residual-on-v1 - v3untied: tied=false (un blocco per livello), depth full.
 # Protocollo IDENTICO a va1 (seed 42, 4488 x 5 epoche, LoRA r16/a32, lr 1e-4,
 # batch 1, best-by-val primary, test 800 hfpin); cambia SOLO l'encoder.
 # Faithful to the paper's TSLM SFT protocol: full train set x 5 epochs,
@@ -35,6 +35,8 @@ model:
     level_gate: true
     noise_tau: 1.0
     pos_dtype: input
+    locality_sigma: 0.0078125
+    context_scale_init: 0.0
     max_levels: 10
     tied: false
     depth_mode: full

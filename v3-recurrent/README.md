@@ -1,4 +1,4 @@
-# v3-recurrent — percettore wavelet ricorrente (looped layer sulla scala)
+# v3-recurrent — residuo ricorrente multi-scala sui token v1
 
 Variante **separata** dell'encoder del Livello 1. La v1 (`kaggle/patch/wavelet_encoder.py`,
 riferimento va1) non viene toccata: la v3 vive in questa cartella, viene sovrapposta sul nodo
@@ -9,41 +9,30 @@ della classe (la chiave `wavelet` resta identica) e il log `[StepTiming]` protet
 
 ## Idea in una riga
 
-In v1 i 256 token che entrano in Qwen sono *scelti* (banda grossolana + top-k globale dei
-coefficienti di dettaglio per magnitudine MAD-normalizzata) e inseriti direttamente nella
-sequenza. In v3 i 256 token sono *latenti* che **leggono la piramide un livello per iterazione,
-dal grossolano al fine (A_L, D_L, …, D_1), con lo stesso blocco a pesi condivisi**: un layer
-ricorrente il cui asse di ricorsione è la scala, non la profondità. I coefficienti vengono
-consultati, mai inseriti: la sequenza di Qwen è identica a v1 (256 token per canale) qualunque
-sia la profondità.
+V3 parte dagli stessi 256 token di v1, bit per bit, e somma soltanto un residuo contestuale
+letto ricorrentemente dalla piramide. La scala appresa del residuo parte da zero: prima del
+training il proiettore MLP e Qwen ricevono esattamente l'input di va1.
 
 ## Architettura (`patch/wavelet_encoder_v3.py`, classe `RecurrentWaveletTSEncoder`)
 
-1. **Analisi identica a v1**: normalizzazione robusta (mediana/MAD), piramide Haar
-   (`haar_pyramid` importata dal file v1), `levels = ceil(log2(L/128))` limitato a 10; con
-   L = 131k sono 10 livelli di dettaglio + banda grossolana = 11 iterazioni.
-2. **Token per livello, featurizzazione identica a v1**: valore (clamp ±20) + posizione di Fourier
-   (16 frequenze) → `value_proj`, più `band_embed(livello)`. Il `band_embed` parte a std 0,02:
-   è un condizionamento e non deve coprire valore e posizione dentro lo stesso livello. La banda grossolana entra intera
-   (128 blocchi); ogni livello di dettaglio espone al massimo `level_topm = 1024` coefficienti,
-   i più grandi per lo stesso punteggio |d|/σ di v1 (D_1 di una serie da 131k ha 65k coefficienti:
-   il lettore ne vede 1024, non zero e non tutti).
-3. **Il loop senza simmetria di slot e con content highway**: le 256 query sono inizializzate dalle feature di Fourier
-   centrate delle posizioni `(i+0,5)/256`, proiettate isometricamente a 512 dimensioni e
-   normalizzate a RMS 1. `step_embed(t)` parte invece a std 0,02. Le query posizionali
-   condizionano a ogni iterazione uno stato di contenuto inizialmente nullo; una prior locale
-   heavy-tailed nella cross-attention assegna subito ogni slot alla sua regione ma consente ai
-   logit appresi di allargare la lettura. La stessa prior produce anche una lettura locale
-   identità di `value_proj(value, position)+band`: così il coefficiente locale raggiunge lo stato
-   senza dipendere dalle proiezioni V/`out_proj` casuali. Il loop *cross-attention · self-attention
-   · MLP* resta una correzione contestuale. In uscita si usa
-   `content_scale·LN(content_locale + context_scale·contesto) + anchor`, con
-   `content_scale=1` e `context_scale=1/(max_levels+1)` appresi. La LayerNorm agisce quindi sul
-   contenuto prima dell'ancora, senza i precedenti coefficienti manuali 0,9/0,85. Con
-   `tied: true` il blocco è uno solo per tutte le iterazioni (blocco 4,2 M; encoder completo
-   4,63 M parametri); con `tied: false` ce n'è uno per iterazione (encoder completo 46,68 M).
+1. **Base v1 esatta**: `RecurrentWaveletTSEncoder` eredita `WaveletTSEncoder` e invoca il suo
+   `_encode_channel` senza copiarne l'implementazione. Normalizzazione mediana/MAD, banda
+   grossolana intera, top-k globale dei dettagli per |d|/σ, `value_proj`, `band_embed`, Fourier,
+   `pad_token` e dtype delle posizioni sono quindi quelli di v1. `wavelet_v3.py` copia inoltre
+   nel nuovo encoder i pesi del v1 appena costruito: con lo stesso seed il controllo va1 e v3
+   hanno lo stesso identico punto di partenza. Posizione reale `p_i`, banda `b_i` e validità di
+   ogni token vengono conservate; i soli slot di padding usano banda sentinella `-1`.
+2. **Una sola piramide per canale**: la chiamata v1 registra la piramide che ha già calcolato e
+   il loop riusa quei tensori. Non c'è una seconda trasformata Haar. Con L=131072 si hanno dieci
+   livelli di dettaglio più la banda grossolana.
+3. **Residuo ricorrente sulla scala**: a ogni iterazione le query sono i 256 token base più un
+   piccolo `step_embed`. Leggono A_L, poi D_L … D_1; ogni dettaglio espone al massimo
+   `level_topm=1024` coefficienti scelti per lo stesso |d|/σ. La cross-attention usa un prior
+   Cauchy centrato sulla posizione reale `p_i` del token base (`locality_sigma=0.0078125`), non
+   su `i/256`; seguono self-attention e MLP sul residuo accumulato. `tied: true` riusa un solo
+   blocco, `tied: false` ne usa uno per iterazione.
 4. **Gate per livello** (`level_gate: true`): uno scalare sigmoid per (serie, iterazione) calcolato
-   da [media dei latenti, media dei token del livello, statistiche del livello: frazione sopra
+   da [media delle query base, media dei token del livello, statistiche del livello: frazione sopra
    2σ e 3σ, log del massimo, indice], che moltiplica la lettura. Inizializzato quasi aperto
    (0,88). È il modo *morbido* di ignorare un livello inutile; i valori restano in
    `last_gates` e il launcher emette `[V3Gates]` ogni 100 chiamate: sono la prima
@@ -56,37 +45,44 @@ sia la profondità.
    In eval `TSLM_V3_DEPTH=r` tronca a r iterazioni per qualsiasi modello. `sdepth` estrae una
    sola profondità per chiamata (quindi condivisa dai canali dell'esempio con batch 1) dal RNG
    globale torch: il seed del trainer la rende riproducibile, ma la sequenza RNG diverge da `full`.
-6. Uscita: contenuto normalizzato e ancora sono entrambi a scala piena → (B, 256, 512) →
-   proiettore MLP di v1 → Qwen.
+6. **Uscita residuale**: `out = token_v1 + context_scale · LN(contesto)`. La LayerNorm vede solo
+   il contesto e non può rimescolare il token base. `context_scale_init: 0.0` è il default e dà
+   uguaglianza bit-per-bit con v1 in fp32 e bf16; `0.1` è l'opzione esplicita per esperimenti con
+   un residuo piccolo già attivo. A scala zero il primo backward muove lo scalare; dai passi
+   successivi il gradiente raggiunge anche i blocchi.
 
 Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali. La prior posizionale
 usa una matrice target×source per ciascun batch/head. Con `TSLM_GRAD_CKPT=1` ogni iterazione
 ricomputa embedding del livello, prior locale, gate e blocco: non restano
 vive le grandi attivazioni `(16,1024,512)` di tutti i livelli; restano soprattutto i confini
-ricorrenti `(16,256,512)`. Il content highway aggiunge un secondo prodotto valori locale; non
-materializza pesi per testa ed è ricomputato dal checkpoint. Test CPU:
-`py v3-recurrent/patch/test_encoder_v3.py` (21 test:
+ricorrenti `(16,256,512)`. Test CPU:
+`py v3-recurrent/patch/test_encoder_v3.py` (23 test:
 forme, budget, override, sdepth riproducibile, noise-gate, tied/untied, gradienti, bf16, serie
 costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip,
-diversità/input-dependence a init e dopo quattro step sintetici, più ridge probe held-out di
-posizione/presenza/magnitudo). `token_diversity(enc, x)`
+identità v1/v3 fp32 e bf16 anche su serie corte e 16×131072, una sola piramide, diversità,
+gradienti del residuo dopo quattro step sintetici e ridge probe held-out). `token_diversity(enc, x)`
 riporta coseno medio off-diagonal, std tra token/std totale e differenza relativa rispetto a
 una serie di confronto (per default la stessa serie traslata temporalmente).
 `position_decodability(enc, n=...)` genera spike, level shift e variance change fra 4096 e
 32768 punti e risolve una ridge CPU senza Qwen su split held-out.
 
-Perché i D_1 "troppo fini" non sono un problema di budget ma di rumore: non entrano in Qwen;
-possono però sporcare i latenti se la cross-attention si diluisce su chiavi di rumore. Le tre
-difese sono il top-m per livello (2), il gate (4) e l'arresto (5); l'ablazione 3 misura quanto
-servono.
+I D_1 non consumano token Qwen: possono soltanto modificare il residuo. Top-m, gate e arresto
+controllano quanto rumore fine venga aggiunto alla base v1.
 
 ## Le tre ablazioni (protocollo va1 identico: seed 42, 4488 × 5 epoche, Qwen3.5-4B LoRA r16/α32, lr 1e-4, batch 1, bf16, grad-ckpt, coverage garantita, best-by-val-primary, test 800 hfpin)
 
 | # | Run | Cosa cambia rispetto alla precedente | Domanda a cui risponde |
 |---|-----|--------------------------------------|------------------------|
-| 1 | `v3tied` vs **va1** (già fatto) | solo il modo in cui i coefficienti diventano 256 token: lettura ricorrente vs selezione dura | La ricorsione sulla scala batte la selezione a budget di token identico? Dove: IoU sui positivi (localize), F1 sui non-vuoti (all_channels), lead_lag |
+| 1 | `v3tied` vs **va1** (già fatto) | selezione v1 + contesto ricorrente multi-scala vs selezione v1 sola; va1 è il controllo esatto e il punto di partenza è identico | Il contesto aggiuntivo migliora IoU sui positivi, F1 sui non-vuoti e lead_lag senza perdere la decodificabilità di v1? |
 | 2 | `v3untied` vs `v3tied` | un blocco per livello invece di uno condiviso (11× parametri, stesso calcolo) | Il guadagno viene dal *prior di condivisione tra scale* (la ricorrenza) o solo dalla profondità/attenzione? Se tied ≥ untied la ricorrenza è un vero bias induttivo, non un risparmio |
 | 3 | `v3sdepth` vs `v3tied` + curva `TSLM_V3_DEPTH = 1,2,3,4,6,8,11` sulla val | training a profondità stocastica; a eval si varia quante scale il lettore consulta | Quando fermarsi: quanto vale ogni livello in più, i livelli fini aiutano o fanno male, e la profondità scelta è coerente con la larghezza dell'anomalia. Confronto con il gate appreso di (4) e con la regola `noise_gate` (valutabile sul modello `v3tied` senza ri-addestrare) |
+
+Il percettore a soli latenti dei commit `cfd5256` e `0d2484e` resta lavoro futuro, non un
+checkpoint compatibile. Nel probe ridge a init aveva MAE posizione 0,112 e poi 0,105 contro
+0,078 di v1 (1,45× e 1,36×) e presenza 0,82–0,85 contro 0,94. La run `cfd5256` dopo un'epoca
+produceva finestre quasi costanti: primary 0,053 e localize IoU 0,0 su 80 esempi val, contro
+primary 0,17 di va1 alla stessa epoca. Il nuovo residuo elimina quel deficit a init per
+costruzione.
 
 Ordine di esecuzione: 1 → 2 → 3 (su A40-24Q ≈ 20 h di training + ≈ 4 h di eval per run, ≈ $21
 per run; su MI300X 192 GB le tre run girano in parallelo). Ogni run è confrontata a va1 con il
@@ -132,5 +128,6 @@ bash ~/node_train_v3.sh v3tied               # solo dopo il gate; A40 una run al
 cat ~/evalq/v3tied_BEST_EPOCH ~/evalq/v3tied_FINAL_test.json   # dopo FINAL_DONE in ~/logs/evw_v3tied.log
 ```
 
-Stato: content highway e separazione contenuto/ancora incorporati; suite CPU estesa a 21 test
-e smoke GPU con ridge probe sullo slim checkpoint. Nessuna nuova run GPU lanciata.
+Stato: disegno residual-on-v1 incorporato; suite CPU estesa a 23 test e smoke GPU con identità
+pre-training, ridge probe e `context_scale` dopo quattro passi nello slim checkpoint. Nessuna
+nuova run GPU lanciata.

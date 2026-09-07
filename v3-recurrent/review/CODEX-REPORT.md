@@ -335,3 +335,104 @@ presence o supera 0,25 di MAE magnitudo.
 - La magnitudo D=256 peggiora da 0,175 a 0,190 rispetto a `cfd5256`; la run GPU deve verificare
   che il miglioramento di localizzazione non compri un peggioramento di `measure_magnitude`.
 - Il probe dopo quattro step è volutamente compatto e misura stabilità precoce, non convergenza.
+
+## 11. 07/09 — v3 “residuo su v1”: il punto di partenza non è più un'ipotesi
+
+### Decisione architetturale
+
+I due tentativi latent-only non hanno chiuso il problema strutturale. Il commit `cfd5256`
+partiva a MAE posizione 0,11236 contro 0,07750 di v1 (1,45×) e presenza 0,819 contro 0,938;
+il content highway di `0d2484e` portava la MAE a 0,10542 (1,36×) e la presenza a 0,847, ma
+lasciava ancora a Qwen il compito di imparare una rappresentazione più difficile di va1. La
+run `cfd5256` dopo un'epoca conferma che non era solo un difetto del probe: su 80 esempi val
+produceva finestre quasi costanti, primary 0,053 e localize IoU 0,0, mentre va1 alla stessa
+epoca era circa 0,17 primary. Una terza run da circa 23 ore sullo stesso punto di partenza non
+era giustificata.
+
+La nuova invariante è più forte di una buona inizializzazione statistica:
+
+`out(x, context_scale=0) = WaveletTSEncoder(x)` **bit per bit**.
+
+`RecurrentWaveletTSEncoder` ora eredita direttamente `WaveletTSEncoder`. La sequenza base è
+calcolata eseguendo il bytecode del suo `_encode_channel`, con gli stessi parametri e nello
+stesso ordine: normalizzazione robusta, piramide, banda grossolana, top-k globale, clamp,
+Fourier nel dtype di input, `value_proj`, `band_embed` e `pad_token`. Non esiste una seconda
+implementazione della selezione v1 da mantenere sincronizzata. `wavelet_v3.py`, dopo aver
+costruito il modello v1, copia nel nuovo encoder proprio lo state dict di quell'encoder: anche
+nel percorso Qwen reale il token base è ciò che va1 avrebbe passato allo stesso proiettore.
+
+Per riusare la piramide senza modificare `kaggle/patch/wavelet_encoder.py`, la chiamata privata
+v1 viene eseguita con una copia locale dei suoi globals nella quale la sola funzione DWT è un
+wrapper di registrazione. Il modulo v1 globale non viene monkey-patchato; forward concorrenti
+non condividono stato. Il wrapper esegue la DWT una volta e restituisce gli stessi tensori sia
+alla selezione base sia allo schedule ricorrente. Un test strumentato conta esattamente una
+chiamata Haar per canale.
+
+Il loop non possiede più latenti di uscita. Le query sono `token_v1 + step_embed[t]`; la prior
+di località è centrata sulla posizione normalizzata realmente selezionata per quel token. La
+banda e la posizione della selezione globale vengono ricostruite dagli stessi dettagli; per
+gli slot reali coincidono con v1, mentre gli eventuali pad hanno banda sentinella `-1`, mask di
+validità falsa e una posizione deterministica usata solo dalla query. Il residuo parte da zero,
+legge A_L e poi D_L…D_1 con cross-attention, self-attention e MLP, e viene normalizzato da una
+LayerNorm propria. Il confine è soltanto:
+
+`out = token_v1 + context_scale * context_norm(residuo)`.
+
+Nessuna LayerNorm o proiezione tocca il percorso v1. `context_scale_init: 0.0` è il default;
+`0.1` resta disponibile come ablation esplicita, non come default nascosto. In eval/no-grad a
+scala esattamente zero il loop viene saltato perché non può cambiare l'uscita; in training viene
+sempre costruito, così il primo backward muove `context_scale` e dai backward successivi il
+gradiente arriva ai blocchi.
+
+### Misure CPU riproducibili
+
+La suite aggiornata termina `23/23 passed` in 23,5 s sulla macchina locale. L'uguaglianza usa
+`torch.equal`, non una tolleranza, e passa in fp32 e bf16 su L=7, L=4096 e sul caso richiesto
+16×131072. Il massimo errore osservato è 0,0 in tutti i casi. Passano inoltre tied/untied,
+`TSLM_V3_DEPTH`, sdepth, noise_gate, checkpoint slim e round-trip, activation checkpointing,
+non-finiti, bf16, diversità e assenza di assunzioni CUDA/ROCm.
+
+Il ridge probe deterministico compatto (D=64, N=256, n=72) dà valori identici a init:
+
+| encoder | MAE posizione | presence | MAE magnitudo |
+|---|---:|---:|---:|
+| v1 | 0,18019845 | 0,94444442 | 0,15701361 |
+| v3 residuo, scala 0 | 0,18019845 | 0,94444442 | 0,15701361 |
+
+Anche le tre MAE per tipo coincidono: spike 0,16608138, level shift 0,14354114, variance
+change 0,23097281. L'identità del probe è una conseguenza verificata dell'identità dei token,
+non un nuovo compromesso di soglia.
+
+Dopo quattro passi sintetici a lr 1e-4, i gradienti di `context_scale` sono 0,1682, 0,1670,
+0,1998 e 0,2358; lo scalare passa da 0 a -0,00040079. Come previsto dalla derivata del prodotto,
+la somma dei gradienti assoluti sui blocchi è zero al primo passo e poi 0,0464, 0,0912 e
+0,1343. Il probe post-update dà MAE posizione 0,19249903 contro 0,19240350 del controllo v1,
+rapporto 1,00050: molto sotto il gate richiesto 1,1×. Presenza resta 0,69444 in entrambi e la
+MAE magnitudo è 0,19130 contro 0,19119.
+
+`TSLM_V3_DEPTH=1` ora significa una sola lettura contestuale, la banda grossolana. Non riduce
+né tronca la selezione base: con scala zero tutte le profondità restano esattamente v1; con
+scala non nulla il test distingue depth 1 da full e verifica che il base completo sia ancora
+presente.
+
+### Checkpoint e smoke
+
+Lo state dict cambia deliberatamente: spariscono `latents`, `ln_out` e `content_scale`, entrano
+il percorso v1 completo e `context_norm`. `_load_from_state_dict` riconosce le chiavi dei due
+encoder latent-only e produce un errore esplicito anche con `strict=False`; quei checkpoint non
+possono essere ripresi accidentalmente.
+
+Lo smoke A40 esegue prima del training un controllo CPU fp32/bf16, tied e untied, su serie
+normali e corte e richiede `V3_INIT_EQUALS_V1`. Dopo i quattro passi apre lo slim checkpoint,
+richiede le chiavi v1, blocchi, gate, step embedding, context norm e scala, fallisce se la scala
+è ancora zero e salva `context_scale_after_4_steps` nel JSON di ciascuna variante. Lo smoke GPU
+non è stato eseguito localmente; resta il gate successivo sul nodo.
+
+### Rischio residuo corretto da misurare
+
+L'identità a init elimina il rischio già osservato di partire con meno informazione di va1, ma
+non dimostra che il contesto migliori il task. Ora però l'ablazione 1 è interpretabile: confronta
+“selezione v1 + contesto multi-scala” con “selezione v1 sola” dallo stesso punto. Il rischio
+principale diventa che `context_scale` resti vicino a zero o impari un residuo inutile; gate,
+curve di profondità, valore dello scalare e metriche appaiate rendono questo esito direttamente
+osservabile senza confonderlo con una tokenizzazione iniziale peggiore.

@@ -1,4 +1,4 @@
-# End-to-end A40 smoke for v3tied: four deterministic local train rows,
+# End-to-end A40 residual-on-v1 smoke for v3tied: four deterministic local train rows,
 # one epoch, one local validation row. The launcher creates and verifies the
 # mini-parquets before train.py starts; no max-step/time budget is used.
 
@@ -28,6 +28,8 @@ model:
     level_gate: true
     noise_tau: 1.0
     pos_dtype: input
+    locality_sigma: 0.0078125
+    context_scale_init: 0.0
     max_levels: 10
     tied: true
     depth_mode: full

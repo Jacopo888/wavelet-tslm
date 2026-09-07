@@ -152,6 +152,39 @@ CURRENT_STAGE="anti_leakage_preflight"
 cd "$ROOT"
 "$PY" preflight_data.py "$DATA_ROOT" --variant precise
 
+CURRENT_STAGE="v1_identity_preflight"
+"$PY" - <<'PYIDENTITY'
+import torch
+
+from src.models.wavelet_encoder import WaveletTSEncoder
+from src.models.wavelet_encoder_v3 import RecurrentWaveletTSEncoder
+
+common = dict(
+    output_dim=32, num_tokens=256, max_levels=3, coarse_blocks=8,
+    n_pos_freqs=4,
+)
+for tied in (True, False):
+    for dtype in (torch.float32, torch.bfloat16):
+        torch.manual_seed(17)
+        v1 = WaveletTSEncoder(**common).to(dtype).eval()
+        torch.manual_seed(17)
+        v3 = RecurrentWaveletTSEncoder(
+            **common, level_topm=32, tied=tied, n_heads=4, mlp_ratio=2,
+            context_scale_init=0.0, locality_sigma=0.0078125,
+        ).to(dtype).eval()
+        for length in (7, 256):
+            torch.manual_seed(length)
+            x = torch.randn(2, length).to(dtype)
+            with torch.no_grad():
+                expected = v1(x)
+                actual = v3(x)
+            assert torch.equal(actual, expected), (
+                tied, dtype, length,
+                (actual.float() - expected.float()).abs().max().item(),
+            )
+print("V3_INIT_EQUALS_V1")
+PYIDENTITY
+
 QWEN_REV=$("$PY" -c \
   "import json,os; print(json.load(open(os.path.expanduser('~/RUN_MANIFEST_V3.json')))['qwen_revision'])")
 [ -n "$QWEN_REV" ] || fail "empty qwen_revision in RUN_MANIFEST_V3.json"
@@ -387,17 +420,18 @@ state = checkpoint.get("model_state")
 assert isinstance(state, dict) and state, "missing/empty model_state"
 keys = sorted(state)
 prefixes = {
-    "latents": "ts_encoder.latents",
+    "v1_value_proj": "ts_encoder.value_proj.",
+    "v1_band_embed": "ts_encoder.band_embed.",
+    "v1_pad_token": "ts_encoder.pad_token",
     "step_embed": "ts_encoder.step_embed.",
     "gate_head": "ts_encoder.gate_head.",
     "blocks": "ts_encoder.blocks.",
-    "ln_out": "ts_encoder.ln_out.",
-    "content_scale": "ts_encoder.content_scale",
+    "context_norm": "ts_encoder.context_norm.",
     "context_scale": "ts_encoder.context_scale",
 }
 matches = {}
 for group, prefix in prefixes.items():
-    if group == "latents":
+    if group in ("v1_pad_token", "context_scale"):
         found = [key for key in keys if key == prefix]
     else:
         found = [key for key in keys if key.startswith(prefix)]
@@ -422,6 +456,8 @@ encoder_state = {
 }
 missing, unexpected = encoder.load_state_dict(encoder_state, strict=True)
 assert not missing and not unexpected, (missing, unexpected)
+context_scale = float(encoder.context_scale.detach())
+assert context_scale != 0.0, "context_scale did not move after four training steps"
 torch.manual_seed(20260906)
 probe = torch.randn(1, 4096)
 probe[:, 896:1024] += 30.0
@@ -444,6 +480,7 @@ doc = {
     },
     "pos_freqs_keys": pos_freqs,
     "tied": tied,
+    "context_scale_after_4_steps": context_scale,
     "token_diversity": diversity,
     "decodability": {
         "v1_init": v1_decodability,
@@ -572,6 +609,7 @@ doc = {
     "checkpoint_prefix_counts": checkpoint["required_prefix_counts"],
     "checkpoint_tensor_count": checkpoint["tensor_count"],
     "checkpoint_has_pos_freqs": bool(checkpoint["pos_freqs_keys"]),
+    "context_scale_after_4_steps": checkpoint["context_scale_after_4_steps"],
     "token_diversity": checkpoint["token_diversity"],
     "decodability": checkpoint["decodability"],
     "eval": {

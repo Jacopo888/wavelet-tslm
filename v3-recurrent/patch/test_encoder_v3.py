@@ -103,6 +103,76 @@ def assert_diverse(metrics: dict[str, float]) -> None:
     assert metrics["between_total_std_ratio"] >= 0.3, metrics
 
 
+def make_exact_pair(dtype=torch.float32, **kw):
+    context_scale_init = kw.pop("context_scale_init", 0.0)
+    level_topm = kw.pop("level_topm", 64)
+    defaults = dict(
+        output_dim=32,
+        num_tokens=256,
+        max_levels=10,
+        coarse_blocks=128,
+        n_pos_freqs=4,
+    )
+    defaults.update(kw)
+    torch.manual_seed(7)
+    v1 = WaveletTSEncoder(**defaults).to(dtype).eval()
+    torch.manual_seed(7)
+    v3 = RecurrentWaveletTSEncoder(
+        **defaults, n_heads=4, mlp_ratio=2, level_topm=level_topm,
+        context_scale_init=context_scale_init,
+    ).to(dtype).eval()
+    return v1, v3
+
+
+def test_init_matches_v1_exact_fp32_bf16_short_and_16ch_long():
+    for dtype in (torch.float32, torch.bfloat16):
+        v1, v3 = make_exact_pair(dtype)
+        for shape in ((2, 7), (2, 4096), (16, 131072)):
+            torch.manual_seed(sum(shape))
+            x = torch.randn(*shape).to(dtype)
+            with torch.no_grad():
+                expected = v1(x)
+                actual = v3(x)
+            assert torch.equal(actual, expected), (
+                dtype, shape, (actual.float() - expected.float()).abs().max().item()
+            )
+            assert v3.last_base_positions is not None
+            assert v3.last_base_bands is not None
+            assert v3.last_base_valid is not None
+            assert v3.last_base_positions.shape == (shape[0], 256)
+            assert v3.last_base_bands.shape == (shape[0], 256)
+            assert v3.last_base_valid.shape == (shape[0], 256)
+        assert (v3.last_base_bands[v3.last_base_valid] >= 0).all()
+
+        # Exercise the actual residual arithmetic as well as the zero-scale
+        # no-grad fast path used by the large equality cases.
+        x = torch.randn(1, 64).to(dtype)
+        expected = v1(x)
+        actual = v3(x)
+        assert torch.equal(actual, expected), dtype
+
+
+def test_one_pyramid_per_channel_is_shared_with_context():
+    import src.models.wavelet_encoder as v1_module
+
+    _, v3 = make_exact_pair(context_scale_init=0.1)
+    original = v1_module.haar_pyramid
+    calls = 0
+
+    def counted(x, levels):
+        nonlocal calls
+        calls += 1
+        return original(x, levels)
+
+    v1_module.haar_pyramid = counted
+    try:
+        with torch.no_grad():
+            v3(torch.randn(2, 256))
+    finally:
+        v1_module.haar_pyramid = original
+    assert calls == 1, calls
+
+
 def test_token_diversity_and_input_dependence_at_init():
     enc, base, different, early, late = make_diversity_case()
     different_metrics = token_diversity(enc, base, different)
@@ -113,45 +183,17 @@ def test_token_diversity_and_input_dependence_at_init():
     assert different_metrics["input_relative_difference"] > 0.1, different_metrics
     assert location_metrics["input_relative_difference"] > 0.1, location_metrics
     assert default_metrics["input_relative_difference"] > 0.1, default_metrics
-    assert abs(enc.latents.float().std().item() - 1.0) < 0.05
     assert enc.step_embed.weight.float().std().item() < 0.03
-
-    # The native-scale local read must not depend on the randomly initialised
-    # attention out_proj having a favourable gain.
-    with torch.no_grad():
-        for block in enc.blocks:
-            block.cross.out_proj.weight.zero_()
-            block.cross.out_proj.bias.zero_()
-    bypass_metrics = token_diversity(enc, early, late)
-    assert bypass_metrics["input_relative_difference"] > 0.1, bypass_metrics
 
 
 def test_position_presence_and_magnitude_decodability_at_init():
-    # D=256 is large enough for the same random-feature regime as production
-    # while keeping this deterministic CPU regression comfortably lightweight.
-    torch.manual_seed(0)
-    v1 = WaveletTSEncoder(
-        output_dim=256, num_tokens=256, max_levels=10,
-        coarse_blocks=128, n_pos_freqs=16,
-    ).eval()
-    torch.manual_seed(0)
-    v3 = RecurrentWaveletTSEncoder(
-        output_dim=256, num_tokens=256, max_levels=10,
-        coarse_blocks=128, n_pos_freqs=16, level_topm=256,
-        n_heads=8, mlp_ratio=2,
-    ).eval()
-    v1_probe = position_decodability(v1, n=288)
-    v3_probe = position_decodability(v3, n=288)
-    # This is deliberately a little stricter than the requested 1.5x gate:
-    # cfd5256 scores ~1.45x here, while the content-highway design is ~1.36x.
-    assert v3_probe["position_mae"] <= 1.4 * v1_probe["position_mae"], (
-        v1_probe, v3_probe
-    )
-    assert v3_probe["presence_accuracy"] >= 0.60, v3_probe
-    assert v3_probe["magnitude_mae"] <= 0.20, v3_probe
+    v1, v3 = make_exact_pair(output_dim=64, n_pos_freqs=16, level_topm=256)
+    v1_probe = position_decodability(v1, n=72)
+    v3_probe = position_decodability(v3, n=72)
+    assert v3_probe == v1_probe, (v1_probe, v3_probe)
 
 
-def test_diversity_and_latent_gradient_survive_synthetic_optimization():
+def test_context_scale_and_blocks_learn_without_decodability_regression():
     enc, base, different, early, late = make_diversity_case()
     enc.train()
     x = torch.cat([early, late], dim=0)
@@ -161,30 +203,28 @@ def test_diversity_and_latent_gradient_survive_synthetic_optimization():
         -((positions.unsqueeze(0) - centers.unsqueeze(1)) / 0.05).square()
     )
     probe = torch.nn.Linear(64, 1, bias=False)
+    initial_scale = enc.context_scale.detach().clone()
     optimizer = torch.optim.Adam(
-        list(enc.parameters()) + list(probe.parameters()), lr=1e-3
+        list(enc.parameters()) + list(probe.parameters()), lr=1e-4
     )
-    gradient_ratios = []
+    block_saw_nonzero_grad = False
+    scale_saw_nonzero_grad = False
     for _ in range(4):
         optimizer.zero_grad()
         logits = probe(enc(x)).squeeze(-1)
         loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, target)
         loss.backward()
-        value_grads = torch.cat([
-            parameter.grad.float().reshape(-1)
-            for parameter in enc.value_proj.parameters()
-            if parameter.grad is not None
-        ])
-        latent_grad = enc.latents.grad
-        assert latent_grad is not None
-        gradient_ratios.append(
-            (latent_grad.float().norm() / value_grads.norm()).item()
+        assert enc.context_scale.grad is not None
+        scale_saw_nonzero_grad |= bool(enc.context_scale.grad.abs() > 0)
+        block_saw_nonzero_grad |= any(
+            parameter.grad is not None and bool(parameter.grad.abs().sum() > 0)
+            for parameter in enc.blocks.parameters()
         )
         optimizer.step()
 
-    # The explicit value highway intentionally strengthens value_proj's
-    # denominator; latents must still receive a material, stable gradient.
-    assert min(gradient_ratios) > 5e-3, gradient_ratios
+    assert scale_saw_nonzero_grad
+    assert block_saw_nonzero_grad
+    assert not torch.equal(enc.context_scale.detach(), initial_scale)
     different_metrics = token_diversity(enc, base, different)
     location_metrics = token_diversity(enc, early, late)
     assert_diverse(different_metrics)
@@ -198,7 +238,7 @@ def test_diversity_and_latent_gradient_survive_synthetic_optimization():
     ).eval()
     v1_probe = position_decodability(v1, n=72)
     trained_probe = position_decodability(enc, n=72)
-    assert trained_probe["position_mae"] <= 1.5 * v1_probe["position_mae"], (
+    assert trained_probe["position_mae"] <= 1.1 * v1_probe["position_mae"], (
         v1_probe, trained_probe
     )
 
@@ -260,9 +300,44 @@ def test_depth_override_env():
             del os.environ["TSLM_V3_DEPTH"]
         again = enc(x)
     assert enc.last_depth == enc.last_steps
-    assert not torch.allclose(full, shallow)
+    # At the mandated zero initialization every depth is exactly the v1 base.
+    assert torch.equal(full, shallow)
     assert torch.equal(full, explicit_full)
     assert torch.equal(full, again)
+
+    with torch.no_grad():
+        enc.context_scale.fill_(0.1)
+        full_context = enc(x)
+        seen_bands = []
+        original_tokens = enc._tokens
+
+        def record_band(values, positions, band):
+            seen_bands.append(band)
+            return original_tokens(values, positions, band)
+
+        enc._tokens = record_band  # type: ignore[method-assign]
+        os.environ["TSLM_V3_DEPTH"] = "1"
+        try:
+            coarse_context = enc(x)
+            assert enc.last_depth == 1
+            assert len(enc.last_active) == 1
+        finally:
+            del os.environ["TSLM_V3_DEPTH"]
+            enc._tokens = original_tokens  # type: ignore[method-assign]
+    assert seen_bands == [0], seen_bands
+    assert not torch.allclose(full_context, coarse_context)
+
+    v1 = WaveletTSEncoder(
+        output_dim=D, num_tokens=K, max_levels=enc.max_levels,
+        coarse_blocks=enc.coarse_blocks, n_pos_freqs=enc.n_pos_freqs,
+    ).eval()
+    v1.load_state_dict({
+        key: value for key, value in enc.state_dict().items()
+        if key in v1.state_dict()
+    }, strict=True)
+    with torch.no_grad():
+        base = v1(x)
+    assert not torch.equal(coarse_context, base)
 
 
 def test_invalid_depth_override_fails_fast():
@@ -307,6 +382,8 @@ def test_stochastic_depth_only_in_training():
 
 def test_noise_gate_skips_noise_levels_but_reads_anomalies():
     enc = make(depth_mode="noise_gate", noise_tau=1.0)
+    with torch.no_grad():
+        enc.context_scale.fill_(0.1)
     torch.manual_seed(2)
     noise = torch.randn(4, 8192)
     spike = noise.clone()
@@ -329,6 +406,7 @@ def test_noise_gate_skips_noise_levels_but_reads_anomalies():
 def test_full_depth_never_skips():
     enc = make(depth_mode="full")
     with torch.no_grad():
+        enc.context_scale.fill_(0.1)
         enc(torch.randn(3, 8192))
     assert all(a == 1.0 for a in enc.last_active)
     assert len(enc.last_gates) == enc.last_steps
@@ -338,6 +416,8 @@ def test_full_depth_never_skips():
 
 def test_level_budget_bounds_tokens_read():
     enc = make(level_topm=64)
+    with torch.no_grad():
+        enc.context_scale.fill_(0.1)
     seen = []
     orig = enc._tokens
 
@@ -363,12 +443,22 @@ def test_tied_vs_untied_params():
 
 def test_gradients_flow_everywhere():
     enc = make().train()
+    with torch.no_grad():
+        enc.context_scale.fill_(0.1)
     x = torch.randn(2, 4096)
     enc(x).float().pow(2).mean().backward()
     for name, p in enc.named_parameters():
+        if name == "pad_token":
+            assert p.grad is None  # no padding at this input length
+            continue
         assert p.grad is not None, name
         assert torch.isfinite(p.grad).all(), name
-        if "gate_head" not in name and "step_embed" not in name and "band_embed" not in name:
+        if (
+            name != "pad_token"
+            and "gate_head" not in name
+            and "step_embed" not in name
+            and "band_embed" not in name
+        ):
             assert p.grad.abs().sum() > 0, name
 
 
@@ -381,6 +471,8 @@ def test_bf16_forward_cpu():
 
 def test_constant_and_short_series_are_finite():
     enc = make_small(depth_mode="noise_gate").to(torch.bfloat16)
+    with torch.no_grad():
+        enc.context_scale.fill_(0.1)
     x = torch.full((2, 64), 7.0, dtype=torch.bfloat16)
     with torch.no_grad():
         y = enc(x)
@@ -447,8 +539,9 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
     assert set(state) == parameter_names
     assert "pos_freqs" not in state
     required = {
-        "latents", "step_embed.weight", "gate_head.weight", "gate_head.bias",
-        "ln_out.weight", "ln_out.bias", "content_scale", "context_scale",
+        "pad_token", "value_proj.0.weight", "band_embed.weight",
+        "step_embed.weight", "gate_head.weight", "gate_head.bias",
+        "context_norm.weight", "context_norm.bias", "context_scale",
     }
     assert required <= set(state)
 
@@ -479,11 +572,24 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
     assert not unexpected
     assert set(missing) == {"frozen.weight", "frozen.bias"}
 
+    # cfd5256/0d2484e used learned latents and a different output boundary.
+    legacy = dict(state)
+    legacy["latents"] = torch.zeros(16, 32)
+    try:
+        make_small().load_state_dict(legacy, strict=False)
+    except RuntimeError as exc:
+        assert "legacy latent-only v3 checkpoint" in str(exc)
+    else:
+        raise AssertionError("legacy v3 checkpoint was accepted")
+
 
 def test_loop_activation_checkpoint_matches_plain_backward():
     plain = make_small(dropout=0.0).train()
     checked = make_small(dropout=0.0).train()
     checked.load_state_dict(plain.state_dict())
+    with torch.no_grad():
+        plain.context_scale.fill_(0.1)
+        checked.context_scale.fill_(0.1)
     x = torch.randn(2, 64)
     target = torch.randn(2, 16, 32)
 
@@ -499,6 +605,9 @@ def test_loop_activation_checkpoint_matches_plain_backward():
         plain.named_parameters(), checked.named_parameters(), strict=True
     ):
         assert name_a == name_b
+        if name_a == "pad_token":
+            assert p_a.grad is None and p_b.grad is None
+            continue
         assert p_a.grad is not None and p_b.grad is not None
         assert torch.allclose(p_a.grad, p_b.grad, rtol=1e-4, atol=1e-5), name_a
 
@@ -507,10 +616,12 @@ def test_config_kwargs_like_yaml():
     cfg = dict(type="wavelet_v3", output_dim=512, num_tokens=256, coarse_blocks=128,
                n_pos_freqs=16, freeze=False, level_topm=1024, n_heads=8, mlp_ratio=4,
                dropout=0.0, level_gate=True, noise_tau=1.0, pos_dtype="input",
+               locality_sigma=0.0078125, context_scale_init=0.0,
                max_levels=10, tied=True, depth_mode="full")
     cfg.pop("type")
     enc = RecurrentWaveletTSEncoder(**cfg)
     assert enc.tied and enc.depth_mode == "full" and enc.level_topm == 1024
+    assert enc.context_scale.item() == 0.0
 
 
 if __name__ == "__main__":
