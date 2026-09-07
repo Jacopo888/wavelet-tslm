@@ -1,9 +1,12 @@
 # CODEX REPORT — v3 “percettore wavelet ricorrente”
 
-Data revisione: 2026-09-06. Perimetro: `v3-recurrent/` e sole righe di registrazione
+Data revisione: 2026-09-07. Perimetro: `v3-recurrent/` e sole righe di registrazione
 in `kaggle/patch/train.py`. Nessun commit, nessun accesso di rete.
 
 ## 0. Collasso dei 256 token: causa verificata e correzione
+
+Nota storica: questa sezione descrive il fix confluito in `cfd5256`; la nuova evidenza e il
+ridisegno che lo sostituisce sono nella sezione 10.
 
 L'ipotesi di Jacopo è confermata dal codice. La bozza costruiva ogni query come
 `z_in = z + step_embed.weight[step]`: `z` partiva da `N(0, 0,02)`, mentre
@@ -61,7 +64,7 @@ backend/spazio disco.
 
 - `patch/wavelet_encoder_v3.py`: query Fourier, scale corrette, lettura locale, stato di
   contenuto separato, diagnostica riusabile, oltre a validazioni e checkpoint non-reentrant.
-- `patch/test_encoder_v3.py`: 20 test, inclusi i quattro gate di regressione sul collasso a
+- `patch/test_encoder_v3.py`: 21 test, inclusi i gate di regressione sul collasso e il probe a
   init e dopo quattro step sintetici, oltre a parità v1 bf16, round-trip/slim e checkpointing.
 - `node/*.sh`: verifica CUDA/ROCm, smoke 16×131072 tied/untied, limite memoria,
   preflight disco e worker irrigidito.
@@ -190,17 +193,17 @@ Comando obbligatorio:
 py v3-recurrent/patch/test_encoder_v3.py
 ```
 
-I 20 test coprono round-trip strict, simulazione slim, prefisso `ts_encoder.*`,
+I 21 test coprono round-trip strict, simulazione slim, prefisso `ts_encoder.*`,
 assenza di `pos_freqs`, parità esatta v1/v3 su grossolana+D1 in bf16, equivalenza
 `TSLM_V3_DEPTH=steps`/full, override invalido, costante L=64, non-finiti, sdepth e
 gradienti con/senza checkpoint. I due nuovi test usano esattamente 256 token e verificano a
 init e dopo quattro step di classificazione sintetica: coseno <0,5, rapporto std ≥0,3,
-differenza tra serie >0,1, differenza tra anomalie in posizioni diverse >0,1 e rapporto tra
+differenza tra serie >0,1, differenza tra anomalie in posizioni diverse >0,1, ridge probe e rapporto tra
 norma del gradiente di `latents` e di tutto `value_proj` >`1e-2`.
 
 Verifiche eseguite:
 
-- `py v3-recurrent/patch/test_encoder_v3.py`: **20/20 passati** su CPU;
+- `py v3-recurrent/patch/test_encoder_v3.py`: **21/21 passati** su CPU;
 - `git diff --check`: passato;
 - `bash -n v3-recurrent/node/node_smoke_v3.sh`: passato;
 - diff verificato: nessuna modifica a `kaggle/patch/wavelet_encoder.py` o `wavelet.py`.
@@ -216,7 +219,7 @@ sul massimo; possibile chiusura dei gate fini.
 
 Prima del lancio Claude deve:
 
-1. eseguire la suite e richiedere 20/20;
+1. eseguire la suite e richiedere 21/21;
 2. controllare la closure checkpointed, in particolare `_band` e `_step` legati come default;
 3. richiedere `V3_BACKEND_OK`, due `V3_GPU_SMOKE` e `V3_ENV_OK`;
 4. fare un forward/backward completo Qwen su una cella reale 16×131072;
@@ -224,3 +227,111 @@ Prima del lancio Claude deve:
 6. aprire uno slim e verificare latents, step_embed, gate_head, blocks e ln_out;
 7. verificare righe `[V3Gates]` e una coverage esatta per epoca;
 8. su MI300X non procedere se versione ROCm, bf16 o SDPA falliscono.
+
+## 10. 07/09 — la posizione fluisce, ma il contenuto non era decodificabile
+
+### Diagnosi sul codice e sui risultati di epoca 1
+
+I nuovi dati separano due proprietà che il precedente gate `token_diversity` confondeva:
+gli slot possono essere diversi e reagire nella regione corretta, senza che un decoder a valle
+riesca a leggere facilmente *che cosa* è cambiato. È precisamente il caso di `cfd5256`.
+
+In v1 il top-k fa già una parte importante della decodifica. Un coefficiente grande viene
+inserito direttamente fra i 256 token e il token è
+`MLP([coefficiente, Fourier(posizione)]) + band_embed`. Valore e posizione percorrono lo stesso
+MLP, entrambi alla scala nativa del token; il proiettore e Qwen ricevono quindi una evidenza
+selezionata, non devono prima estrarla da un piccolo residuo.
+
+In `cfd5256`, invece, lo stato letto dalla piramide veniva trasformato in
+`LN(z - 0,9 mean_slot(z) + 0,85 anchor)`. L'ancora Fourier centrata ha RMS circa uno ed è fissa;
+il contenuto dipendente dall'input osservato era solo il 3–4% dopo la LayerNorm. La LayerNorm
+finale, applicata alla somma, non separa i due percorsi: normalizza ogni slot e rende media/RMS
+quasi costanti. Qwen deve perciò imparare contemporaneamente la mappa slot→posizione e una
+direzione di lettura ad alto guadagno per il residuo. Il proiettore MLP e LoRA r16 possono farlo,
+ma i risultati invarianti fra step 1000 e fine epoca mostrano che non lo fanno nel budget dato.
+Questo spiega anche perché la loss teacher-forced (0,3966 contro 0,3963 della run collassata)
+non discrimina: predire le risposte-moda è facile senza usare l'evidenza numerica.
+
+Il gate non è la causa primaria. A init i pesi sono zero e il bias +2 dà esattamente
+`sigmoid(2)=0,880797`: attenua ogni lettura del 12%, non la chiude e non contiene alcuna
+selettività di posizione. Anche la prior di località è utile ma non sufficiente: con
+`sigma=2/256=0,0078125` il bias Cauchy `-log(1+(delta/sigma)^2)` concentra l'attenzione, però il
+valore locale attraversava ancora V e `out_proj` casuali, poi self-attention e MLP. Su D=512,
+D1 di una serie sintetica da 4096, ho misurato RMS token di livello 0,1466, uscita della
+cross-attention 0,2959 (0,2606 dopo il gate) e lettura locale 0,1082 (0,0953 dopo il gate):
+`out_proj` non schiaccia la *norma*, ma ruota/miscela l'evidenza e non offre un percorso identità.
+
+### Ridisegno scelto
+
+Ho mantenuto query, prior, gate, top-m e loop, ma ho separato esplicitamente base locale,
+contesto ricorrente e posizione:
+
+1. la prior locale produce anche `local_read = softmax(position_bias) @ level_tokens`, senza
+   proiezioni apprese; questa lettura viene gate-ata e accumulata in `direct`;
+2. il blocco esistente continua a calcolare `z` con cross-attention, self-attention e MLP;
+3. `context = z - direct` isola la correzione appresa; il suo scalare `context_scale` è appreso
+   e parte dalla media per profondità `1/(max_levels+1)`, non da una costante calibrata;
+4. l'uscita è
+   `content_scale * LN((direct + context_scale*context) - mean_slot) + centered_anchor`, con
+   `content_scale` appreso e inizializzato a uno.
+
+La LayerNorm ora agisce **prima** dell'ancora: contenuto e posizione hanno RMS circa uno a init
+e nessuno dei due deve essere recuperato come residuo del 3%. Il test azzera completamente
+`cross.out_proj` e richiede ancora differenza relativa fra anomalie in posizioni diverse >0,1:
+è la verifica fail-closed che il coefficiente locale non dipenda dal guadagno favorevole di
+quella proiezione. Sul caso deterministico da 256 slot il nuovo output ha differenza relativa
+0,266 e rapporto std-tra-slot/std-totale 0,982.
+
+Il highway aggiunge un prodotto valori `(B,256,M)@(B,M,D)` per livello. Non replica la matrice
+per le teste e viene ricomputato con activation checkpointing, ma aumenta il calcolo
+dell'encoder; questo va misurato nello smoke A40. Contratto, 256 token, `pos_dtype: input`,
+tied/untied, sdepth, noise_gate, `TSLM_V3_DEPTH` e `token_diversity` sono invariati. I due nuovi
+scalari entrano correttamente nello slim checkpoint. Un checkpoint `cfd5256` non è caricabile
+strict nel nuovo encoder perché non contiene `content_scale/context_scale`: è intenzionale,
+non va usato per riprendere la nuova architettura.
+
+### Probe offline CPU
+
+`position_decodability(encoder, n=...)` genera coppie indipendenti rumore/anomalia, con
+lunghezze 4096/8192/32768, posizione casuale e tre tipi (spike, level shift, variance change).
+Il probe non confronta la coppia: ogni serie viene codificata da sola. Usa come feature il
+massimo per canale sui token e l'RMS per slot, poi risolve ridge chiusa sul train e misura un
+held-out fisso (ID multipli di quattro). Non standardizza le feature sul segnale: la scala
+assoluta del contenuto resta parte della decodificabilità. Riporta MAE posizione, accuracy di
+presenza bilanciata e MAE della magnitudo normalizzata.
+
+Numeri deterministici del test principale (D=256, 256 token, `n=288`, ridge 3):
+
+| encoder a init | MAE posizione | rapporto/v1 | presence accuracy | MAE magnitudo |
+|---|---:|---:|---:|---:|
+| v1 | 0,07750 | 1,000 | 0,9375 | 0,13815 |
+| v3 `cfd5256` | 0,11236 | 1,450 | 0,8194 | 0,17543 |
+| v3 nuovo | 0,10542 | 1,360 | 0,8472 | 0,19003 |
+
+Per tipo, la MAE posizione del nuovo v3 è 0,1523 spike, 0,0762 level shift e 0,0877 variance
+change (v1: 0,1016/0,0575/0,0734). Il gate di regressione è volutamente 1,40×, più severo del
+requisito 1,50×: `cfd5256` fallisce, il nuovo encoder passa. La magnitudo nuova è leggermente
+peggiore del vecchio v3 pur restando sotto 0,20; è un rischio reale da seguire, non un risultato
+da nascondere.
+
+Dopo quattro step sintetici del test compatto (D=64, max_levels=2, `n=72`) il v3 ha MAE
+posizione 0,2660 contro 0,1924 di v1, rapporto 1,382; presence 0,750 contro 0,694 e magnitudo
+0,2009 contro 0,1912. Quindi il criterio ≤1,5× sopravvive ai primi aggiornamenti, anche se il
+piccolo probe ha varianza maggiore del test principale.
+
+Per lo smoke sul checkpoint reale il probe ricostruisce v1 e v3 a D=512/topm=1024 e usa
+`n=36` per limitare il costo CPU. A init locale il risultato è v1 0,16444 contro v3 0,14706
+(rapporto 0,894), presence 0,944/0,778 e magnitudo 0,190/0,149. Lo smoke salva tutti i numeri
+nel JSON e fallisce se il checkpoint supera 1,5× la MAE posizione di v1, scende sotto 0,55 di
+presence o supera 0,25 di MAE magnitudo.
+
+### Rischi residui
+
+- È un probe sintetico lineare, non sostituisce localize/IoU di Qwen; serve come gate economico
+  contro una rappresentazione difficile da leggere, non come stima della metrica finale.
+- Lo split D=512 dello smoke è piccolo (`n=36`) e quindi meno preciso del gate CPU principale.
+- Il highway costa un secondo value read per livello; memoria e tempo end-to-end A40 restano da
+  confermare con `node_smoke_v3.sh`.
+- La magnitudo D=256 peggiora da 0,175 a 0,190 rispetto a `cfd5256`; la run GPU deve verificare
+  che il miglioramento di localizzazione non compri un peggioramento di `measure_magnitude`.
+- Il probe dopo quattro step è volutamente compatto e misura stabilità precoce, non convergenza.

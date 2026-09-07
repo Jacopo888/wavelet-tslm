@@ -374,8 +374,10 @@ import json
 import sys
 
 import torch
+from src.models.wavelet_encoder import WaveletTSEncoder
 from src.models.wavelet_encoder_v3 import (
     RecurrentWaveletTSEncoder,
+    position_decodability,
     token_diversity,
 )
 
@@ -390,6 +392,8 @@ prefixes = {
     "gate_head": "ts_encoder.gate_head.",
     "blocks": "ts_encoder.blocks.",
     "ln_out": "ts_encoder.ln_out.",
+    "content_scale": "ts_encoder.content_scale",
+    "context_scale": "ts_encoder.context_scale",
 }
 matches = {}
 for group, prefix in prefixes.items():
@@ -422,6 +426,13 @@ torch.manual_seed(20260906)
 probe = torch.randn(1, 4096)
 probe[:, 896:1024] += 30.0
 diversity = token_diversity(encoder, probe)
+torch.manual_seed(0)
+v1 = WaveletTSEncoder(**encoder_config).eval()
+v1_decodability = position_decodability(v1, n=36, batch_pairs=6)
+v3_decodability = position_decodability(encoder, n=36, batch_pairs=6)
+position_ratio = (
+    v3_decodability["position_mae"] / v1_decodability["position_mae"]
+)
 doc = {
     "checkpoint": path,
     "tensor_count": len(keys),
@@ -434,6 +445,11 @@ doc = {
     "pos_freqs_keys": pos_freqs,
     "tied": tied,
     "token_diversity": diversity,
+    "decodability": {
+        "v1_init": v1_decodability,
+        "v3_checkpoint": v3_decodability,
+        "position_mae_ratio": position_ratio,
+    },
 }
 with open(out, "w", encoding="utf-8") as handle:
     json.dump(doc, handle, indent=2)
@@ -441,6 +457,9 @@ with open(out, "w", encoding="utf-8") as handle:
 print("CHECKPOINT_DIAGNOSTICS", json.dumps(doc, separators=(",", ":")))
 assert diversity["mean_token_cosine"] <= 0.9, diversity
 assert diversity["input_relative_difference"] > 0.1, diversity
+assert position_ratio <= 1.5, doc["decodability"]
+assert v3_decodability["presence_accuracy"] >= 0.55, v3_decodability
+assert v3_decodability["magnitude_mae"] <= 0.25, v3_decodability
 print("CHECKPOINT_OK")
 PYCKPT
 
@@ -554,6 +573,7 @@ doc = {
     "checkpoint_tensor_count": checkpoint["tensor_count"],
     "checkpoint_has_pos_freqs": bool(checkpoint["pos_freqs_keys"]),
     "token_diversity": checkpoint["token_diversity"],
+    "decodability": checkpoint["decodability"],
     "eval": {
         "EVALONLY_RESULT": True,
         "split": evaluation["split"],

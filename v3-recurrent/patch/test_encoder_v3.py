@@ -43,6 +43,7 @@ _install_pkg()
 from src.models.wavelet_encoder import WaveletTSEncoder, haar_pyramid  # noqa: E402
 from src.models.wavelet_encoder_v3 import (  # noqa: E402
     RecurrentWaveletTSEncoder,
+    position_decodability,
     token_diversity,
 )
 
@@ -115,6 +116,40 @@ def test_token_diversity_and_input_dependence_at_init():
     assert abs(enc.latents.float().std().item() - 1.0) < 0.05
     assert enc.step_embed.weight.float().std().item() < 0.03
 
+    # The native-scale local read must not depend on the randomly initialised
+    # attention out_proj having a favourable gain.
+    with torch.no_grad():
+        for block in enc.blocks:
+            block.cross.out_proj.weight.zero_()
+            block.cross.out_proj.bias.zero_()
+    bypass_metrics = token_diversity(enc, early, late)
+    assert bypass_metrics["input_relative_difference"] > 0.1, bypass_metrics
+
+
+def test_position_presence_and_magnitude_decodability_at_init():
+    # D=256 is large enough for the same random-feature regime as production
+    # while keeping this deterministic CPU regression comfortably lightweight.
+    torch.manual_seed(0)
+    v1 = WaveletTSEncoder(
+        output_dim=256, num_tokens=256, max_levels=10,
+        coarse_blocks=128, n_pos_freqs=16,
+    ).eval()
+    torch.manual_seed(0)
+    v3 = RecurrentWaveletTSEncoder(
+        output_dim=256, num_tokens=256, max_levels=10,
+        coarse_blocks=128, n_pos_freqs=16, level_topm=256,
+        n_heads=8, mlp_ratio=2,
+    ).eval()
+    v1_probe = position_decodability(v1, n=288)
+    v3_probe = position_decodability(v3, n=288)
+    # This is deliberately a little stricter than the requested 1.5x gate:
+    # cfd5256 scores ~1.45x here, while the content-highway design is ~1.36x.
+    assert v3_probe["position_mae"] <= 1.4 * v1_probe["position_mae"], (
+        v1_probe, v3_probe
+    )
+    assert v3_probe["presence_accuracy"] >= 0.60, v3_probe
+    assert v3_probe["magnitude_mae"] <= 0.20, v3_probe
+
 
 def test_diversity_and_latent_gradient_survive_synthetic_optimization():
     enc, base, different, early, late = make_diversity_case()
@@ -147,12 +182,25 @@ def test_diversity_and_latent_gradient_survive_synthetic_optimization():
         )
         optimizer.step()
 
-    assert min(gradient_ratios) > 1e-2, gradient_ratios
+    # The explicit value highway intentionally strengthens value_proj's
+    # denominator; latents must still receive a material, stable gradient.
+    assert min(gradient_ratios) > 5e-3, gradient_ratios
     different_metrics = token_diversity(enc, base, different)
     location_metrics = token_diversity(enc, early, late)
     assert_diverse(different_metrics)
     assert different_metrics["input_relative_difference"] > 0.1, different_metrics
     assert location_metrics["input_relative_difference"] > 0.1, location_metrics
+
+    torch.manual_seed(11)
+    v1 = WaveletTSEncoder(
+        output_dim=64, num_tokens=256, max_levels=2,
+        coarse_blocks=32, n_pos_freqs=16,
+    ).eval()
+    v1_probe = position_decodability(v1, n=72)
+    trained_probe = position_decodability(enc, n=72)
+    assert trained_probe["position_mae"] <= 1.5 * v1_probe["position_mae"], (
+        v1_probe, trained_probe
+    )
 
 
 def test_shapes_and_steps():
@@ -284,7 +332,8 @@ def test_full_depth_never_skips():
         enc(torch.randn(3, 8192))
     assert all(a == 1.0 for a in enc.last_active)
     assert len(enc.last_gates) == enc.last_steps
-    assert all(0.0 < g < 1.0 for g in enc.last_gates)
+    expected_gate = torch.sigmoid(torch.tensor(2.0)).item()
+    assert all(abs(g - expected_gate) < 1e-6 for g in enc.last_gates)
 
 
 def test_level_budget_bounds_tokens_read():
@@ -399,7 +448,7 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
     assert "pos_freqs" not in state
     required = {
         "latents", "step_embed.weight", "gate_head.weight", "gate_head.bias",
-        "ln_out.weight", "ln_out.bias",
+        "ln_out.weight", "ln_out.bias", "content_scale", "context_scale",
     }
     assert required <= set(state)
 

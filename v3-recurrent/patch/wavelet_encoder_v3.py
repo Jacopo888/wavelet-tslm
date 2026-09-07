@@ -36,6 +36,10 @@ Depth ("when to stop", see README):
 Token featurisation (value clamp, Fourier positions, band embedding) is copied
 from v1; only the conditioning embedding's initial scale is reduced so it does
 not hide value/position differences inside a level.
+Each iteration also has an identity local-read highway, so value/position
+features do not depend on random attention projections to reach the output.
+At the boundary, content is normalised before adding the positional anchor;
+learned content/context scales replace the old hand-tuned output mixture.
 `pos_dtype="input"` keeps v1's dtype behaviour for positions; "fp32" is the
 v2 fix and is NOT enabled by default (it would confound the comparison).
 
@@ -81,7 +85,7 @@ class _LoopBlock(nn.Module):
         e: torch.Tensor,
         gate: torch.Tensor | None,
         position_bias: torch.Tensor,
-    ) -> torch.Tensor:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         # ``query`` carries the positional/step anchors, whereas ``z`` is the
         # content residual.  Keeping them separate prevents a fixed learned
         # query from dominating the norm of every emitted token.
@@ -92,13 +96,23 @@ class _LoopBlock(nn.Module):
         read, _ = self.cross(
             q, kv, kv, attn_mask=attn_mask, need_weights=False
         )
+        # Identity content highway at initialisation: the positional prior
+        # already defines a meaningful local interpolation, while a freshly
+        # initialised V/out projection is an unnecessary random bottleneck.
+        # Cross-attention remains a learned correction and can move/reshape
+        # the read; the highway guarantees that local coefficient features
+        # reach the recurrent state at their native scale from step zero.
+        local_weights = torch.softmax(position_bias.float(), dim=-1).to(e.dtype)
+        local_read = torch.bmm(local_weights, e)
+        read = read + local_read
         if gate is not None:
             read = read * gate
+            local_read = local_read * gate
         z = z + read
         s = self.ln_s(z)
         mix, _ = self.self_attn(s, s, s, need_weights=False)
         z = z + mix
-        return z + self.mlp(self.ln_m(z))
+        return z + self.mlp(self.ln_m(z)), local_read
 
 
 class RecurrentWaveletTSEncoder(nn.Module):
@@ -213,6 +227,17 @@ class RecurrentWaveletTSEncoder(nn.Module):
             nn.init.zeros_(self.gate_head.weight)
             nn.init.constant_(self.gate_head.bias, 2.0)  # sigmoid(2) ~ 0.88: starts almost open
         self.ln_out = nn.LayerNorm(D)
+        # Content and position leave the encoder through two explicit paths.
+        # Normalising content before adding the anchor keeps both at O(1)
+        # without a hand-tuned mixture coefficient; the learned scalar lets
+        # training change their ratio from the neutral 1:1 initialisation.
+        self.content_scale = nn.Parameter(torch.ones(()))
+        # Depth-averaged residual initialisation: the deterministic local read
+        # is the base representation, while the sum of randomly initialised
+        # recurrent corrections starts at its per-step mean scale.
+        self.context_scale = nn.Parameter(
+            torch.tensor(1.0 / n_steps)
+        )
 
         # Diagnostics stay out of state_dict.  Logging is opt-in because it
         # belongs to the run harness, not to the model architecture.
@@ -276,7 +301,7 @@ class RecurrentWaveletTSEncoder(nn.Module):
         stats: torch.Tensor,
         band: int,
         step: int,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Build one level's tokens and apply one recurrent iteration.
 
         Token construction stays inside this function so activation
@@ -303,9 +328,9 @@ class RecurrentWaveletTSEncoder(nn.Module):
         locality_sigma = 2.0 / self.num_tokens
         position_bias = -torch.log1p(((qpos - kpos) / locality_sigma).square())
         position_bias = position_bias.to(e.dtype)
-        z_new = self._block(step)(z, query, e, gate, position_bias)
+        z_new, local_read = self._block(step)(z, query, e, gate, position_bias)
         gate_out = gate if gate is not None else z_new.new_empty((0,))
-        return z_new, gate_out
+        return z_new, gate_out, local_read
 
     def _num_levels(self, input_length: int) -> int:
         return max(
@@ -404,12 +429,13 @@ class RecurrentWaveletTSEncoder(nn.Module):
             schedule.append((v, p, stats, li, smax > thr))
 
         # ---- the loop --------------------------------------------------------
-        # The learned Fourier latents are query anchors, not output content.
-        # The recurrent residual starts empty and can therefore not hide a
-        # collapsed, input-independent encoder behind a large fixed norm.
+        # The learned Fourier latents condition the queries and form the
+        # separate positional output path.  Both the recurrent state and the
+        # direct local-content accumulator start empty.
         z = torch.zeros(
             B, self.num_tokens, self.output_dim, dtype=x.dtype, device=dev
         )
+        direct = torch.zeros_like(z)
         gate_means: list[torch.Tensor] = []
         active_means: list[torch.Tensor] = []
         use_checkpoint = (
@@ -425,13 +451,13 @@ class RecurrentWaveletTSEncoder(nn.Module):
                 def run_step(z_, v_, p_, s_, _band=band, _step=step):
                     return self._iteration(z_, v_, p_, s_, _band, _step)
 
-                z_new, gate_out = checkpoint(
+                z_new, gate_out, local_read = checkpoint(
                     run_step, z, values, positions, stats,
                     use_reentrant=False,
                     preserve_rng_state=True,
                 )
             else:
-                z_new, gate_out = self._iteration(
+                z_new, gate_out, local_read = self._iteration(
                     z, values, positions, stats, band, step
                 )
             if self.gate_head is not None:
@@ -440,9 +466,11 @@ class RecurrentWaveletTSEncoder(nn.Module):
                 # series whose level is below the noise floor do not read it
                 keep = has_signal.view(B, 1, 1)
                 z = torch.where(keep, z_new, z)
+                direct = torch.where(keep, direct + local_read, direct)
                 active_means.append(keep.float().mean())
             else:
                 z = z_new
+                direct = direct + local_read
                 active_means.append(torch.ones((), device=dev))
 
         self.last_depth, self.last_steps = depth, n_steps
@@ -462,14 +490,19 @@ class RecurrentWaveletTSEncoder(nn.Module):
                 f"gates=[{gates_text}] active=[{active_text}]",
                 flush=True,
             )
-        # Suppress the broadcast component created by shared band/MLP biases
-        # without discarding it entirely.  Most of each emitted token is its
-        # local residual; 10% of the pooled state carries global context.
-        z = z - 0.9 * z.mean(dim=1, keepdim=True)
+        # Split the emitted representation into an input-dependent local
+        # residual and a fixed positional anchor.  Exact centring removes the
+        # broadcast mode introduced by shared biases; self-attention has
+        # already placed global context inside each local residual.  Crucially
+        # the final normalisation is applied to content *before* the anchor is
+        # added, so it cannot shrink the input-dependent path to a few percent.
+        context = z - direct
+        content = direct + self.context_scale.to(z.dtype) * context
+        content = content - content.mean(dim=1, keepdim=True)
+        content = self.ln_out(content)
         anchors = self.latents.to(z.dtype)
         anchors = anchors - anchors.mean(dim=0, keepdim=True)
-        z = z + 0.85 * anchors.unsqueeze(0)
-        return self.ln_out(z)
+        return self.content_scale.to(z.dtype) * content + anchors.unsqueeze(0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.multi_variable:
@@ -550,4 +583,156 @@ def token_diversity(
             (between_token_std / total_std.clamp_min(eps)).cpu()
         ),
         "input_relative_difference": float(relative_difference.cpu()),
+    }
+
+
+@torch.no_grad()
+def position_decodability(
+    encoder: nn.Module,
+    n: int = 288,
+    seed: int = 20260907,
+    ridge: float = 3.0,
+    batch_pairs: int = 24,
+) -> dict[str, float | dict[str, float]]:
+    """CPU ridge probe for anomaly position, presence, and magnitude.
+
+    ``n`` paired noise/anomaly cases are spread over lengths 4096, 8192 and
+    32768 and over spike, level-shift and variance-change anomalies.  The
+    probe sees each encoded series independently; pairing is used only to keep
+    the positive/negative nuisance distribution identical.  Its features are
+    the maximum over slots for each channel plus the RMS of each slot.  The
+    former lets v1 expose a selected large coefficient; the latter lets a
+    fixed-slot reader expose where its content energy changed.  This is a
+    small, fixed readout rather than a trainable feature normaliser: absolute
+    content scale therefore remains part of what "decodable" means.
+
+    IDs divisible by four form the held-out split.  Ridge is solved in the
+    dual, so the function remains practical when encoder output_dim is 512.
+    The encoder's training mode is restored on return.
+    """
+    if n < 36 or n % 36:
+        raise ValueError("n must be a multiple of 36 and >= 36")
+    if not math.isfinite(float(ridge)) or ridge <= 0:
+        raise ValueError("ridge must be finite and > 0")
+    if int(batch_pairs) < 1:
+        raise ValueError("batch_pairs must be >= 1")
+    try:
+        parameter = next(encoder.parameters())
+    except StopIteration as exc:
+        raise ValueError("encoder must have parameters") from exc
+    if parameter.device.type != "cpu":
+        raise ValueError("position_decodability is an offline CPU probe")
+    if getattr(encoder, "multi_variable", False):
+        raise ValueError("position_decodability expects a single-variable encoder")
+
+    lengths = (4096, 8192, 32768)
+    kinds = ("spike", "level_shift", "variance_change")
+    generator = torch.Generator(device="cpu").manual_seed(seed)
+    groups: dict[int, list[tuple[torch.Tensor, torch.Tensor, int, float, float, str]]] = {}
+    for sample_id in range(n):
+        length = lengths[sample_id % len(lengths)]
+        kind = kinds[(sample_id // len(lengths)) % len(kinds)]
+        position = 0.05 + 0.90 * torch.rand((), generator=generator).item()
+        magnitude = 0.25 + 0.75 * torch.rand((), generator=generator).item()
+        clean = torch.randn(length, generator=generator)
+        anomalous = clean.clone()
+        start = min(length - 2, max(1, int(position * length)))
+        if kind == "spike":
+            anomalous[start] += 30.0 + 60.0 * magnitude
+        elif kind == "level_shift":
+            anomalous[start:] += 4.0 + 9.0 * magnitude
+        else:
+            width = max(32, int(0.08 * length))
+            start = min(start, length - width)
+            position = start / length
+            anomalous[start:start + width] *= 3.0 + 8.0 * magnitude
+        groups.setdefault(length, []).append(
+            (clean, anomalous, sample_id, position, magnitude, kind)
+        )
+
+    feature_batches = []
+    labels: list[tuple[int, int, float, float, str]] = []
+    was_training = encoder.training
+    try:
+        encoder.eval()
+        for rows in groups.values():
+            for offset in range(0, len(rows), int(batch_pairs)):
+                chunk = rows[offset:offset + int(batch_pairs)]
+                batch = torch.stack([
+                    series
+                    for clean, anomalous, *_ in chunk
+                    for series in (clean, anomalous)
+                ]).to(dtype=parameter.dtype)
+                tokens = encoder(batch).float()
+                if tokens.dim() != 3 or tokens.shape[1] != 256:
+                    raise ValueError(
+                        "position_decodability requires output shaped (B, 256, D), "
+                        f"got {tuple(tokens.shape)}"
+                    )
+                features = torch.cat([
+                    tokens.amax(dim=1),
+                    tokens.square().mean(dim=-1).sqrt(),
+                ], dim=-1)
+                # Keep the ridge strength comparable for compact test encoders
+                # and D=512 without fitting a data-dependent scaler.
+                features = features * math.sqrt(512.0 / features.shape[-1])
+                feature_batches.append(features)
+                labels.extend([
+                    (sample_id, present, position, magnitude, kind)
+                    for _, _, sample_id, position, magnitude, kind in chunk
+                    for present in (0, 1)
+                ])
+    finally:
+        encoder.train(was_training)
+
+    raw_features = torch.cat(feature_batches, dim=0)
+    order = sorted(range(len(labels)), key=lambda i: (labels[i][0], labels[i][1]))
+    features = raw_features[order]
+    labels = [labels[i] for i in order]
+    train_ids = [i for i, label in enumerate(labels) if label[0] % 4]
+    test_ids = [i for i, label in enumerate(labels) if not label[0] % 4]
+
+    def fit_predict(target_index: int, positives_only: bool) -> tuple[torch.Tensor, torch.Tensor, list[int]]:
+        train = [
+            i for i in train_ids if not positives_only or labels[i][1] == 1
+        ]
+        test = [
+            i for i in test_ids if not positives_only or labels[i][1] == 1
+        ]
+        x_train = features[train]
+        x_test = features[test]
+        x_mean = x_train.mean(dim=0)
+        x_train = x_train - x_mean
+        x_test = x_test - x_mean
+        y_train = torch.tensor(
+            [labels[i][target_index] for i in train], dtype=torch.float32
+        )
+        y_test = torch.tensor(
+            [labels[i][target_index] for i in test], dtype=torch.float32
+        )
+        y_mean = y_train.mean()
+        gram = x_train @ x_train.T
+        dual = torch.linalg.solve(
+            gram + float(ridge) * torch.eye(gram.shape[0]),
+            y_train - y_mean,
+        )
+        prediction = x_test @ x_train.T @ dual + y_mean
+        return prediction, y_test, test
+
+    pos_pred, pos_true, positive_test = fit_predict(2, positives_only=True)
+    mag_pred, mag_true, _ = fit_predict(3, positives_only=True)
+    presence_pred, presence_true, _ = fit_predict(1, positives_only=False)
+    by_kind = {}
+    for kind in kinds:
+        mask = torch.tensor([labels[i][4] == kind for i in positive_test])
+        by_kind[kind] = float((pos_pred[mask] - pos_true[mask]).abs().mean())
+    return {
+        "position_mae": float((pos_pred - pos_true).abs().mean()),
+        "position_mae_by_type": by_kind,
+        "presence_accuracy": float(
+            ((presence_pred >= 0.5) == presence_true.bool()).float().mean()
+        ),
+        "magnitude_mae": float((mag_pred - mag_true).abs().mean()),
+        "n_pairs": float(n),
+        "ridge": float(ridge),
     }
