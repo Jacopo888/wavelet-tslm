@@ -1,0 +1,9 @@
+2026-09-07T12:46:02Z PROBE_START ep2
+2026-09-07T12:51:10Z PROBE_DONE ep2 primary 0.1719 {'localize': 0.095, 'classify_with_evidence': 0.0, 'measure_magnitude': 0.375, 'localize_all_channels': 0.182, 'lead_lag_with_magnitude': 0.0}
+2026-09-07T17:38:10Z PROBE_START ep3
+2026-09-07T17:43:47Z PROBE_DONE ep3 primary 0.1508 {'localize': 0.0, 'classify_with_evidence': 0.029, 'measure_magnitude': 0.409, 'localize_all_channels': 0.091, 'lead_lag_with_magnitude': 0.0}
+2026-09-07T22:22:47Z PROBE_START ep4
+2026-09-07T22:22:59Z PROBE_FAILED ep4 (vedi valprobe_v3tied_ep4.log)
+2026-09-08T03:03:59Z PROBE_START ep5
+2026-09-08T03:08:45Z PROBE_DONE ep5 primary 0.2873 {'localize': 0.172, 'classify_with_evidence': 0.213, 'measure_magnitude': 0.507, 'localize_all_channels': 0.273, 'lead_lag_with_magnitude': 0.0}
+2026-09-08T03:08:45Z WAITER_END

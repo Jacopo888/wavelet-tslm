@@ -1,0 +1,9 @@
+training v3tied concluso con EXIT:0, parte la selezione
+val eval epoch 1
+val eval epoch 2
+val eval epoch 3
+val eval epoch 4
+val eval epoch 5
+BEST_EPOCH=5 (per val primary)
+FINAL_TEST_DONE
+FINAL_DONE

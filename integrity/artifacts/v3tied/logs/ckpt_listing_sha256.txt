@@ -1,0 +1,7 @@
+-rw-r--r-- 1 root root 91858507 Sep  8 03:01 best_model.pt
+-rw-r--r-- 1 root root 91860418 Sep  7 08:02 epoch_1_end.pt
+-rw-r--r-- 1 root root 91860418 Sep  7 12:44 epoch_2_end.pt
+-rw-r--r-- 1 root root 91860418 Sep  7 17:37 epoch_3_end.pt
+-rw-r--r-- 1 root root 91860418 Sep  7 22:20 epoch_4_end.pt
+-rw-r--r-- 1 root root 91860418 Sep  8 03:01 epoch_5_end.pt
+250f16980fabb0fc2d9b1411fed513b0938e1911ee064b0c35406300177b6579  /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_v3tied/checkpoints/epoch_5_end.pt

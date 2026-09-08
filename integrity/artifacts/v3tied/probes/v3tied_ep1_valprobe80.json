@@ -1,0 +1,17 @@
+{
+  "loss": 0.42686739517375827,
+  "num_batches": 80,
+  "eval_errors": 0,
+  "eval_jsonl": "results/anomaly_xl_precise/anomaly_xl_wavelet_v3tied_valprobe/output_logs/evalonly_val_epoch_1_end_valprobe_epoch_0.jsonl",
+  "samples_evaluated": 80,
+  "primary": 0.16532795360138725,
+  "category_primary": {
+    "localize": 0.0,
+    "classify_with_evidence": 0.0,
+    "measure_magnitude": 0.4317783187734992,
+    "localize_all_channels": 0.18181818181818182,
+    "lead_lag_with_magnitude": 0.0
+  },
+  "checkpoint": "results/anomaly_xl_precise/anomaly_xl_wavelet_v3tied/checkpoints/epoch_1_end.pt",
+  "split": "val"
+}
