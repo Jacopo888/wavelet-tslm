@@ -40,16 +40,28 @@ Scomposizioni:
 Sondaggi appaiati sugli stessi 80 esempi di val (in parallelo al training): ep1 0,165 vs 0,124,
 ep2 0,172 vs 0,161, ep3 0,151 vs 0,205, ep5 0,287 vs 0,283.
 
-## Lettura
+## Lettura (corretta dopo l'ispezione dei checkpoint)
 
-Il contesto ricorrente multi-scala (blocco condiviso, tutti i livelli letti) **non aiuta**: la
-metrica complessiva è pari (differenza non significativa), la localizzazione fine peggiora in modo
-significativo (IoU sui positivi dimezzato) e il "guadagno" su lead_lag è il collasso sulla moda
-"independent". La percezione v1 (selezione dura dei coefficienti) resta il riferimento.
+`ts_encoder.context_scale` è rimasto a zero per tutta la run: 0,0001 (ep1), −0,0006 (ep3),
+0,0004 (ep5). **Il contesto ricorrente non è mai entrato nei token**: il modello valutato è, di
+fatto, va1 replicato (stesso seed, grafo di calcolo diverso, bf16). Le differenze sul test
+(+0,009 complessivo, −0,034 su localize, lead_lag caduto sulla moda "independent") sono quindi
+**rumore run-to-run del protocollo va1**, non un effetto dell'architettura. Due conseguenze utili:
+(i) effetti sotto ≈0,03 per categoria non sono risolvibili con una singola run, e il bootstrap
+appaiato sul test non cattura la varianza di training (dichiara "significativa" una differenza
+fra due repliche); (ii) il collasso di lead_lag sulla moda può avvenire o no a parità di modello.
 
-Ipotesi sul perché: il residuo, con `context_scale` libero e LayerNorm sul contesto, perturba i
-token base (valore + posizione) su cui Qwen localizza; il modello impara a usare il contesto per
-statistiche globali (presenza, moda lead_lag) e perde precisione posizionale.
+Perché la scala non si è mossa: con `context_scale_init = 0` il ramo di contesto riceve gradiente
+proporzionale alla scala (≈0) e non si allena, mentre la scala riceve gradiente proporzionale alla
+correlazione fra un contesto *non allenato* e la direzione utile (≈0 in media): un deadlock. Lo
+schema "ReZero" funziona solo quando il ramo si allena insieme alla scala; qui, con lr 1e-4 e
+4488 esempi, la scala ha oscillato intorno a zero (negativa all'epoca 3).
+
+L'ablazione 1 resta quindi **aperta**: per misurare davvero il contesto serve
+`context_scale_init` piccolo ma non nullo (es. 0,1: a init v3 = v1 + 10% di contesto, probe di
+decodificabilità ancora ≈ v1), oppure un learning rate separato per il ramo. Il config lo
+supporta già; costo di una run ≈ $23 / 27 h. La curva di profondità sul checkpoint attuale è
+stata interrotta perché priva di senso (contesto inattivo).
 
 ## Storia della variante (tre lanci)
 
@@ -63,9 +75,9 @@ statistiche globali (presenza, moda lead_lag) e perde precisione posizionale.
 
 ## Cosa resta aperto (decisione)
 
-- Ablazione 2 (`v3untied`) e 3 (`v3sdepth` + curva di profondità): ≈$23 e 27 h ciascuna sulla
-  A40; con il risultato dell'ablazione 1 misurerebbero varianti di un contesto che oggi non aiuta.
-- Curva di profondità sul checkpoint `v3tied` ep5 (`TSLM_V3_DEPTH` = 1, 3, 6, 11 sulla val, in
-  corso l'08/09): dice se leggere meno livelli riduce il danno.
-- Alternative: chiudere qui la variante v3 come risultato negativo documentato (percezione v1 +
-  contesto ricorsivo non migliora AnomalyXL a parità di budget) e rimettere la GPU sul Livello 2.
+- Ripetere l'ablazione 1 con `context_scale_init: 0.1` (unica modifica di config): è l'unico
+  modo per misurare il contesto ricorrente. Con lo zero-init anche `v3untied` e `v3sdepth`
+  resterebbero a scala zero: vanno lanciate solo dopo, con lo stesso init.
+- In alternativa chiudere la variante come "non misurabile con zero-init" e rimettere la GPU sul
+  Livello 2. Il valore già ottenuto: una replica di va1 che quantifica il rumore run-to-run del
+  protocollo (±0,03 per categoria, moda lead_lag instabile).
