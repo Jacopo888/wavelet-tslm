@@ -21,6 +21,44 @@ if TYPE_CHECKING:
 
 class WaveletV3TSModel(WaveletTSModel):
 
+    def get_trainable_parameters(self):
+        """Keep recurrent-only parameters in their own optimizer group.
+
+        The inherited group contains the complete encoder.  Splitting by
+        parameter identity lets ``training.learning_rate.context`` accelerate
+        only the newly initialized loop while the v1 token path keeps the va1
+        learning rate.  If the encoder is frozen, none of these parameters is
+        present in the inherited groups and no context group is added.
+        """
+        groups = {
+            name: list(params)
+            for name, params in super().get_trainable_parameters().items()
+        }
+        grouped_ids = {id(parameter) for params in groups.values() for parameter in params}
+        encoder = self.ts_encoder
+        candidates = [
+            *encoder.blocks.parameters(),
+            *encoder.step_embed.parameters(),
+            *encoder.context_norm.parameters(),
+            encoder.context_scale,
+        ]
+        if encoder.gate_head is not None:
+            candidates.extend(encoder.gate_head.parameters())
+        context = [parameter for parameter in candidates if id(parameter) in grouped_ids]
+        if not context:
+            return groups
+
+        context_ids = {id(parameter) for parameter in context}
+        split = {
+            name: [parameter for parameter in params if id(parameter) not in context_ids]
+            for name, params in groups.items()
+        }
+        split = {name: params for name, params in split.items() if params}
+        if "context" in split:
+            raise RuntimeError("optimizer group 'context' already exists")
+        split["context"] = context
+        return split
+
     @classmethod
     def from_config(cls, config: "ExperimentConfig", device: str) -> "WaveletV3TSModel":
         model = super().from_config(config, device)  # v1 build, v1 encoder (discarded below)

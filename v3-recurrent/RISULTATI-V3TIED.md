@@ -57,11 +57,11 @@ correlazione fra un contesto *non allenato* e la direzione utile (≈0 in media)
 schema "ReZero" funziona solo quando il ramo si allena insieme alla scala; qui, con lr 1e-4 e
 4488 esempi, la scala ha oscillato intorno a zero (negativa all'epoca 3).
 
-L'ablazione 1 resta quindi **aperta**: per misurare davvero il contesto serve
-`context_scale_init` piccolo ma non nullo (es. 0,1: a init v3 = v1 + 10% di contesto, probe di
-decodificabilità ancora ≈ v1), oppure un learning rate separato per il ramo. Il config lo
-supporta già; costo di una run ≈ $23 / 27 h. La curva di profondità sul checkpoint attuale è
-stata interrotta perché priva di senso (contesto inattivo).
+L'ablazione 1 resta quindi **aperta**. Il fix ora implementato usa `context_scale_init: 0.1`
+(a init v3 = v1 + 10% di contesto, probe di decodificabilità entro 1,1× v1) e un gruppo
+`context` a lr 1e-3, mentre il percorso v1 resta a 1e-4. Costo di una run ≈ $23 / 27 h. La
+curva di profondità sul checkpoint attuale è stata interrotta perché priva di senso
+(contesto inattivo).
 
 ## Storia della variante (tre lanci)
 
@@ -75,9 +75,9 @@ stata interrotta perché priva di senso (contesto inattivo).
 
 ## Cosa resta aperto (decisione)
 
-- Ripetere l'ablazione 1 con `context_scale_init: 0.1` (unica modifica di config): è l'unico
-  modo per misurare il contesto ricorrente. Con lo zero-init anche `v3untied` e `v3sdepth`
-  resterebbero a scala zero: vanno lanciate solo dopo, con lo stesso init.
+- Ripetere l'ablazione 1 con il fix comune (`context_scale_init: 0.1`, gruppo `context` a
+  lr 1e-3). Con lo zero-init anche `v3untied` e `v3sdepth` resterebbero a scala zero: vanno
+  lanciate solo dopo, con lo stesso init e lo stesso gruppo.
 - In alternativa chiudere la variante come "non misurabile con zero-init" e rimettere la GPU sul
   Livello 2. Il valore già ottenuto: una replica di va1 che quantifica il rumore run-to-run del
   protocollo (±0,03 per categoria, moda lead_lag instabile).

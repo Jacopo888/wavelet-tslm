@@ -457,6 +457,42 @@ def load_checkpoint(
 # Training Loop
 # ==============================================================================
 
+def _log_v3_gradient_diagnostics(model, step: int) -> None:
+    """Emit one post-unscale gradient record for the env-gated v3 smoke."""
+    if os.environ.get("TSLM_V3_GRAD_LOG") != "1":
+        return
+
+    named = list(model.named_parameters())
+
+    def norm(fragment: str) -> float:
+        terms = [
+            parameter.grad.detach().float().square().sum()
+            for name, parameter in named
+            if fragment in name and parameter.grad is not None
+        ]
+        return torch.stack(terms).sum().sqrt().item() if terms else 0.0
+
+    scale_matches = [
+        parameter for name, parameter in named
+        if name.endswith("ts_encoder.context_scale")
+    ]
+    scale = float(scale_matches[0].detach()) if scale_matches else float("nan")
+    scale_grad = (
+        float(scale_matches[0].grad.detach())
+        if scale_matches and scale_matches[0].grad is not None
+        else float("nan")
+    )
+    block_norm = norm("ts_encoder.blocks.")
+    value_norm = norm("ts_encoder.value_proj.")
+    relative = block_norm / max(value_norm, 1e-30)
+    print(
+        f"[V3Grad] step={step} context_scale={scale:.9g} "
+        f"context_scale_grad={scale_grad:.9g} blocks_grad_norm={block_norm:.9g} "
+        f"value_proj_grad_norm={value_norm:.9g} blocks_relative={relative:.9g}",
+        flush=True,
+    )
+
+
 def train_epoch(
     model,
     train_loader: DataLoader,
@@ -535,11 +571,13 @@ def train_epoch(
             if use_amp:
                 scaler.scale(loss).backward()
                 scaler.unscale_(optimizer)
+                _log_v3_gradient_diagnostics(model, global_step)
                 clip_grad_norm_(model.parameters(), config.training.max_grad_norm)
                 scaler.step(optimizer)
                 scaler.update()
             else:
                 loss.backward()
+                _log_v3_gradient_diagnostics(model, global_step)
 
                 # Gradient clipping
                 clip_grad_norm_(model.parameters(), config.training.max_grad_norm)
@@ -642,11 +680,13 @@ def train_epoch(
                         if use_amp:
                             scaler.scale(loss).backward()
                             scaler.unscale_(optimizer)
+                            _log_v3_gradient_diagnostics(model, global_step)
                             clip_grad_norm_(model.parameters(), config.training.max_grad_norm)
                             scaler.step(optimizer)
                             scaler.update()
                         else:
                             loss.backward()
+                            _log_v3_gradient_diagnostics(model, global_step)
                             clip_grad_norm_(model.parameters(), config.training.max_grad_norm)
                             optimizer.step()
                         scheduler.step()

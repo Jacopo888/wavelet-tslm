@@ -3,15 +3,17 @@
 Variante **separata** dell'encoder del Livello 1. La v1 (`kaggle/patch/wavelet_encoder.py`,
 riferimento va1) non viene toccata: la v3 vive in questa cartella, viene sovrapposta sul nodo
 come file nuovi (`src/models/wavelet_encoder_v3.py`, `src/models/wavelet_v3.py`) e si seleziona
-con `model.architecture: wavelet_v3`. Le sole modifiche fuori cartella sono in `kaggle/patch/train.py`: la registrazione condizionale
-della classe (la chiave `wavelet` resta identica) e il log `[StepTiming]` protetto da
-`TSLM_STEP_TIMING=1`, usato soltanto dallo smoke end-to-end.
+con `model.architecture: wavelet_v3`. Le sole modifiche fuori cartella sono in
+`kaggle/patch/train.py`: la registrazione condizionale della classe (la chiave `wavelet` resta
+identica), il log `[StepTiming]` protetto da `TSLM_STEP_TIMING=1` e la diagnostica `[V3Grad]`
+protetta da `TSLM_V3_GRAD_LOG=1`; entrambi gli hook sono inerti di default e usati dallo smoke.
 
 ## Idea in una riga
 
-V3 parte dagli stessi 256 token di v1, bit per bit, e somma soltanto un residuo contestuale
-letto ricorrentemente dalla piramide. La scala appresa del residuo parte da zero: prima del
-training il proiettore MLP e Qwen ricevono esattamente l'input di va1.
+V3 parte dagli stessi 256 token di v1 e somma soltanto un residuo contestuale letto
+ricorrentemente dalla piramide. I config di run inizializzano la scala a 0,1 per dare gradiente
+ai blocchi dal primo backward; l'identità bit-per-bit con v1 resta un test esplicito con scala
+forzata a zero.
 
 ## Architettura (`patch/wavelet_encoder_v3.py`, classe `RecurrentWaveletTSEncoder`)
 
@@ -45,22 +47,29 @@ training il proiettore MLP e Qwen ricevono esattamente l'input di va1.
    In eval `TSLM_V3_DEPTH=r` tronca a r iterazioni per qualsiasi modello. `sdepth` estrae una
    sola profondità per chiamata (quindi condivisa dai canali dell'esempio con batch 1) dal RNG
    globale torch: il seed del trainer la rende riproducibile, ma la sequenza RNG diverge da `full`.
-6. **Uscita residuale**: `out = token_v1 + context_scale · LN(contesto)`. La LayerNorm vede solo
-   il contesto e non può rimescolare il token base. `context_scale_init: 0.0` è il default e dà
-   uguaglianza bit-per-bit con v1 in fp32 e bf16; `0.1` è l'opzione esplicita per esperimenti con
-   un residuo piccolo già attivo. A scala zero il primo backward muove lo scalare; dai passi
-   successivi il gradiente raggiunge anche i blocchi.
+6. **Uscita residuale e fix del deadlock**: `out = token_v1 + context_scale · LN(contesto)`.
+   La LayerNorm vede solo il contesto e non può rimescolare il token base. Il default della
+   classe resta `context_scale_init: 0.0` per compatibilità e per il gate `v3 == v1`; i cinque
+   config consegnati usano invece `0.1`. Infatti al primo step
+   `∂L/∂θ_context = context_scale · ∂LN(z)/∂θ_context · ∂L/∂out`: con scala zero blocchi, gate,
+   step embedding e norm non co-adattano, mentre lo scalare vede soltanto la correlazione con
+   un ramo casuale. È il deadlock osservato nella run `1b0f9fa`: scala 0,0001/−0,0006/0,0004
+   a epoca 1/3/5 e gate bias circa 1,98. Con init 0,1 il gradiente dei blocchi è non nullo dal
+   primo backward. `WaveletV3TSModel.get_trainable_parameters()` separa inoltre `context`
+   (blocks, gate, step embedding, context norm e scala) dal percorso v1: lr 1e-3 contro 1e-4.
+   Nessuna chiave dello state dict cambia, quindi i checkpoint residual-on-v1 `1b0f9fa`
+   restano caricabili.
 
 Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali. La prior posizionale
 usa una matrice target×source per ciascun batch/head. Con `TSLM_GRAD_CKPT=1` ogni iterazione
 ricomputa embedding del livello, prior locale, gate e blocco: non restano
 vive le grandi attivazioni `(16,1024,512)` di tutti i livelli; restano soprattutto i confini
 ricorrenti `(16,256,512)`. Test CPU:
-`py v3-recurrent/patch/test_encoder_v3.py` (23 test:
+`py v3-recurrent/patch/test_encoder_v3.py` (25 test:
 forme, budget, override, sdepth riproducibile, noise-gate, tied/untied, gradienti, bf16, serie
 costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip,
 identità v1/v3 fp32 e bf16 anche su serie corte e 16×131072, una sola piramide, diversità,
-gradienti del residuo dopo quattro step sintetici e ridge probe held-out). `token_diversity(enc, x)`
+witness zero/nonzero dopo 16 step sintetici, split del gruppo optimizer e ridge probe held-out). `token_diversity(enc, x)`
 riporta coseno medio off-diagonal, std tra token/std totale e differenza relativa rispetto a
 una serie di confronto (per default la stessa serie traslata temporalmente).
 `position_decodability(enc, n=...)` genera spike, level shift e variance change fra 4096 e
@@ -69,11 +78,11 @@ una serie di confronto (per default la stessa serie traslata temporalmente).
 I D_1 non consumano token Qwen: possono soltanto modificare il residuo. Top-m, gate e arresto
 controllano quanto rumore fine venga aggiunto alla base v1.
 
-## Le tre ablazioni (protocollo va1 identico: seed 42, 4488 × 5 epoche, Qwen3.5-4B LoRA r16/α32, lr 1e-4, batch 1, bf16, grad-ckpt, coverage garantita, best-by-val-primary, test 800 hfpin)
+## Le tre ablazioni (protocollo va1 identico: seed 42, 4488 × 5 epoche, Qwen3.5-4B LoRA r16/α32, lr 1e-4 salvo il gruppo context a 1e-3, batch 1, bf16, grad-ckpt, coverage garantita, best-by-val-primary, test 800 hfpin)
 
 | # | Run | Cosa cambia rispetto alla precedente | Domanda a cui risponde |
 |---|-----|--------------------------------------|------------------------|
-| 1 | `v3tied` vs **va1** (già fatto) | selezione v1 + contesto ricorrente multi-scala vs selezione v1 sola; va1 è il controllo esatto e il punto di partenza è identico | Il contesto aggiuntivo migliora IoU sui positivi, F1 sui non-vuoti e lead_lag senza perdere la decodificabilità di v1? |
+| 1 | `v3tied` vs **va1** (da ripetere col fix) | selezione v1 + contesto ricorrente multi-scala vs selezione v1 sola; la run `1b0f9fa` a scala zero è risultata una replica di va1 e misura solo rumore run-to-run | Il contesto aggiuntivo migliora IoU sui positivi, F1 sui non-vuoti e lead_lag senza perdere la decodificabilità di v1? |
 | 2 | `v3untied` vs `v3tied` | un blocco per livello invece di uno condiviso (11× parametri, stesso calcolo) | Il guadagno viene dal *prior di condivisione tra scale* (la ricorrenza) o solo dalla profondità/attenzione? Se tied ≥ untied la ricorrenza è un vero bias induttivo, non un risparmio |
 | 3 | `v3sdepth` vs `v3tied` + curva `TSLM_V3_DEPTH = 1,2,3,4,6,8,11` sulla val | training a profondità stocastica; a eval si varia quante scale il lettore consulta | Quando fermarsi: quanto vale ogni livello in più, i livelli fini aiutano o fanno male, e la profondità scelta è coerente con la larghezza dell'anomalia. Confronto con il gate appreso di (4) e con la regola `noise_gate` (valutabile sul modello `v3tied` senza ri-addestrare) |
 
@@ -128,6 +137,6 @@ bash ~/node_train_v3.sh v3tied               # solo dopo il gate; A40 una run al
 cat ~/evalq/v3tied_BEST_EPOCH ~/evalq/v3tied_FINAL_test.json   # dopo FINAL_DONE in ~/logs/evw_v3tied.log
 ```
 
-Stato: disegno residual-on-v1 incorporato; suite CPU estesa a 23 test e smoke GPU con identità
-pre-training, ridge probe e `context_scale` dopo quattro passi nello slim checkpoint. Nessuna
-nuova run GPU lanciata.
+Stato: fix zero-init incorporato; suite CPU 25/25, smoke con identità a scala zero, gradiente
+dei blocchi post-unscale e spostamento assoluto di `context_scale` ≥1e-3 dopo quattro passi.
+La run `1b0f9fa` è archiviata come replica va1; nessuna nuova run GPU lanciata.

@@ -10,10 +10,13 @@ The v1 file (kaggle/patch/wavelet_encoder.py) is imported through a temporary
 from __future__ import annotations
 
 import math
+import importlib.util
 import os
+import re
 import shutil
 import sys
 import tempfile
+import types
 from pathlib import Path
 
 import torch
@@ -48,6 +51,10 @@ from src.models.wavelet_encoder_v3 import (  # noqa: E402
 )
 
 D, K = 512, 256
+RUN_CONTEXT_SCALE_INIT = 0.1
+RUN_CONTEXT_LR = 1.0e-3
+RUN_CONTEXT_SCALE_INIT = 0.1
+RUN_CONTEXT_LR = 1.0e-3
 
 
 def make(**kw) -> RecurrentWaveletTSEncoder:
@@ -126,7 +133,7 @@ def make_exact_pair(dtype=torch.float32, **kw):
 
 def test_init_matches_v1_exact_fp32_bf16_short_and_16ch_long():
     for dtype in (torch.float32, torch.bfloat16):
-        v1, v3 = make_exact_pair(dtype)
+        v1, v3 = make_exact_pair(dtype, context_scale_init=0.0)
         for shape in ((2, 7), (2, 4096), (16, 131072)):
             torch.manual_seed(sum(shape))
             x = torch.randn(*shape).to(dtype)
@@ -187,60 +194,132 @@ def test_token_diversity_and_input_dependence_at_init():
 
 
 def test_position_presence_and_magnitude_decodability_at_init():
-    v1, v3 = make_exact_pair(output_dim=64, n_pos_freqs=16, level_topm=256)
+    v1, v3 = make_exact_pair(
+        output_dim=64,
+        n_pos_freqs=16,
+        level_topm=256,
+        context_scale_init=RUN_CONTEXT_SCALE_INIT,
+    )
     v1_probe = position_decodability(v1, n=72)
     v3_probe = position_decodability(v3, n=72)
-    assert v3_probe == v1_probe, (v1_probe, v3_probe)
+    assert v3_probe["position_mae"] <= 1.1 * v1_probe["position_mae"], (
+        v1_probe, v3_probe
+    )
+    assert v3_probe["magnitude_mae"] <= 1.1 * v1_probe["magnitude_mae"], (
+        v1_probe, v3_probe
+    )
+    assert v3_probe["presence_accuracy"] >= v1_probe["presence_accuracy"] / 1.1, (
+        v1_probe, v3_probe
+    )
 
 
-def test_context_scale_and_blocks_learn_without_decodability_regression():
-    enc, base, different, early, late = make_diversity_case()
-    enc.train()
-    x = torch.cat([early, late], dim=0)
-    positions = (torch.arange(256, dtype=torch.float32) + 0.5) / 256
-    centers = torch.tensor([0.2, 0.8])
-    target = torch.exp(
-        -((positions.unsqueeze(0) - centers.unsqueeze(1)) / 0.05).square()
+def _context_parameters(enc: RecurrentWaveletTSEncoder) -> list[torch.nn.Parameter]:
+    params = [
+        *enc.blocks.parameters(),
+        *enc.step_embed.parameters(),
+        *enc.context_norm.parameters(),
+        enc.context_scale,
+    ]
+    if enc.gate_head is not None:
+        params.extend(enc.gate_head.parameters())
+    return params
+
+
+def _gradient_norm(parameters) -> float:
+    terms = [
+        parameter.grad.detach().float().square().sum()
+        for parameter in parameters
+        if parameter.grad is not None
+    ]
+    return torch.stack(terms).sum().sqrt().item() if terms else 0.0
+
+
+def _run_context_deadlock_witness(context_scale_init: float) -> dict[str, float]:
+    """Train the context group on a location absent from the v1 tokens.
+
+    Eight coarse coefficients consume v1's full token budget. The paired
+    impulses cancel from that band, so their location is available only to the
+    per-level reader. A one-coordinate initial context makes the desired
+    second-coordinate correction exactly orthogonal. At scale zero both
+    dL/dscale and dL/dblocks are therefore exactly zero; this deterministic
+    witness avoids relying on random finite-sample cancellation.
+    """
+    torch.manual_seed(123)
+    enc = RecurrentWaveletTSEncoder(
+        output_dim=8,
+        num_tokens=8,
+        max_levels=3,
+        coarse_blocks=8,
+        level_topm=8,
+        n_pos_freqs=2,
+        n_heads=2,
+        mlp_ratio=1,
+        dropout=0.0,
+        context_scale_init=context_scale_init,
+    ).train()
+    with torch.no_grad():
+        enc.context_norm.weight.zero_()
+        enc.context_norm.weight[0] = 1.0
+        enc.context_norm.bias.zero_()
+
+    x = torch.zeros(2, 64)
+    x[0, 10], x[0, 11] = 5.0, -5.0
+    x[1, 50], x[1, 51] = 5.0, -5.0
+    centers = torch.tensor([10.5, 50.5]) / 64
+    positions = (torch.arange(8, dtype=torch.float32) + 0.5) / 8
+    location = torch.exp(
+        -((positions.unsqueeze(0) - centers.unsqueeze(1)) / 0.12).square()
     )
-    probe = torch.nn.Linear(64, 1, bias=False)
-    initial_scale = enc.context_scale.detach().clone()
-    optimizer = torch.optim.Adam(
-        list(enc.parameters()) + list(probe.parameters()), lr=1e-4
+
+    with torch.no_grad():
+        initial_scale = enc.context_scale.item()
+        enc.context_scale.zero_()
+        base = enc(x).detach()
+        assert torch.equal(base[0], base[1])
+        assert bool((enc.last_base_bands == 0).all())  # v1 has no detail slots
+        enc.context_scale.fill_(initial_scale)
+    target = base.clone()
+    target[:, :, 1] += location
+
+    optimizer = torch.optim.AdamW(
+        _context_parameters(enc),
+        lr=RUN_CONTEXT_LR,
+        weight_decay=0.01,
     )
-    block_saw_nonzero_grad = False
-    scale_saw_nonzero_grad = False
-    for _ in range(4):
-        optimizer.zero_grad()
-        logits = probe(enc(x)).squeeze(-1)
-        loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, target)
+    first_block_norm = first_value_norm = 0.0
+    max_block_norm = max_scale_grad = 0.0
+    for step in range(16):
+        optimizer.zero_grad(set_to_none=True)
+        enc.zero_grad(set_to_none=True)
+        loss = torch.nn.functional.mse_loss(enc(x), target)
         loss.backward()
-        assert enc.context_scale.grad is not None
-        scale_saw_nonzero_grad |= bool(enc.context_scale.grad.abs() > 0)
-        block_saw_nonzero_grad |= any(
-            parameter.grad is not None and bool(parameter.grad.abs().sum() > 0)
-            for parameter in enc.blocks.parameters()
-        )
+        block_norm = _gradient_norm(enc.blocks.parameters())
+        value_norm = _gradient_norm(enc.value_proj.parameters())
+        scale_grad = abs(enc.context_scale.grad.detach().item())
+        if step == 0:
+            first_block_norm, first_value_norm = block_norm, value_norm
+        max_block_norm = max(max_block_norm, block_norm)
+        max_scale_grad = max(max_scale_grad, scale_grad)
         optimizer.step()
 
-    assert scale_saw_nonzero_grad
-    assert block_saw_nonzero_grad
-    assert not torch.equal(enc.context_scale.detach(), initial_scale)
-    different_metrics = token_diversity(enc, base, different)
-    location_metrics = token_diversity(enc, early, late)
-    assert_diverse(different_metrics)
-    assert different_metrics["input_relative_difference"] > 0.1, different_metrics
-    assert location_metrics["input_relative_difference"] > 0.1, location_metrics
+    return {
+        "scale_move": abs(enc.context_scale.detach().item() - initial_scale),
+        "first_block_relative_to_value": first_block_norm / max(first_value_norm, 1e-30),
+        "max_block_norm": max_block_norm,
+        "max_scale_grad": max_scale_grad,
+    }
 
-    torch.manual_seed(11)
-    v1 = WaveletTSEncoder(
-        output_dim=64, num_tokens=256, max_levels=2,
-        coarse_blocks=32, n_pos_freqs=16,
-    ).eval()
-    v1_probe = position_decodability(v1, n=72)
-    trained_probe = position_decodability(enc, n=72)
-    assert trained_probe["position_mae"] <= 1.1 * v1_probe["position_mae"], (
-        v1_probe, trained_probe
-    )
+
+def test_nonzero_run_init_breaks_zero_scale_context_deadlock():
+    deadlocked = _run_context_deadlock_witness(0.0)
+    active = _run_context_deadlock_witness(RUN_CONTEXT_SCALE_INIT)
+
+    assert deadlocked["scale_move"] == 0.0, deadlocked
+    assert deadlocked["max_block_norm"] == 0.0, deadlocked
+    assert deadlocked["max_scale_grad"] == 0.0, deadlocked
+    assert active["first_block_relative_to_value"] > 1.0e-3, active
+    assert active["max_block_norm"] > 0.0, active
+    assert active["scale_move"] > 1.0e-2, active
 
 
 def test_shapes_and_steps():
@@ -552,6 +631,15 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
     with torch.no_grad():
         assert torch.equal(enc(x), restored(x))
 
+    # The run init changes only the constructor value, never the state schema.
+    # A residual-on-v1 checkpoint made with scale zero must strictly load and
+    # overwrite the new 0.1 constructor value.
+    run_init = make_small(level_gate=True, context_scale_init=RUN_CONTEXT_SCALE_INIT)
+    assert set(run_init.state_dict()) == set(state)
+    missing, unexpected = run_init.load_state_dict(state, strict=True)
+    assert not missing and not unexpected
+    assert run_init.context_scale.item() == enc.context_scale.item()
+
     # Mirror train.py's trainable-only filter on a minimal parent model.  The
     # encoder keys must all retain their ts_encoder.* prefix, while frozen
     # tensors are the only keys reported missing by strict=False at eval.
@@ -581,6 +669,55 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
         assert "legacy latent-only v3 checkpoint" in str(exc)
     else:
         raise AssertionError("legacy v3 checkpoint was accepted")
+
+
+def test_model_splits_context_optimizer_group_without_v1_parameters():
+    """Exercise wavelet_v3's inherited-group split without loading Qwen."""
+    dummy_wavelet = types.ModuleType("src.models.wavelet")
+
+    class DummyWaveletTSModel(torch.nn.Module):
+        def get_trainable_parameters(self):
+            return {
+                "encoder": list(self.ts_encoder.parameters()),
+                "projector": list(self.ts_projector.parameters()),
+            }
+
+    dummy_wavelet.WaveletTSModel = DummyWaveletTSModel
+    previous = sys.modules.get("src.models.wavelet")
+    sys.modules["src.models.wavelet"] = dummy_wavelet
+    module_name = "src.models.wavelet_v3_group_test"
+    try:
+        spec = importlib.util.spec_from_file_location(
+            module_name, HERE / "wavelet_v3.py"
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+
+        model = module.WaveletV3TSModel()
+        model.ts_encoder = make_small(level_gate=True)
+        model.ts_projector = torch.nn.Linear(32, 7)
+        groups = model.get_trainable_parameters()
+
+        expected_context = {id(parameter) for parameter in _context_parameters(model.ts_encoder)}
+        actual_context = {id(parameter) for parameter in groups["context"]}
+        encoder_ids = {id(parameter) for parameter in groups["encoder"]}
+        projector_ids = {id(parameter) for parameter in groups["projector"]}
+        assert actual_context == expected_context
+        assert not actual_context & encoder_ids
+        assert encoder_ids == {
+            id(parameter) for parameter in model.ts_encoder.parameters()
+        } - expected_context
+        assert projector_ids == {id(parameter) for parameter in model.ts_projector.parameters()}
+        flat_ids = [id(parameter) for params in groups.values() for parameter in params]
+        assert len(flat_ids) == len(set(flat_ids))
+    finally:
+        sys.modules.pop(module_name, None)
+        if previous is None:
+            del sys.modules["src.models.wavelet"]
+        else:
+            sys.modules["src.models.wavelet"] = previous
 
 
 def test_loop_activation_checkpoint_matches_plain_backward():
@@ -616,12 +753,30 @@ def test_config_kwargs_like_yaml():
     cfg = dict(type="wavelet_v3", output_dim=512, num_tokens=256, coarse_blocks=128,
                n_pos_freqs=16, freeze=False, level_topm=1024, n_heads=8, mlp_ratio=4,
                dropout=0.0, level_gate=True, noise_tau=1.0, pos_dtype="input",
-               locality_sigma=0.0078125, context_scale_init=0.0,
+               locality_sigma=0.0078125, context_scale_init=RUN_CONTEXT_SCALE_INIT,
                max_levels=10, tied=True, depth_mode="full")
     cfg.pop("type")
     enc = RecurrentWaveletTSEncoder(**cfg)
     assert enc.tied and enc.depth_mode == "full" and enc.level_topm == 1024
-    assert enc.context_scale.item() == 0.0
+    assert math.isclose(enc.context_scale.item(), RUN_CONTEXT_SCALE_INIT, rel_tol=1e-6)
+
+
+def test_all_run_and_smoke_configs_enable_context_coadaptation():
+    names = (
+        "wavelet_precise_v3tied.yaml",
+        "wavelet_precise_v3untied.yaml",
+        "wavelet_precise_v3sdepth.yaml",
+        "wavelet_precise_v3smoke_tied.yaml",
+        "wavelet_precise_v3smoke_untied.yaml",
+    )
+    for name in names:
+        candidates = (HERE / name, HERE.parent / "configs" / name)
+        path = next((candidate for candidate in candidates if candidate.exists()), None)
+        assert path is not None, (name, candidates)
+        text = path.read_text(encoding="utf-8")
+        assert re.search(r"(?m)^\s+context_scale_init:\s+0\.1\s*$", text), path
+        assert re.search(r"(?m)^\s+default:\s+1\.0e-4\s*$", text), path
+        assert re.search(r"(?m)^\s+context:\s+1\.0e-3\s*$", text), path
 
 
 if __name__ == "__main__":

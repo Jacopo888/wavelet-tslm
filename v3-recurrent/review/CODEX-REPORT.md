@@ -436,3 +436,89 @@ non dimostra che il contesto migliori il task. Ora però l'ablazione 1 è interp
 principale diventa che `context_scale` resti vicino a zero o impari un residuo inutile; gate,
 curve di profondità, valore dello scalare e metriche appaiate rendono questo esito direttamente
 osservabile senza confonderlo con una tokenizzazione iniziale peggiore.
+
+## 12. 08/09 — rottura misurabile del deadlock dello zero-init
+
+### Diagnosi verificata sul codice e sulla run
+
+Il confine effettivo in `RecurrentWaveletTSEncoder._encode_channel` è
+`base_tokens + context_scale * context_norm(z)`. Per qualunque parametro `θ` di blocchi, gate,
+step embedding o context norm:
+
+`∂L/∂θ = context_scale · (∂L/∂out) · ∂LN(z)/∂θ`.
+
+Con scala zero questo gradiente è esattamente zero al primo step. Lo scalare vede invece
+`∂L/∂context_scale = <∂L/∂out, LN(z)>`; prima che il ramo sia allenato è una correlazione con
+feature casuali, non un segnale che possa co-adattare il ramo. I checkpoint della run
+`1b0f9fa` (0,0001 a epoca 1, −0,0006 a epoca 3, 0,0004 a epoca 5, gate bias circa 1,98)
+confermano che dopo 22.440 step il sistema è rimasto nel vicinato della soluzione nulla.
+Quella run è quindi una replica di va1 con rumore run-to-run: il risultato 0,2832 contro
+0,2744 non misura il valore del contesto.
+
+### Scelta implementata
+
+Ho scelto **init non nullo più learning rate differenziale**:
+
+- i cinque config `v3{tied,untied,sdepth,smoke_tied,smoke_untied}` usano
+  `context_scale_init: 0.1`;
+- `WaveletV3TSModel.get_trainable_parameters()` sottrae per identità dal gruppo encoder i soli
+  `blocks`, `gate_head`, `step_embed`, `context_norm` e `context_scale`, e li espone come gruppo
+  `context`;
+- `training.learning_rate.context: 1e-3`, mentre tutti i parametri va1 (`value_proj`,
+  `band_embed`, `pad_token`) e il resto del training conservano `default: 1e-4`.
+
+Il trainer già costruiva AdamW leggendo `training.learning_rate[group_name]`, quindi non è
+servita alcuna modifica del percorso optimizer. Il test con una base fittizia verifica che i
+gruppi non abbiano duplicati, che `context` contenga esattamente i parametri richiesti e che
+encoder va1 e projector restino nei gruppi originali. Il 10× serve sia a co-adattare un ramo
+nuovo rispetto al percorso va1 già informativo, sia a rendere osservabile in quattro step lo
+spostamento minimo richiesto dallo smoke. Non ho scelto softplus/exp: cambierebbe la chiave o
+la semantica del parametro nei checkpoint. Non ho scelto un warmup imposto dal forward:
+introdurrebbe stato/step nel modello e renderebbe train/eval dipendenti dall'harness.
+
+Al primo backward il gradiente atteso dei blocchi non è più zero ma
+`0,1 · (∂L/∂out) · ∂LN(z)/∂θ`. Nel witness deterministico misurato, la sua norma è 0,0180925,
+pari a **0,246994×** la norma del gradiente di `value_proj`, molto sopra il gate 1e-3.
+
+### Test CPU e numeri
+
+`py v3-recurrent/patch/test_encoder_v3.py` passa **25/25** sulla macchina locale.
+Il nuovo test usa otto token tutti consumati dalla banda grossolana v1 e due impulsi +/− che
+si cancellano in quella banda: la posizione precoce/tardiva è leggibile soltanto dai livelli
+di dettaglio del ramo contestuale. Un witness ortogonale rende nullo per costruzione il
+fortuito gradiente dello scalare casuale e documenta il prodotto parametrico senza una soglia
+statistica fragile. Dopo K=16 step AdamW sul gruppo context:
+
+| init scala | max norma grad blocchi | grad scala max | spostamento scala |
+|---:|---:|---:|---:|
+| 0,0 | 0 | 0 | 0 |
+| 0,1 | 0,0180925 | 0,0629449 | **0,0141876** |
+
+Il gate di identità usa ancora `context_scale_init=0.0` esplicito e passa con `torch.equal` in
+fp32 e bf16, incluse serie corte e 16×131072. Con l'init di run 0,1, il ridge probe a init dà:
+
+| encoder | MAE posizione | presence | MAE magnitudo |
+|---|---:|---:|---:|
+| v1 | 0,18019845 | 0,94444442 | 0,15701361 |
+| v3, scala 0,1 | 0,17688306 | 0,94444442 | 0,15650079 |
+
+Il rapporto v3/v1 è **0,981603** sulla MAE posizione e **0,996734** sulla MAE magnitudo;
+la presenza è invariata. Tutti i gate di decodificabilità sono quindi entro 1,1× v1.
+
+### Smoke e compatibilità
+
+`node_smoke_v3.sh` conserva `V3_INIT_EQUALS_V1`: costruisce un encoder separato con scala zero
+forzata, quindi il controllo non è indebolito dal nuovo config. Durante il vero training imposta
+`TSLM_V3_GRAD_LOG=1`; `train.py` emette, solo sotto questo env, una riga `[V3Grad]` dopo
+l'unscale e prima del clipping con norma dei blocchi, norma di `value_proj`, rapporto, scala e
+gradiente della scala. Lo smoke richiede quattro righe, una per step, e norma blocchi >0 in
+ciascuna. Dal checkpoint legge l'init 0,1, calcola lo spostamento assoluto e richiede
+`abs(scale_after_4_steps - 0.1) >= 1e-3`. Entrambi i valori e il riepilogo dei gradienti sono
+salvati nei JSON. Lo smoke A40 resta da eseguire sul nodo.
+
+La parametrizzazione e tutte le chiavi dello state dict sono immutate: `context_scale` resta
+un parametro scalare con lo stesso nome. I checkpoint della run `1b0f9fa` continuano quindi a
+caricarsi per eval o per recupero dei pesi; il loro valore quasi zero non viene sovrascritto
+dall'init del nuovo config. Un resume con lo stato AdamW storico non è il percorso previsto
+per la nuova ablazione, perché il nuovo gruppo `context` cambia intenzionalmente la topologia
+dell'optimizer; la replica parte da init e protocollo puliti.

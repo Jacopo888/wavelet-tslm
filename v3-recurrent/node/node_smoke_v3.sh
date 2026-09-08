@@ -329,7 +329,8 @@ PYSUBSET
 [ -s "$SUBSET_MANIFEST" ] || fail "subset manifest is empty"
 
 # node_train_v3.sh COMMON_ENV, except full-coverage is intentionally absent.
-# Smoke-only additions are offline mode, per-step timing, and gate logging.
+# Smoke-only additions are offline mode, per-step timing, gate logging, and
+# post-unscale gradient diagnostics.
 COMMON_ENV=(
   TSLM_TORCH_DTYPE=bfloat16
   TSLM_AMP=1
@@ -345,6 +346,7 @@ COMMON_ENV=(
   TSLM_VAL_GEN=0
   TSLM_KEEP_EPOCH_CKPTS=1
   TSLM_V3_GATE_LOG_EVERY=1
+  TSLM_V3_GRAD_LOG=1
   TSLM_STEP_TIMING=1
   HF_HUB_DISABLE_PROGRESS_BARS=1
   HF_HUB_OFFLINE=1
@@ -457,7 +459,12 @@ encoder_state = {
 missing, unexpected = encoder.load_state_dict(encoder_state, strict=True)
 assert not missing and not unexpected, (missing, unexpected)
 context_scale = float(encoder.context_scale.detach())
-assert context_scale != 0.0, "context_scale did not move after four training steps"
+context_scale_initial = float(encoder_config["context_scale_init"])
+context_scale_move = abs(context_scale - context_scale_initial)
+assert context_scale_move >= 1.0e-3, (
+    "context_scale moved less than 1e-3 after four training steps",
+    context_scale_initial, context_scale,
+)
 torch.manual_seed(20260906)
 probe = torch.randn(1, 4096)
 probe[:, 896:1024] += 30.0
@@ -480,7 +487,9 @@ doc = {
     },
     "pos_freqs_keys": pos_freqs,
     "tied": tied,
+    "context_scale_initial": context_scale_initial,
     "context_scale_after_4_steps": context_scale,
+    "context_scale_abs_move": context_scale_move,
     "token_diversity": diversity,
     "decodability": {
         "v1_init": v1_decodability,
@@ -573,6 +582,17 @@ gate_lines = [
     line for line in train_text.splitlines() if "[V3Gates]" in line
 ]
 assert gate_lines, "no [V3Gates] line in training output"
+gradient_rows = [
+    (int(step), float(blocks), float(value), float(relative))
+    for step, blocks, value, relative in re.findall(
+        r"\[V3Grad\] step=(\d+).*?blocks_grad_norm=([0-9.eE+\-]+) "
+        r"value_proj_grad_norm=([0-9.eE+\-]+) "
+        r"blocks_relative=([0-9.eE+\-]+)",
+        train_text,
+    )
+]
+assert [row[0] for row in gradient_rows] == list(range(expected_steps)), gradient_rows
+assert all(row[1] > 0.0 for row in gradient_rows), gradient_rows
 assert "Training Complete" in train_text
 assert "[SkipFinalTest]" in train_text
 assert "[CkptFallback]" not in train_text, \
@@ -599,6 +619,12 @@ doc = {
     "gpu_peak_mib": int(peak),
     "gpu_peak_limit_mib": int(peak_limit),
     "v3_gate_lines": len(gate_lines),
+    "gradient_diagnostics": {
+        "rows": len(gradient_rows),
+        "min_blocks_grad_norm": min(row[1] for row in gradient_rows),
+        "max_blocks_grad_norm": max(row[1] for row in gradient_rows),
+        "max_blocks_relative_to_value_proj": max(row[3] for row in gradient_rows),
+    },
     "coverage": {
         "trained": expected_steps,
         "failed": 0,
@@ -609,7 +635,9 @@ doc = {
     "checkpoint_prefix_counts": checkpoint["required_prefix_counts"],
     "checkpoint_tensor_count": checkpoint["tensor_count"],
     "checkpoint_has_pos_freqs": bool(checkpoint["pos_freqs_keys"]),
+    "context_scale_initial": checkpoint["context_scale_initial"],
     "context_scale_after_4_steps": checkpoint["context_scale_after_4_steps"],
+    "context_scale_abs_move": checkpoint["context_scale_abs_move"],
     "token_diversity": checkpoint["token_diversity"],
     "decodability": checkpoint["decodability"],
     "eval": {

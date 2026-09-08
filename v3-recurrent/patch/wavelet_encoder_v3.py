@@ -4,13 +4,16 @@ The base sequence is produced by ``WaveletTSEncoder._encode_channel`` itself:
 coarse band, global detail top-k, value projection, band embedding, Fourier
 positions and padding are therefore exactly v1.  Its already-computed pyramid
 is reused by a coarse-to-fine recurrent reader.  The reader's context is added
-through a learned scalar initialized to zero::
+through a learned scalar::
 
     output = v1_tokens + context_scale * context
 
-Thus a fresh v3 is bit-for-bit v1.  The loop can only add context; no
-normalization or learned transform touches the base-token path.  Base-token
-positions and bands are retained for the real-position locality prior.
+The class default remains zero so identity tests and old residual-on-v1
+checkpoints retain their exact semantics.  Run configs use a small non-zero
+initial value to avoid the zero-scale gradient deadlock.  The loop can only add
+context; no normalization or learned transform touches the base-token path.
+Base-token positions and bands are retained for the real-position locality
+prior.
 """
 
 from __future__ import annotations
