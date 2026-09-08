@@ -511,10 +511,15 @@ la presenza è invariata. Tutti i gate di decodificabilità sono quindi entro 1,
 forzata, quindi il controllo non è indebolito dal nuovo config. Durante il vero training imposta
 `TSLM_V3_GRAD_LOG=1`; `train.py` emette, solo sotto questo env, una riga `[V3Grad]` dopo
 l'unscale e prima del clipping con norma dei blocchi, norma di `value_proj`, rapporto, scala e
-gradiente della scala. Lo smoke richiede quattro righe, una per step, e norma blocchi >0 in
-ciascuna. Dal checkpoint legge l'init 0,1, calcola lo spostamento assoluto e richiede
-`abs(scale_after_4_steps - 0.1) >= 1e-3`. Entrambi i valori e il riepilogo dei gradienti sono
-salvati nei JSON. Lo smoke A40 resta da eseguire sul nodo.
+gradiente della scala. Lo smoke richiede quattro righe, una per step, con norma blocchi >0 e
+rapporto blocchi/`value_proj` almeno 1e-3 in ciascuna; richiede inoltre almeno un gradiente non
+nullo della scala e `max_t abs(context_scale_t - context_scale_init) >= 1e-4`. Il massimo lungo
+la traiettoria misura l'attivazione dell'ottimizzazione senza fallire se aggiornamenti oscillanti
+riportano il checkpoint finale vicino a 0,1. Traiettoria, massimo spostamento e minimi delle due
+diagnostiche dei blocchi sono salvati nel JSON di ciascuna variante; lo spostamento finale resta
+una sola diagnostica. Il witness zero-init già riportato sopra (norma gradiente blocchi 0 e
+spostamento scala 0) fallirebbe logicamente sia il primo sia il secondo requisito, quindi il
+nuovo gate continua a escludere il deadlock osservato. Lo smoke A40 resta da rieseguire sul nodo.
 
 La parametrizzazione e tutte le chiavi dello state dict sono immutate: `context_scale` resta
 un parametro scalare con lo stesso nome. I checkpoint della run `1b0f9fa` continuano quindi a

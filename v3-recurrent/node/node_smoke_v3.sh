@@ -404,8 +404,11 @@ run_variant() {
   [ -s "$checkpoint" ] || fail "$variant slim checkpoint missing: $checkpoint"
 
   CURRENT_STAGE="${variant}_checkpoint"
-  "$PY" - "$checkpoint" "$variant" "$checkpoint_json" <<'PYCKPT'
+  "$PY" - "$checkpoint" "$variant" "$checkpoint_json" \
+      "$train_log" "$TRAIN_ROWS" <<'PYCKPT'
 import json
+import math
+import re
 import sys
 
 import torch
@@ -416,7 +419,8 @@ from src.models.wavelet_encoder_v3 import (
     token_diversity,
 )
 
-path, variant, out = sys.argv[1:4]
+path, variant, out, train_log, expected_steps = sys.argv[1:]
+expected_steps = int(expected_steps)
 checkpoint = torch.load(path, map_location="cpu", weights_only=False)
 state = checkpoint.get("model_state")
 assert isinstance(state, dict) and state, "missing/empty model_state"
@@ -461,9 +465,64 @@ assert not missing and not unexpected, (missing, unexpected)
 context_scale = float(encoder.context_scale.detach())
 context_scale_initial = float(encoder_config["context_scale_init"])
 context_scale_move = abs(context_scale - context_scale_initial)
-assert context_scale_move >= 1.0e-3, (
-    "context_scale moved less than 1e-3 after four training steps",
-    context_scale_initial, context_scale,
+
+# Gate the failure mode itself: every smoke step must train the contextual
+# blocks materially, the logged scale must move at least once, and its own
+# gradient must be nonzero.  The final checkpoint may legitimately return
+# close to the initial scale after several oscillating optimizer updates.
+train_text = open(
+    train_log, encoding="utf-8", errors="replace"
+).read().replace("\r", "\n")
+gradient_rows = [
+    {
+        "step": int(step),
+        "context_scale": float(scale),
+        "context_scale_grad": float(scale_grad),
+        "blocks_grad_norm": float(blocks),
+        "blocks_relative": float(relative),
+    }
+    for step, scale, scale_grad, blocks, relative in re.findall(
+        r"\[V3Grad\] step=(\d+) context_scale=(\S+) "
+        r"context_scale_grad=(\S+) blocks_grad_norm=(\S+) "
+        r"value_proj_grad_norm=\S+ blocks_relative=(\S+)",
+        train_text,
+    )
+]
+assert [row["step"] for row in gradient_rows] == list(
+    range(expected_steps)
+), gradient_rows
+diagnostic_fields = (
+    "context_scale", "context_scale_grad", "blocks_grad_norm", "blocks_relative",
+)
+assert all(
+    math.isfinite(row[field])
+    for row in gradient_rows
+    for field in diagnostic_fields
+), gradient_rows
+context_scale_trajectory = [
+    row["context_scale"] for row in gradient_rows
+]
+context_scale_max_abs_move = max(
+    abs(scale - context_scale_initial) for scale in context_scale_trajectory
+)
+blocks_grad_norm_min = min(
+    row["blocks_grad_norm"] for row in gradient_rows
+)
+blocks_relative_min = min(
+    row["blocks_relative"] for row in gradient_rows
+)
+assert blocks_grad_norm_min > 0.0, (
+    "blocks_grad_norm must be positive at every smoke step", gradient_rows,
+)
+assert blocks_relative_min >= 1.0e-3, (
+    "blocks_relative fell below 1e-3", gradient_rows,
+)
+assert context_scale_max_abs_move >= 1.0e-4, (
+    "context_scale never moved at least 1e-4 from its initial value",
+    context_scale_initial, context_scale_trajectory,
+)
+assert any(abs(row["context_scale_grad"]) > 0.0 for row in gradient_rows), (
+    "context_scale_grad was zero at every smoke step", gradient_rows,
 )
 torch.manual_seed(20260906)
 probe = torch.randn(1, 4096)
@@ -490,6 +549,10 @@ doc = {
     "context_scale_initial": context_scale_initial,
     "context_scale_after_4_steps": context_scale,
     "context_scale_abs_move": context_scale_move,
+    "context_scale_trajectory": context_scale_trajectory,
+    "context_scale_max_abs_move": context_scale_max_abs_move,
+    "blocks_grad_norm_min": blocks_grad_norm_min,
+    "blocks_relative_min": blocks_relative_min,
     "token_diversity": diversity,
     "decodability": {
         "v1_init": v1_decodability,
@@ -638,6 +701,10 @@ doc = {
     "context_scale_initial": checkpoint["context_scale_initial"],
     "context_scale_after_4_steps": checkpoint["context_scale_after_4_steps"],
     "context_scale_abs_move": checkpoint["context_scale_abs_move"],
+    "context_scale_trajectory": checkpoint["context_scale_trajectory"],
+    "context_scale_max_abs_move": checkpoint["context_scale_max_abs_move"],
+    "blocks_grad_norm_min": checkpoint["blocks_grad_norm_min"],
+    "blocks_relative_min": checkpoint["blocks_relative_min"],
     "token_diversity": checkpoint["token_diversity"],
     "decodability": checkpoint["decodability"],
     "eval": {
