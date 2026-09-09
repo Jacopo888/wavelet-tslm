@@ -150,7 +150,18 @@ for label, doc in [('on', on), ('off', off)]:
     assert math.isfinite(float(doc['primary'])), (label, doc.get('primary'))
     assert isinstance(doc.get('category_primary'), dict) and doc['category_primary'], label
 assert forward['split'] == 'val' and forward['n'] == 80
-assert forward['context_final_mean']['token_variable_fraction'] is not None
+required_context_keys = {
+    f'{metric}_{group}'
+    for metric in (
+        'token_variable_fraction', 'mean_token_cosine',
+        'input_series_relative',
+    )
+    for group in ('total', 'coarse', 'detail')
+}
+assert required_context_keys <= set(forward['context_final_mean']), (
+    required_context_keys - set(forward['context_final_mean'])
+)
+assert forward['context_final_mean']['token_variable_fraction_total'] is not None
 PY
 }
 

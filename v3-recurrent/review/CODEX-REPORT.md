@@ -627,3 +627,64 @@ bash ~/node_pilot_v3.sh gate configs/wavelet_precise_v3pilot_gate.yaml 1
 
 Eseguire prima `bash ~/node_smoke_v3.sh`. Non rimuovere `~/pilots/init_common.pt` tra i tre pilot;
 rimuoverlo soltanto per iniziare deliberatamente una nuova famiglia di inizializzazione comune.
+
+## 14. 09/09 — decomposizione `full | local | global` del contesto
+
+### Motivazione e semantica
+
+Il pilot `pilot_cross_20260909T014929Z` ha mostrato che il centraggio unico fra tutti i token
+non impedisce il collasso in due cluster: a step 2000 i grossolani hanno coseno 0,99 e frazione
+variabile 0,08, mentre i dettagli hanno coseno 0,75 e frazione variabile 0,50. Il lettore può
+quindi usare un modo comune per banda, ridondante con `band_embed`, senza conservare informazione
+locale per token.
+
+`RecurrentWaveletTSEncoder` accetta ora `context_mode: full | local | global`, con default
+`full`. La decomposizione avviene dopo il centraggio storico governato da `reader_mode` e prima
+della `context_norm`:
+
+- `full` passa direttamente lo stesso tensore usato prima della modifica, quindi il default non
+  aggiunge operazioni aritmetiche al forward e resta bit-per-bit invariato;
+- `local` sottrae, per ogni serie e per ogni valore esatto di `base_band`, la media sugli slot
+  validi della banda;
+- `global` ribroadcasta sugli stessi slot soltanto quella media.
+
+Ho scelto la **banda esatta**, anziché il solo split grossolana/dettaglio, perché è la condizione
+più forte contro il canale spurio ed è allineata alla granularità di `band_embed`. Il padding
+non contribuisce ad alcuna media. Per conservare l'identità algebrica sull'intero tensore, la
+sua componente resta nel ramo `local`; gli invarianti semantici sono definiti sui token validi.
+Su questi, la media per banda di `local` è zero, la varianza intrabanda di `global` è zero e
+`full = local + global` (la stessa uguaglianza vale sull'intero tensore con la convenzione sul
+padding). La LayerNorm resta successiva e distinta in tutte e tre le modalità. `reader_mode`,
+scale self-attention/MLP, level gate, token gate, `context_scale`, inizializzazione, state dict e
+gruppi optimizer non cambiano. Con `context_scale=0`, tutte le modalità restano v3 ≡ v1 bit per
+bit.
+
+### Diagnostiche e witness
+
+`_context_snapshot` non usa più `[:4,:64,:64]`: RMS, frazione variabile e coseno sono calcolati
+su tutti i token validi e tutte le dimensioni. Le chiavi canoniche sono
+`token_variable_fraction_{total,coarse,detail}`,
+`mean_token_cosine_{total,coarse,detail}` e
+`input_series_relative_{total,coarse,detail}`; gli alias storici senza suffisso indicano il
+totale. Le stesse chiavi sono presenti in `last_context_stats`, nel JSON del forward audit e
+dello smoke, e nella riga testuale `[V3Ctx]`. Anche le statistiche del token gate usano tutti gli
+slot validi.
+
+I test costruttivi verificano separatamente che: (1) `local` abbia media intrabanda nulla,
+(2) `global` sia costante entro banda, (3) le componenti ricostruiscano `full`, (4) un segnale
+zero-sum di posizione sia decodificabile da `local` ma non da `global`, e (5) presenza e
+magnitudo condivise siano recuperabili da `global` e assenti da `local`. Un ulteriore caso con
+il solo elemento `[slot=255, feature=511]` non nullo impedisce regressioni al vecchio
+campionamento dei primi 64 slot/feature.
+
+### Config pilot e consegna
+
+Sono aggiunti `wavelet_precise_v3pilot_crosslocal.yaml` e
+`wavelet_precise_v3pilot_crossglobal.yaml`. Entrambi mantengono dal controllo `pilot_cross`
+`reader_mode: cross_only`, `context_scale_init: 0.1`, scale self/MLP 0,1, token gate disattivo e
+LR `default/context/context_scale = 1e-4/1e-3/1e-5`; cambia soltanto `context_mode`. Non serve
+modificare `ship_v3.sh`, che spedisce già `v3-recurrent/configs/*.yaml`.
+
+Verifiche locali finali: `py v3-recurrent/patch/test_encoder_v3.py` passa 33/33; il logging
+`[V3Ctx]` è stato esercitato con tutte le nuove chiavi; `py_compile` sui file Python modificati,
+`bash -n` su tutti gli script node v3 e su `ops/ship_v3.sh`, e `git diff --check` passano.

@@ -14,7 +14,11 @@ L'audit ha mostrato che il lettore `full` storico collassa verso un modo quasi c
 L'implementazione corrente aggiunge, in quest'ordine:
 
 - `reader_mode: cross_only|full`; `cross_only` accumula soltanto letture cross-attention e rimuove
-  il modo medio condiviso, mentre `full` conserva self-attention e MLP;
+  il modo medio condiviso storico, mentre `full` conserva self-attention e MLP;
+- `context_mode: full|local|global` (default `full`): `local` conserva solo gli scarti dalla
+  media degli slot con la stessa `base_band`, `global` conserva e ribroadcasta soltanto quelle
+  medie, `full` conserva il comportamento precedente. Il raggruppamento è per banda esatta;
+  grossolana/dettaglio sono aggregazioni diagnostiche;
 - scale apprese per blocco `self_attn_scale_init` e `mlp_scale_init`; il default 1,0 conserva il
   forward `full` storico. Con init 0,1 il centraggio locale interpola verso il controllo
   `cross_only` (`local_center_strength=0,9`), senza cambiare il default;
@@ -22,10 +26,11 @@ L'implementazione corrente aggiunge, in quest'ordine:
   dedicata manca; i pilot usano 1e-5;
 - `token_gate: true` opzionale, condiviso fra token, inizializzato a identità: dopo LN,
   `g_i=2 sigmoid(Linear([LN_noaffine(base_i),h_i]))` e `out_i=base_i+a g_i h_i`;
-- statistiche del solo contesto in `last_context_stats` e righe `[V3Ctx]`: RMS prima/dopo LN,
-  diversità/coseno fra token, dipendenza dall'input, componenti cross/self/MLP e gate finale.
+- statistiche del solo contesto in `last_context_stats` e righe `[V3Ctx]`, su tutti i 256 slot e
+  tutte le feature: frazione variabile, coseno e differenza fra serie totali e separati fra
+  grossolani/dettaglio, RMS, componenti cross/self/MLP e gate finale.
 
-I tre config `v3pilot_{cross,fullsmall,gate}` sono i candidati attuali. I vecchi config
+I config `v3pilot_{cross,crosslocal,crossglobal,fullsmall,gate}` sono i candidati attuali. I vecchi config
 `v3tied/v3untied/v3sdepth` restano descrittivi della ricetta `full`, scale 1,0 e LR scala ereditato:
 non sono l'ordine consigliato per i pilot dopo l'audit.
 
@@ -33,8 +38,8 @@ non sono l'ordine consigliato per i pilot dopo l'audit.
 
 V3 parte dagli stessi 256 token di v1 e somma soltanto un residuo contestuale letto
 ricorrentemente dalla piramide. I config inizializzano la scala a 0,1 per dare gradiente ai
-blocchi dal primo backward; disabilitando il residuo, `cross_only` e `full` restano entrambi
-bit-per-bit identici a v1.
+blocchi dal primo backward; disabilitando il residuo, ogni combinazione di `reader_mode` e
+`context_mode` resta bit-per-bit identica a v1.
 
 ## Architettura (`patch/wavelet_encoder_v3.py`, classe `RecurrentWaveletTSEncoder`)
 
@@ -55,6 +60,11 @@ bit-per-bit identici a v1.
    su `i/256`. In `cross_only` si accumulano solo queste letture; in `full` seguono self-attention
    e MLP, ciascuna moltiplicata dalla propria scala appresa. `tied: true` riusa un solo blocco,
    `tied: false` ne usa uno per iterazione.
+   Prima della `context_norm`, `context_mode: local` sottrae separatamente, per ogni serie e
+   banda esatta, la media degli slot validi; `global` usa solo la stessa media ribroadcast;
+   `full` non applica questa decomposizione. Il padding non contribuisce alle medie. Sui token
+   validi `full = local + global`; la scelta per banda esatta impedisce anche a ciascun dettaglio
+   di ricreare un canale già disponibile in `band_embed`.
 4. **Gate per livello** (`level_gate: true`): uno scalare sigmoid per (serie, iterazione) calcolato
    da [media delle query base, media dei token del livello, statistiche del livello: frazione sopra
    2σ e 3σ, log del massimo, indice], che moltiplica la lettura. Inizializzato quasi aperto
@@ -90,7 +100,7 @@ usa una matrice target×source per ciascun batch/head. Con `TSLM_GRAD_CKPT=1` og
 ricomputa embedding del livello, prior locale, gate e blocco: non restano
 vive le grandi attivazioni `(16,1024,512)` di tutti i livelli; restano soprattutto i confini
 ricorrenti `(16,256,512)`. Test CPU:
-`py v3-recurrent/patch/test_encoder_v3.py` (30 test:
+`py v3-recurrent/patch/test_encoder_v3.py` (33 test:
 forme, budget, override, sdepth riproducibile, noise-gate, tied/untied, gradienti, bf16, serie
 costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip,
 identità v1/v3 fp32 e bf16 anche su serie corte e 16×131072, una sola piramide, diversità,
@@ -161,10 +171,12 @@ bash ~/node_env_v3.sh                        # V3_ENV_OK  (V3_ROCM=1 bash ~/node
 bash ~/node_smoke_v3.sh                      # A40: deve terminare con SMOKE_OK
 python3 -m json.tool ~/logs/v3smoke.ok        # entrambe le varianti pass=true, picco <= 23000 MiB
 bash ~/node_pilot_v3.sh cross configs/wavelet_precise_v3pilot_cross.yaml 1
+bash ~/node_pilot_v3.sh crosslocal configs/wavelet_precise_v3pilot_crosslocal.yaml 1
+bash ~/node_pilot_v3.sh crossglobal configs/wavelet_precise_v3pilot_crossglobal.yaml 1
 bash ~/node_pilot_v3.sh fullsmall configs/wavelet_precise_v3pilot_fullsmall.yaml 1
 bash ~/node_pilot_v3.sh gate configs/wavelet_precise_v3pilot_gate.yaml 1
 ```
 
-Stato: suite CPU 30/30; lo smoke richiede gradienti e spostamento misurabile dei pesi del lettore,
+Stato: suite CPU 33/33; lo smoke richiede gradienti e spostamento misurabile dei pesi del lettore,
 non uno spostamento minimo della scala lenta, e fallisce se la frazione variabile del contesto è
 inferiore a 1e-3. La run `1b0f9fa` è archiviata come replica va1; nessuna nuova run GPU lanciata.

@@ -110,6 +110,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         locality_sigma: float = 0.0078125,
         context_scale_init: float = 0.0,
         reader_mode: str = "full",
+        context_mode: str = "full",
         self_attn_scale_init: float = 1.0,
         mlp_scale_init: float = 1.0,
         token_gate: bool = False,
@@ -124,6 +125,10 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         if reader_mode not in ("full", "cross_only"):
             raise ValueError(
                 f"reader_mode must be full|cross_only, got {reader_mode!r}"
+            )
+        if context_mode not in ("full", "local", "global"):
+            raise ValueError(
+                f"context_mode must be full|local|global, got {context_mode!r}"
             )
         if int(output_dim) <= 0 or int(num_tokens) <= 0:
             raise ValueError("output_dim and num_tokens must be positive")
@@ -172,6 +177,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         self.pos_dtype = pos_dtype
         self.locality_sigma = float(locality_sigma)
         self.reader_mode = reader_mode
+        self.context_mode = context_mode
         self.token_gate_enabled = bool(token_gate)
         # The audit found a large token-shared mode.  Cross-only removes it;
         # controlled full readers approach the same local baseline smoothly,
@@ -243,6 +249,48 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             return z
         return z - self.local_center_strength * z.mean(dim=-2, keepdim=True)
 
+    def _context_components(
+        self,
+        z: torch.Tensor,
+        base_bands: torch.Tensor,
+        base_valid: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Split valid slots into within-band variation and exact-band means.
+
+        Padding is excluded from every mean.  It remains in the local
+        component so ``local + global == full`` over the complete tensor,
+        while all semantic invariants are defined on ``base_valid`` slots.
+        """
+        if base_bands.shape != z.shape[:-1] or base_valid.shape != z.shape[:-1]:
+            raise ValueError("context metadata shape must match context token axes")
+        global_context = torch.zeros_like(z)
+        for band in range(self.max_levels + 1):
+            mask = base_valid & (base_bands == band)
+            count = mask.sum(dim=-1, keepdim=True).clamp_min(1)
+            mean = (
+                (z * mask.unsqueeze(-1)).sum(dim=-2, keepdim=True)
+                / count.unsqueeze(-1)
+            )
+            global_context = global_context + mean * mask.unsqueeze(-1)
+        return z - global_context, global_context
+
+    def _context_for_mode(
+        self,
+        z: torch.Tensor,
+        base_bands: torch.Tensor,
+        base_valid: torch.Tensor,
+    ) -> torch.Tensor:
+        """Select the configured component before the context LayerNorm."""
+        full = self._local_context(z)
+        if self.context_mode == "full":
+            # Deliberately return the historical tensor directly: the default
+            # forward must remain bit-for-bit identical.
+            return full
+        local, global_context = self._context_components(
+            full, base_bands, base_valid
+        )
+        return local if self.context_mode == "local" else global_context
+
     @staticmethod
     def _rms(value: torch.Tensor) -> torch.Tensor:
         return value.detach().float().square().mean().sqrt()
@@ -254,49 +302,96 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         self_attn: torch.Tensor | None = None,
         mlp: torch.Tensor | None = None,
     ) -> dict[str, float | None]:
-        """Small detached context-only sample; never retained in state_dict."""
-        z_sample = z.detach()[:4, :64, :64].float()
+        """Detached context stats over every token and feature dimension."""
         with torch.no_grad():
-            h = self.context_norm(z.detach())[:4, :64, :64].float()
+            z_all = z.detach().float()
+            h = self.context_norm(z.detach()).float()
+            if self.last_base_bands is None or self.last_base_valid is None:
+                raise RuntimeError("context diagnostics require base token metadata")
+            bands = self.last_base_bands
+            valid = self.last_base_valid
+            if bands.shape != h.shape[:-1] or valid.shape != h.shape[:-1]:
+                raise RuntimeError("context diagnostic metadata shape mismatch")
             eps = torch.finfo(h.dtype).eps
-            h_rms = self._rms(h).clamp_min(eps)
-            centered = h - h.mean(dim=-2, keepdim=True)
-            unit = F.normalize(h, dim=-1, eps=eps)
+
+            def masked_rms(value: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+                weight = mask.unsqueeze(-1).float()
+                count = (mask.sum() * value.shape[-1]).clamp_min(1)
+                return (value.float().square() * weight).sum().div(count).sqrt()
+
+            def group_stats(mask: torch.Tensor) -> dict[str, float | None]:
+                h_rms = masked_rms(h, mask).clamp_min(eps)
+                count = mask.sum(dim=-1, keepdim=True).clamp_min(1)
+                mean = (
+                    (h * mask.unsqueeze(-1)).sum(dim=-2, keepdim=True)
+                    / count.unsqueeze(-1)
+                )
+                variable = masked_rms(h - mean, mask) / h_rms
+                unit = F.normalize(h, dim=-1, eps=eps) * mask.unsqueeze(-1)
+                pair_count = count.squeeze(-1) * (count.squeeze(-1) - 1)
+                pair_sum = unit.sum(dim=-2).square().sum(dim=-1) - count.squeeze(-1)
+                usable = pair_count > 0
+                if bool(usable.any()):
+                    cosine_value: float | None = float(
+                        (pair_sum[usable].sum() / pair_count[usable].sum()).cpu()
+                    )
+                else:
+                    cosine_value = None
+                if h.shape[0] > 1:
+                    pair_mask = mask[1:] & mask[:-1]
+                    if bool(pair_mask.any()):
+                        series_value: float | None = float(
+                            (masked_rms(h[1:] - h[:-1], pair_mask) / h_rms).cpu()
+                        )
+                    else:
+                        series_value = None
+                else:
+                    series_value = None
+                return {
+                    "z_rms": float(masked_rms(z_all, mask).cpu()),
+                    "h_rms": float(h_rms.cpu()),
+                    "token_variable_fraction": float(variable.cpu()),
+                    "mean_token_cosine": cosine_value,
+                    "input_series_relative": series_value,
+                }
+
+            masks = {
+                "total": valid,
+                "coarse": valid & (bands == 0),
+                "detail": valid & (bands >= 1),
+            }
+            grouped = {name: group_stats(mask) for name, mask in masks.items()}
+            total = grouped["total"]
             n_tokens = h.shape[-2]
-            if n_tokens > 1:
-                cosine = (
-                    unit.sum(dim=-2).square().sum(dim=-1) - n_tokens
-                ) / (n_tokens * (n_tokens - 1))
-                mean_cosine = cosine.mean()
-            else:
-                mean_cosine = h.new_tensor(1.0)
-            if h.shape[0] > 1:
-                series_delta = self._rms(h[1:] - h[:-1]) / h_rms
-                series_value: float | None = float(series_delta.cpu())
-            else:
-                series_value = None
             shift = max(1, n_tokens // 3)
-            token_translation = self._rms(h - h.roll(shift, dims=-2)) / h_rms
+            rolled_valid = valid.roll(shift, dims=-1)
+            translation_mask = valid & rolled_valid
+            token_translation = (
+                masked_rms(h - h.roll(shift, dims=-2), translation_mask)
+                / max(float(total["h_rms"]), eps)
+            )
 
             def component_rms(value: torch.Tensor | None) -> float:
                 if value is None:
                     return 0.0
-                part = value.detach()[:4, :64, :64]
-                return float(self._rms(part).cpu())
+                return float(masked_rms(value.detach(), valid).cpu())
 
-            return {
-                "z_rms": float(self._rms(z_sample).cpu()),
-                "h_rms": float(h_rms.cpu()),
-                "token_variable_fraction": float(
-                    (self._rms(centered) / h_rms).cpu()
-                ),
-                "mean_token_cosine": float(mean_cosine.cpu()),
-                "input_series_relative": series_value,
+            result: dict[str, float | None] = {
+                # Backward-compatible aliases now explicitly mean "total".
+                "z_rms": total["z_rms"],
+                "h_rms": total["h_rms"],
+                "token_variable_fraction": total["token_variable_fraction"],
+                "mean_token_cosine": total["mean_token_cosine"],
+                "input_series_relative": total["input_series_relative"],
                 "token_translation_relative": float(token_translation.cpu()),
                 "cross_rms": component_rms(cross),
                 "self_attn_rms": component_rms(self_attn),
                 "mlp_rms": component_rms(mlp),
             }
+            for group, values in grouped.items():
+                for key, value in values.items():
+                    result[f"{key}_{group}"] = value
+            return result
 
     def _merge_context(
         self,
@@ -656,7 +751,8 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 active_means.append(torch.ones((), device=dev))
             if collect_stats:
                 snapshot = self._context_snapshot(
-                    self._local_context(z), cross, self_attn, mlp
+                    self._context_for_mode(z, base_bands, base_valid),
+                    cross, self_attn, mlp,
                 )
                 snapshot.update({"step": step, "band": band})
                 iteration_stats.append(snapshot)
@@ -667,12 +763,12 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         )
         self.last_active = torch.stack(active_means).cpu().tolist()
         self._forward_calls += 1
-        z = self._local_context(z)
+        z = self._context_for_mode(z, base_bands, base_valid)
         context = self.context_norm(z)
         output, token_gate = self._merge_context(base_tokens, context)
         if collect_stats:
             final_stats = self._context_snapshot(z)
-            gate_sample = token_gate.detach()[:4, :64].float().flatten()
+            gate_sample = token_gate.detach().float()[base_valid].flatten()
             final_stats["gate_mean"] = float(gate_sample.mean().cpu())
             final_stats["gate_min"] = float(gate_sample.min().cpu())
             final_stats["gate_max"] = float(gate_sample.max().cpu())
@@ -683,6 +779,8 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             final_stats["gate_saturation_high"] = float((gate_sample > 1.95).float().mean().cpu())
             self.last_context_stats = {
                 "reader_mode": self.reader_mode,
+                "context_mode": self.context_mode,
+                "context_grouping": "exact_base_band",
                 "iterations": iteration_stats,
                 "final": final_stats,
             }
@@ -693,13 +791,24 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             gates_text = ",".join(f"{value:.4f}" for value in self.last_gates)
             active_text = ",".join(f"{value:.4f}" for value in self.last_active)
             final = self.last_context_stats.get("final", {})
+            def logged(key: str) -> float:
+                value = final.get(key)
+                return float(value) if isinstance(value, (int, float)) else float("nan")
             print(
                 f"[V3Ctx] call={self._forward_calls} depth={depth}/{n_steps} "
-                f"reader={self.reader_mode} z_rms={final.get('z_rms', float('nan')):.6g} "
-                f"h_rms={final.get('h_rms', float('nan')):.6g} "
-                f"token_variable={final.get('token_variable_fraction', float('nan')):.6g} "
-                f"token_cosine={final.get('mean_token_cosine', float('nan')):.6g} "
-                f"token_gate_mean={final.get('gate_mean', float('nan')):.6g} "
+                f"reader={self.reader_mode} context_mode={self.context_mode} "
+                f"z_rms={logged('z_rms'):.6g} "
+                f"h_rms={logged('h_rms'):.6g} "
+                f"token_variable_fraction_total={logged('token_variable_fraction_total'):.6g} "
+                f"mean_token_cosine_total={logged('mean_token_cosine_total'):.6g} "
+                f"input_series_relative_total={logged('input_series_relative_total'):.6g} "
+                f"token_variable_fraction_coarse={logged('token_variable_fraction_coarse'):.6g} "
+                f"mean_token_cosine_coarse={logged('mean_token_cosine_coarse'):.6g} "
+                f"input_series_relative_coarse={logged('input_series_relative_coarse'):.6g} "
+                f"token_variable_fraction_detail={logged('token_variable_fraction_detail'):.6g} "
+                f"mean_token_cosine_detail={logged('mean_token_cosine_detail'):.6g} "
+                f"input_series_relative_detail={logged('input_series_relative_detail'):.6g} "
+                f"token_gate_mean={logged('gate_mean'):.6g} "
                 f"gates=[{gates_text}] active=[{active_text}]",
                 flush=True,
             )

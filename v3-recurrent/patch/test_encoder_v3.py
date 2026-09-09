@@ -161,14 +161,95 @@ def test_init_matches_v1_exact_fp32_bf16_short_and_16ch_long():
 def test_reader_modes_and_unit_scales_preserve_disabled_residual_identity():
     x = torch.randn(2, 96)
     for reader_mode in ("cross_only", "full"):
-        v1, v3 = make_exact_pair(
-            context_scale_init=0.0,
-            reader_mode=reader_mode,
-            self_attn_scale_init=1.0,
-            mlp_scale_init=1.0,
-        )
-        with torch.no_grad():
-            assert torch.equal(v3(x), v1(x)), reader_mode
+        for context_mode in ("full", "local", "global"):
+            v1, v3 = make_exact_pair(
+                context_scale_init=0.0,
+                reader_mode=reader_mode,
+                context_mode=context_mode,
+                self_attn_scale_init=1.0,
+                mlp_scale_init=1.0,
+            )
+            with torch.no_grad():
+                assert torch.equal(v3(x), v1(x)), (reader_mode, context_mode)
+
+
+def test_context_modes_are_an_exact_valid_token_decomposition_by_base_band():
+    enc = make_small(reader_mode="cross_only")
+    torch.manual_seed(20260909)
+    z = torch.randn(2, 8, 32)
+    bands = torch.tensor([
+        [0, 0, 1, 1, 2, 2, -1, -1],
+        [0, 0, 1, 1, 3, 3, -1, -1],
+    ])
+    valid = bands >= 0
+    historical_full = enc._local_context(z)
+    enc.context_mode = "full"
+    assert torch.equal(
+        enc._context_for_mode(z, bands, valid), historical_full
+    )
+    enc.context_mode = "local"
+    local = enc._context_for_mode(z, bands, valid)
+    enc.context_mode = "global"
+    global_context = enc._context_for_mode(z, bands, valid)
+    assert torch.allclose(local + global_context, historical_full, atol=1e-7)
+    for batch in range(z.shape[0]):
+        for band in torch.unique(bands[batch, valid[batch]]):
+            mask = valid[batch] & (bands[batch] == band)
+            assert torch.allclose(
+                local[batch, mask].mean(dim=0),
+                torch.zeros(z.shape[-1]),
+                atol=1e-7,
+            )
+            values = global_context[batch, mask]
+            assert torch.equal(values, values[:1].expand_as(values))
+
+
+def test_context_mode_witness_separates_position_from_global_presence_magnitude():
+    enc = make_small(reader_mode="cross_only")
+    bands = torch.tensor([[0] * 4 + [1] * 4] * 4)
+    valid = torch.ones_like(bands, dtype=torch.bool)
+    z = torch.zeros(4, 8, 2)
+    magnitudes = torch.tensor([0.0, 1.5, 2.5, 4.0])
+    positions = torch.tensor([0, 1, 2, 3])
+    for sample, position in enumerate(positions):
+        # A zero-sum detail pattern carries only within-band position.
+        z[sample, 4:8, 0] = -0.25
+        z[sample, 4 + position, 0] = 0.75
+        # A band-shared channel carries only presence/magnitude.
+        z[sample, 4:8, 1] = magnitudes[sample]
+    local, global_context = enc._context_components(z, bands, valid)
+    local_positions = local[:, 4:8, 0].argmax(dim=1)
+    global_positions = global_context[:, 4:8, 0].argmax(dim=1)
+    assert torch.equal(local_positions, positions)
+    assert not torch.equal(global_positions, positions)
+    assert torch.allclose(global_context[:, 4:8, 1].mean(dim=1), magnitudes)
+    assert torch.equal(
+        global_context[:, 4:8, 1].mean(dim=1) > 0,
+        magnitudes > 0,
+    )
+    assert torch.allclose(local[:, 4:8, 1], torch.zeros(4, 4))
+
+
+def test_context_snapshot_covers_all_256_slots_and_all_512_features():
+    enc = make().eval()
+    enc.last_base_bands = torch.tensor([[0] * 128 + [1] * 128] * 2)
+    enc.last_base_valid = torch.ones(2, 256, dtype=torch.bool)
+    z = torch.zeros(2, 256, 512)
+    z[1, 0, 0] = 8.0
+    z[0, 255, 511] = 32.0
+    z[1, 255, 511] = -32.0
+    stats = enc._context_snapshot(z)
+    expected = z.square().mean().sqrt().item()
+    assert math.isclose(stats["z_rms_total"], expected, rel_tol=1e-6)
+    assert stats["z_rms_coarse"] > 0.0
+    assert stats["z_rms_detail"] > 0.0
+    for group in ("total", "coarse", "detail"):
+        assert {
+            f"token_variable_fraction_{group}",
+            f"mean_token_cosine_{group}",
+            f"input_series_relative_{group}",
+        } <= set(stats)
+        assert stats[f"input_series_relative_{group}"] > 0.0
 
 
 def test_one_pyramid_per_channel_is_shared_with_context():
@@ -1061,12 +1142,13 @@ def test_config_kwargs_like_yaml():
                dropout=0.0, level_gate=True, noise_tau=1.0, pos_dtype="input",
                locality_sigma=0.0078125, context_scale_init=RUN_CONTEXT_SCALE_INIT,
                max_levels=10, tied=True, depth_mode="full",
-               reader_mode="cross_only", self_attn_scale_init=0.1,
+               reader_mode="cross_only", context_mode="local", self_attn_scale_init=0.1,
                mlp_scale_init=0.1, token_gate=True)
     cfg.pop("type")
     enc = RecurrentWaveletTSEncoder(**cfg)
     assert enc.tied and enc.depth_mode == "full" and enc.level_topm == 1024
     assert enc.reader_mode == "cross_only" and enc.token_gate_enabled
+    assert enc.context_mode == "local"
     assert math.isclose(enc.context_scale.item(), RUN_CONTEXT_SCALE_INIT, rel_tol=1e-6)
 
 
@@ -1088,16 +1170,20 @@ def test_all_run_and_smoke_configs_enable_context_coadaptation():
         assert re.search(r"(?m)^\s+context:\s+1\.0e-3\s*$", text), path
 
     pilot_expectations = {
-        "wavelet_precise_v3pilot_cross.yaml": ("cross_only", "false"),
-        "wavelet_precise_v3pilot_fullsmall.yaml": ("full", "false"),
-        "wavelet_precise_v3pilot_gate.yaml": ("cross_only", "true"),
+        "wavelet_precise_v3pilot_cross.yaml": ("cross_only", "full", "false"),
+        "wavelet_precise_v3pilot_fullsmall.yaml": ("full", "full", "false"),
+        "wavelet_precise_v3pilot_gate.yaml": ("cross_only", "full", "true"),
+        "wavelet_precise_v3pilot_crosslocal.yaml": ("cross_only", "local", "false"),
+        "wavelet_precise_v3pilot_crossglobal.yaml": ("cross_only", "global", "false"),
     }
-    for name, (mode, gate) in pilot_expectations.items():
+    for name, (reader_mode, context_mode, gate) in pilot_expectations.items():
         candidates = (HERE / name, HERE.parent / "configs" / name)
         path = next((candidate for candidate in candidates if candidate.exists()), None)
         assert path is not None, (name, candidates)
         text = path.read_text(encoding="utf-8")
-        assert re.search(rf"(?m)^\s+reader_mode:\s+{mode}\s*$", text), path
+        assert re.search(rf"(?m)^\s+reader_mode:\s+{reader_mode}\s*$", text), path
+        configured_mode = re.search(r"(?m)^\s+context_mode:\s+(\w+)\s*$", text)
+        assert (configured_mode.group(1) if configured_mode else "full") == context_mode, path
         assert re.search(r"(?m)^\s+self_attn_scale_init:\s+0\.1\s*$", text), path
         assert re.search(r"(?m)^\s+mlp_scale_init:\s+0\.1\s*$", text), path
         assert re.search(rf"(?m)^\s+token_gate:\s+{gate}\s*$", text), path

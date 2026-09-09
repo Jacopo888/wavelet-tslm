@@ -80,8 +80,16 @@ if args.pilot_config:
             })
             if (index + 1) % 10 == 0:
                 print('PILOT_FORWARD_PROGRESS', index + 1, '/', args.n, flush=True)
-    final_keys = ('z_rms', 'h_rms', 'token_variable_fraction', 'mean_token_cosine',
-                  'gate_mean', 'gate_saturation_low', 'gate_saturation_high')
+    final_keys = (
+        'z_rms', 'h_rms',
+        'token_variable_fraction_total', 'mean_token_cosine_total',
+        'input_series_relative_total',
+        'token_variable_fraction_coarse', 'mean_token_cosine_coarse',
+        'input_series_relative_coarse',
+        'token_variable_fraction_detail', 'mean_token_cosine_detail',
+        'input_series_relative_detail',
+        'gate_mean', 'gate_saturation_low', 'gate_saturation_high',
+    )
     aggregate = {}
     for key in final_keys:
         values = [row['context_stats'].get('final', {}).get(key) for row in rows]

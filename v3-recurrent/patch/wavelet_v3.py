@@ -105,7 +105,7 @@ class WaveletV3TSModel(WaveletTSModel):
                 p.requires_grad_(False)
         n_par = sum(p.numel() for p in enc.parameters())
         print(f"  v3 encoder: tied={enc.tied} level_topm={enc.level_topm} "
-              f"gate={enc.level_gate} reader={enc.reader_mode} "
+              f"gate={enc.level_gate} reader={enc.reader_mode} context={enc.context_mode} "
               f"token_gate={enc.token_gate_enabled} depth_mode={enc.depth_mode} "
               f"context_scale={enc.context_scale.item():.6g} params={n_par/1e6:.2f}M")
         return model
