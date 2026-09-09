@@ -19,6 +19,7 @@ prior.
 from __future__ import annotations
 
 import math
+import json
 import os
 import types
 
@@ -239,6 +240,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         self.last_base_positions: torch.Tensor | None = None
         self.last_base_bands: torch.Tensor | None = None
         self.last_base_valid: torch.Tensor | None = None
+        self.last_context_eval_mode = "on"
 
     # ------------------------------------------------------------------
     def _block(self, step: int) -> _LoopBlock:
@@ -301,7 +303,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         cross: torch.Tensor | None = None,
         self_attn: torch.Tensor | None = None,
         mlp: torch.Tensor | None = None,
-    ) -> dict[str, float | None]:
+    ) -> dict[str, object]:
         """Detached context stats over every token and feature dimension."""
         with torch.no_grad():
             z_all = z.detach().float()
@@ -320,6 +322,16 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 return (value.float().square() * weight).sum().div(count).sqrt()
 
             def group_stats(mask: torch.Tensor) -> dict[str, float | None]:
+                if not bool(mask.any()):
+                    return {
+                        "n_valid_tokens": 0,
+                        "z_rms": None,
+                        "h_rms": None,
+                        "token_variable_fraction": None,
+                        "mean_token_cosine": None,
+                        "group_mean_rms_over_h_rms": None,
+                        "input_series_relative": None,
+                    }
                 h_rms = masked_rms(h, mask).clamp_min(eps)
                 count = mask.sum(dim=-1, keepdim=True).clamp_min(1)
                 mean = (
@@ -327,6 +339,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                     / count.unsqueeze(-1)
                 )
                 variable = masked_rms(h - mean, mask) / h_rms
+                group_mean_relative = masked_rms(mean, mask) / h_rms
                 unit = F.normalize(h, dim=-1, eps=eps) * mask.unsqueeze(-1)
                 pair_count = count.squeeze(-1) * (count.squeeze(-1) - 1)
                 pair_sum = unit.sum(dim=-2).square().sum(dim=-1) - count.squeeze(-1)
@@ -348,10 +361,14 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 else:
                     series_value = None
                 return {
+                    "n_valid_tokens": int(mask.sum().cpu()),
                     "z_rms": float(masked_rms(z_all, mask).cpu()),
                     "h_rms": float(h_rms.cpu()),
                     "token_variable_fraction": float(variable.cpu()),
                     "mean_token_cosine": cosine_value,
+                    "group_mean_rms_over_h_rms": float(
+                        group_mean_relative.cpu()
+                    ),
                     "input_series_relative": series_value,
                 }
 
@@ -361,6 +378,11 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 "detail": valid & (bands >= 1),
             }
             grouped = {name: group_stats(mask) for name, mask in masks.items()}
+            by_base_band = {
+                str(band): group_stats(valid & (bands == band))
+                for band in range(self.max_levels + 1)
+                if bool((valid & (bands == band)).any())
+            }
             total = grouped["total"]
             n_tokens = h.shape[-2]
             shift = max(1, n_tokens // 3)
@@ -376,7 +398,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                     return 0.0
                 return float(masked_rms(value.detach(), valid).cpu())
 
-            result: dict[str, float | None] = {
+            result: dict[str, object] = {
                 # Backward-compatible aliases now explicitly mean "total".
                 "z_rms": total["z_rms"],
                 "h_rms": total["h_rms"],
@@ -391,7 +413,47 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             for group, values in grouped.items():
                 for key, value in values.items():
                     result[f"{key}_{group}"] = value
+            # Exact-band statistics are intentionally nested: the set of
+            # represented levels depends on the real input length/depth.
+            result["by_base_band"] = by_base_band
             return result
+
+    def _context_eval_mode(self) -> str:
+        """Resolve the evaluation-only intervention at the residual boundary."""
+        requested = os.environ.get("TSLM_V3_CONTEXT_EVAL", "").strip()
+        aliases = {"": "on", "on": "on", "off": "off", "roll_tokens": "roll_tokens"}
+        if requested not in aliases:
+            raise ValueError(
+                "TSLM_V3_CONTEXT_EVAL must be one of on|off|roll_tokens, "
+                f"got {requested!r}"
+            )
+        mode = aliases[requested]
+        legacy_off = os.environ.get("TSLM_V3_CONTEXT_OFF") == "1"
+        if legacy_off:
+            if mode not in ("on", "off"):
+                raise ValueError(
+                    "TSLM_V3_CONTEXT_OFF=1 conflicts with "
+                    f"TSLM_V3_CONTEXT_EVAL={requested}"
+                )
+            mode = "off"
+        if self.training and mode != "on":
+            raise RuntimeError("TSLM_V3_CONTEXT_EVAL interventions are evaluation-only")
+        return mode
+
+    @staticmethod
+    def _roll_valid_context(
+        context: torch.Tensor, valid: torch.Tensor
+    ) -> torch.Tensor:
+        """Roll whole context vectors within each row's valid-token set."""
+        if valid.shape != context.shape[:-1]:
+            raise ValueError("valid-token mask must match context token axes")
+        rolled = context.clone()
+        for row in range(context.shape[0]):
+            indices = torch.where(valid[row])[0]
+            if indices.numel() > 1:
+                shift = max(1, int(indices.numel()) // 3)
+                rolled[row, indices] = context[row, indices].roll(shift, dims=0)
+        return rolled
 
     def _merge_context(
         self,
@@ -400,6 +462,12 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         token_gate_override: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Apply the output boundary; override exists for exact gate tests/audits."""
+        mode = self._context_eval_mode()
+        self.last_context_eval_mode = mode
+        if mode == "roll_tokens":
+            if self.last_base_valid is None:
+                raise RuntimeError("roll_tokens requires base-token metadata")
+            context = self._roll_valid_context(context, self.last_base_valid)
         if token_gate_override is not None:
             gate = token_gate_override.to(device=context.device, dtype=context.dtype)
         elif self.context_token_gate is not None:
@@ -409,7 +477,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         else:
             gate = torch.ones_like(context[..., :1])
         scale = self.context_scale.to(context.dtype)
-        if os.environ.get("TSLM_V3_CONTEXT_OFF") == "1":
+        if mode == "off":
             scale = scale * 0.0
         return base_tokens + scale * gate * context, gate
 
@@ -638,10 +706,16 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         # With a zero scale and gradients disabled, evaluating the loop cannot
         # affect the result.  This makes the mandatory 16x131072 equality gate
         # cost the same as v1 while training still builds the residual graph.
-        context_is_off = os.environ.get("TSLM_V3_CONTEXT_OFF") == "1"
+        context_eval_mode = self._context_eval_mode()
+        context_is_off = context_eval_mode == "off"
+        self.last_context_eval_mode = context_eval_mode
+        collect_context_stats = os.environ.get("TSLM_V3_COLLECT_CONTEXT_STATS") == "1"
         if (
             not torch.is_grad_enabled()
-            and (self.context_scale.detach().item() == 0.0 or context_is_off)
+            and (
+                self.context_scale.detach().item() == 0.0
+                or (context_is_off and not collect_context_stats)
+            )
         ):
             self.last_depth, self.last_steps = depth, n_steps
             self.last_gates, self.last_active = [], []
@@ -780,6 +854,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             self.last_context_stats = {
                 "reader_mode": self.reader_mode,
                 "context_mode": self.context_mode,
+                "context_eval_mode": self.last_context_eval_mode,
                 "context_grouping": "exact_base_band",
                 "iterations": iteration_stats,
                 "final": final_stats,
@@ -808,6 +883,8 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 f"token_variable_fraction_detail={logged('token_variable_fraction_detail'):.6g} "
                 f"mean_token_cosine_detail={logged('mean_token_cosine_detail'):.6g} "
                 f"input_series_relative_detail={logged('input_series_relative_detail'):.6g} "
+                "base_band_stats="
+                f"{json.dumps(final.get('by_base_band', {}), separators=(',', ':'))} "
                 f"token_gate_mean={logged('gate_mean'):.6g} "
                 f"gates=[{gates_text}] active=[{active_text}]",
                 flush=True,

@@ -18,7 +18,8 @@ SCP="scp -o StrictHostKeyChecking=no -o BatchMode=yes -i $KEY"
 $SSH "mkdir -p ~/patch ~/logs ~/evalq"
 $SCP "$REPO"/kaggle/patch/*.py "$REPO"/kaggle/patch/*.yaml root@$IP:~/patch/
 $SCP "$REPO"/v3-recurrent/patch/*.py "$REPO"/v3-recurrent/configs/*.yaml root@$IP:~/patch/
-$SCP "$REPO"/v3-recurrent/audit/20260908-ctx01/forward_audit.py root@$IP:~/patch/
+$SCP "$REPO"/v3-recurrent/audit/20260908-ctx01/forward_audit.py \
+  "$REPO"/v3-recurrent/audit/paired_eval.py root@$IP:~/patch/
 $SCP "$REPO"/vultr/node_env.sh "$REPO"/v3-recurrent/node/*.sh root@$IP:~/
 # CRLF -> LF (i file possono arrivare da Windows) e permessi
 $SSH "sed -i 's/\r\$//' ~/*.sh ~/patch/*.py ~/patch/*.yaml && chmod +x ~/*.sh && ls ~/patch | wc -l && md5sum ~/patch/wavelet_encoder.py ~/patch/wavelet_encoder_v3.py ~/patch/train.py"

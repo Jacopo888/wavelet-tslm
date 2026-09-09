@@ -21,6 +21,10 @@ Cartella di lavoro dedicata (isolata dalla vecchia proposta ADMIT, ora in `../ad
 ## Stato modelli
 
 - **Variante v3 (residuo su v1, ablazione 1, 08/09)**: test 800 primary **0,2832** vs va1 0,2744 (appaiato +0,009, ns). `context_scale` è rimasto a zero per 5 epoche: la run del commit `1b0f9fa` è una **replica di va1**, non una misura del contesto. Il deadlock è ora rotto nei config con `context_scale_init: 0.1` e gruppo ricorrente a lr `1e-3` (il percorso v1 resta a `1e-4`); ablazione 1 da ripetere. Dettagli in `v3-recurrent/RISULTATI-V3TIED.md` e `v3-recurrent/review/CODEX-REPORT.md` §12.
+- **Pilot v3 context (09/09)**: l'harness valuta ora, sullo stesso checkpoint e sulle stesse
+  righe di validation, contesto on/off/roll sui probe80, full-val on/off e confronti appaiati
+  bootstrap 10k; il launcher post-hoc completa senza sovrascrivere i pilot già conclusi.
+  Dettagli in `v3-recurrent/review/CODEX-REPORT.md` §15.
 - **Riferimento Livello 1: va1 epoca 5** (re-run a copertura totale su Vultr A40, 03/09) — test 800 hfpin: primary **0.2744**, localize 0.241 (IoU positivi 0.094), MMag 0.578, all_channels 0.261, classify 0.064, lead_lag 0.166 (al caso). Dettagli in `vultr/RISULTATI-VA1.md`, artefatti in `integrity/artifacts/va1/`, checkpoint sul nodo.
 - Storici (controllo): m30 epoca 4 (0.2156 hfpin; ha perso tutte le celle 16ch), full1 post-top-up (0.2417 hfpin).
 - Prossimo: Livello 2 (GRPO prime-rl al pin, kit in `l2/`, modello Qwen3.5-2B su A40-24Q) — la A40 resta al lato wavelet (ordine 03/09).

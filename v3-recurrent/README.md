@@ -26,9 +26,10 @@ L'implementazione corrente aggiunge, in quest'ordine:
   dedicata manca; i pilot usano 1e-5;
 - `token_gate: true` opzionale, condiviso fra token, inizializzato a identità: dopo LN,
   `g_i=2 sigmoid(Linear([LN_noaffine(base_i),h_i]))` e `out_i=base_i+a g_i h_i`;
-- statistiche del solo contesto in `last_context_stats` e righe `[V3Ctx]`, su tutti i 256 slot e
-  tutte le feature: frazione variabile, coseno e differenza fra serie totali e separati fra
-  grossolani/dettaglio, RMS, componenti cross/self/MLP e gate finale.
+- statistiche del solo contesto in `last_context_stats` e righe `[V3Ctx]`, su tutti gli slot
+  validi e tutte le feature: oltre agli aggregati totale/coarse/detail, `by_base_band` misura
+  dopo `context_norm` ogni banda esatta (frazione variabile, coseno, RMS della media/RMS di h e
+  dipendenza dall'input); il padding non entra nei calcoli.
 
 I config `v3pilot_{cross,crosslocal,crossglobal,fullsmall,gate}` sono i candidati attuali. I vecchi config
 `v3tied/v3untied/v3sdepth` restano descrittivi della ricetta `full`, scale 1,0 e LR scala ereditato:
@@ -157,7 +158,12 @@ ora interrompe test e smoke prima di spendere una run completa.
   poi curva di profondità sulla val).
 - `node/node_pilot_v3.sh <nome> <config> <n_epochs>` — run dir univoca, scheduler fisso
   22440/673, init comune e ordine dati fissato; valuta soltanto val a step 500/2000 e fine epoca,
-  con probe80 generation/teacher-forcing on/off più val intera on a fine epoca.
+  con probe80 generation/teacher-forcing on/off/roll; a fine epoca esegue val intera on/off e
+  produce `pilot_eval/epochN_paired.json` con bootstrap appaiato 10k. Impostare
+  `V3_FULL_VAL_ROLL=1` per aggiungere anche il roll sui 520.
+- `node/node_pilot_posthoc.sh <run_dir> <epoch>` completa gli stessi artefatti su un pilot
+  concluso usando `epoch_N_end.pt` e le config conservate nella run dir; non sovrascrive file
+  esistenti e crea un TF suffissato quando quello storico non contiene roll/stats per banda.
 - `ops/gpu_watch.py` + `ops/start_watch.ps1` — watcher/grab detached (Vultr A40-24 / L40S-48 in
   qualunque regione, DO MI300X in qualunque regione; stato in `%LOCALAPPDATA%\wavelet-v3\`);
   `ops/ship_v3.sh <ip>` — spedizione sul nodo da WSL.
@@ -175,8 +181,10 @@ bash ~/node_pilot_v3.sh crosslocal configs/wavelet_precise_v3pilot_crosslocal.ya
 bash ~/node_pilot_v3.sh crossglobal configs/wavelet_precise_v3pilot_crossglobal.yaml 1
 bash ~/node_pilot_v3.sh fullsmall configs/wavelet_precise_v3pilot_fullsmall.yaml 1
 bash ~/node_pilot_v3.sh gate configs/wavelet_precise_v3pilot_gate.yaml 1
+# pilot già concluso (nome breve o path assoluto):
+bash ~/node_pilot_posthoc.sh pilot_cross_20260909T014929Z 1
 ```
 
-Stato: suite CPU 33/33; lo smoke richiede gradienti e spostamento misurabile dei pesi del lettore,
+Stato: suite CPU 36/36; lo smoke richiede gradienti e spostamento misurabile dei pesi del lettore,
 non uno spostamento minimo della scala lenta, e fallisce se la frazione variabile del contesto è
 inferiore a 1e-3. La run `1b0f9fa` è archiviata come replica va1; nessuna nuova run GPU lanciata.

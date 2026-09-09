@@ -57,52 +57,83 @@ if args.pilot_config:
     model.eval()
     rows = []
     started = time.time()
-    with torch.no_grad():
-        for index, batch in enumerate(val_loader):
-            prepared = model.prepare_batch(batch)
-            os.environ.pop('TSLM_V3_CONTEXT_OFF', None)
-            with torch.autocast('cuda', dtype=torch.bfloat16):
-                on_loss = float(model(**prepared)['loss'])
-            stats = json.loads(json.dumps(model.ts_encoder.last_context_stats))
-            os.environ['TSLM_V3_CONTEXT_OFF'] = '1'
-            with torch.autocast('cuda', dtype=torch.bfloat16):
-                off_loss = float(model(**prepared)['loss'])
-            os.environ.pop('TSLM_V3_CONTEXT_OFF', None)
-            sample = batch[0]
-            rows.append({
-                'index': index,
-                'id': sample.get('id'),
-                'category': sample.get('category'),
-                'teacher_forcing_on': on_loss,
-                'teacher_forcing_off': off_loss,
-                'delta_on_minus_off': on_loss - off_loss,
-                'context_stats': stats,
-            })
-            if (index + 1) % 10 == 0:
-                print('PILOT_FORWARD_PROGRESS', index + 1, '/', args.n, flush=True)
-    final_keys = (
-        'z_rms', 'h_rms',
-        'token_variable_fraction_total', 'mean_token_cosine_total',
-        'input_series_relative_total',
-        'token_variable_fraction_coarse', 'mean_token_cosine_coarse',
-        'input_series_relative_coarse',
-        'token_variable_fraction_detail', 'mean_token_cosine_detail',
-        'input_series_relative_detail',
-        'gate_mean', 'gate_saturation_low', 'gate_saturation_high',
-    )
-    aggregate = {}
-    for key in final_keys:
-        values = [row['context_stats'].get('final', {}).get(key) for row in rows]
-        values = [value for value in values if isinstance(value, (int, float)) and np.isfinite(value)]
-        aggregate[key] = float(np.mean(values)) if values else None
+    conditions = ('on', 'off', 'roll_tokens')
+    try:
+        with torch.no_grad():
+            for index, batch in enumerate(val_loader):
+                prepared = model.prepare_batch(batch)
+                losses = {}
+                stats = None
+                for condition in conditions:
+                    os.environ.pop('TSLM_V3_CONTEXT_OFF', None)
+                    os.environ.pop('TSLM_V3_CONTEXT_EVAL', None)
+                    if condition != 'on':
+                        os.environ['TSLM_V3_CONTEXT_EVAL'] = condition
+                    with torch.autocast('cuda', dtype=torch.bfloat16):
+                        losses[condition] = float(model(**prepared)['loss'])
+                    if condition == 'on':
+                        stats = json.loads(json.dumps(model.ts_encoder.last_context_stats))
+                sample = batch[0]
+                rows.append({
+                    'index': index,
+                    'id': sample.get('id'),
+                    'category': sample.get('category'),
+                    'conditions': {
+                        condition: {'nll': losses[condition]}
+                        for condition in conditions
+                    },
+                    # Keep the original fields for old audit consumers.
+                    'teacher_forcing_on': losses['on'],
+                    'teacher_forcing_off': losses['off'],
+                    'teacher_forcing_roll': losses['roll_tokens'],
+                    'delta_on_minus_off': losses['on'] - losses['off'],
+                    'context_stats': stats,
+                })
+                if (index + 1) % 10 == 0:
+                    print('PILOT_FORWARD_PROGRESS', index + 1, '/', args.n, flush=True)
+    finally:
+        os.environ.pop('TSLM_V3_CONTEXT_OFF', None)
+        os.environ.pop('TSLM_V3_CONTEXT_EVAL', None)
+
+    def mean_numeric_dicts(documents):
+        keys = sorted({key for document in documents for key in document})
+        result = {}
+        for key in keys:
+            values = [document[key] for document in documents if key in document]
+            nested = [value for value in values if isinstance(value, dict)]
+            numeric = [
+                float(value) for value in values
+                if isinstance(value, (int, float)) and not isinstance(value, bool)
+                and np.isfinite(value)
+            ]
+            if nested:
+                result[key] = mean_numeric_dicts(nested)
+            elif numeric:
+                result[key] = float(np.mean(numeric))
+            else:
+                result[key] = None
+        return result
+
+    aggregate = mean_numeric_dicts([
+        row['context_stats'].get('final', {}) for row in rows
+    ])
     result = {
         'mode': 'pilot_val_teacher_forcing',
         'config': str(args.pilot_config),
         'checkpoint': str(args.checkpoint),
         'n': len(rows),
         'split': 'val',
+        'conditions': {
+            condition: {
+                'mean_nll': float(np.mean([
+                    row['conditions'][condition]['nll'] for row in rows
+                ]))
+            }
+            for condition in conditions
+        },
         'teacher_forcing_on_mean': float(np.mean([row['teacher_forcing_on'] for row in rows])),
         'teacher_forcing_off_mean': float(np.mean([row['teacher_forcing_off'] for row in rows])),
+        'teacher_forcing_roll_mean': float(np.mean([row['teacher_forcing_roll'] for row in rows])),
         'delta_on_minus_off_mean': float(np.mean([row['delta_on_minus_off'] for row in rows])),
         'context_final_mean': aggregate,
         'rows': rows,

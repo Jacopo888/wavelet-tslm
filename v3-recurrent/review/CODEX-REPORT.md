@@ -688,3 +688,75 @@ modificare `ship_v3.sh`, che spedisce già `v3-recurrent/configs/*.yaml`.
 Verifiche locali finali: `py v3-recurrent/patch/test_encoder_v3.py` passa 33/33; il logging
 `[V3Ctx]` è stato esercitato con tutte le nuove chiavi; `py_compile` sui file Python modificati,
 `bash -n` su tutti gli script node v3 e su `ops/ship_v3.sh`, e `git diff --check` passano.
+
+## 15. 09/09 — verifiche appaiate e struttura post-LayerNorm dei pilot
+
+### Intervento di sola valutazione
+
+`RecurrentWaveletTSEncoder` risolve ora `TSLM_V3_CONTEXT_EVAL=on|off|roll_tokens` al solo
+confine residuo, immediatamente prima di calcolare l'eventuale token gate e sommare il contesto
+ai token v1. La variabile è inerte se assente. Una condizione diversa da `on` con il modulo in
+training solleva un errore: non può quindi cambiare accidentalmente un update. `off` azzera la
+stessa scala del vecchio `TSLM_V3_CONTEXT_OFF=1`; i test verificano che le due uscite siano
+identiche. `roll_tokens` sposta vettori h interi fra i soli indici validi, separatamente per ogni
+riga dell'encoder: preserva esattamente il multinsieme delle norme dei token, lascia intatti
+padding e tensore base, ma rompe l'allineamento fra token v1 e contesto. Con `context_scale=0`,
+on, off e roll restituiscono tutti il base path bit per bit.
+
+Non è stato aggiunto `shuffle_series`. Con `batch_size: 1`, l'asse batch interno dell'encoder è
+usato anche per i canali di uno stesso esempio; scambiarlo non garantirebbe quindi "un'altra
+serie con stessa lunghezza/canali" e rischierebbe di etichettare come controllo fra serie un
+semplice scambio fra canali. Ottenere quel controllo correttamente richiederebbe conservare e
+reiniettare h da un secondo forward compatibile. Il brief consentiva in questo caso il solo
+controllo (a), che è quello implementato nell'harness.
+
+### Statistiche esatte dopo `context_norm`
+
+`_context_snapshot` calcola ora `by_base_band` direttamente su
+`h=context_norm(z_centrato)`, dopo l'eventuale decomposizione `full|local|global`. Per ogni banda
+esatta presente da 0 a L, escludendo il padding, salva numero di token, RMS di z e h, frazione
+variabile `RMS(h-mean_band(h))/RMS(h)`, coseno medio off-diagonal,
+`RMS(mean_band(h))/RMS(h)` e differenza relativa fra input compatibili presenti nello stesso
+forward. Una dipendenza non misurabile (per esempio un input a canale singolo) resta `null`, non
+viene convertita in zero. Gli aggregati storici total/coarse/detail restano disponibili.
+
+La struttura completa è inclusa nel JSON teacher-forcing sui reali 80 esempi e serializzata in
+forma compatta come `base_band_stats=...` nelle righe `[V3Ctx]`. Con
+`TSLM_V3_COLLECT_CONTEXT_STATS=1`, `validate()` aggrega inoltre gli stessi dati durante il
+forward della loss già eseguito dalla generazione: le nuove full-val on/off li ottengono quindi
+senza un quarto passaggio dedicato sui 520. Questa raccolta è spenta di default e non tocca il
+training. Va mantenuta l'interpretazione corretta: **diversità geometrica alta non implica che
+il contesto contenga informazione utile per il task**; è il confronto on/off/roll a pesi fissi a
+misurarne l'utilità predittiva e l'allineamento.
+
+### Harness, bootstrap e post-hoc
+
+`node_pilot_v3.sh` esegue ora on/off/roll sia in generazione sia in teacher forcing sui medesimi
+80 esempi. A ogni fine epoca esegue obbligatoriamente `epochN_full_val_on.json` e
+`epochN_full_val_off.json` sullo stesso `epoch_N_end.pt`; `V3_FULL_VAL_ROLL=1` abilita il terzo
+passaggio completo, lasciato opzionale per il costo di circa 25 minuti. `PILOT_OK` richiede
+full-val on/off, generation roll e `epochN_paired.json`, oltre alle verifiche di coverage già
+presenti.
+
+Il nuovo `audit/paired_eval.py` legge i JSONL per esempio indicati dai summary, pretende identità
+e ordine esatti delle tuple `(id, category, ground_truth)` e ricontrolla gli aggregati ufficiali.
+Usa 10.000 ricampionamenti con seed fisso 20260909. Il JSON risultante contiene, per
+`generation_probe80`, `teacher_forcing_probe80` e `full_val`, le medie di ogni condizione e i
+contrasti disponibili on−off, on−roll e off−roll. Ogni contrasto riporta IC95 e significatività
+per il primary/NLL complessivo e separatamente per categoria; la full-val senza roll contiene
+correttamente il solo on−off.
+
+`node_pilot_posthoc.sh <run_dir> <epoch>` usa esclusivamente `epoch_N_end.pt`,
+`pilot_train.yaml` e `pilot_probe80.yaml` della run conclusa: non usa l'init comune e non legge il
+test split. Ogni output è creato solo se assente. Se trova un vecchio teacher-forcing privo di
+roll o `by_base_band`, lo conserva e scrive `epochN_teacher_forcing_context_eval.json`; il paired
+summary punta a quest'ultimo. I tag post-hoc dei JSONL sono distinti, quindi anche i log storici
+restano intatti. Lo script accetta sia un path assoluto sia il nome breve sotto
+`results/anomaly_xl_precise/`.
+
+Verifiche locali finali di questa consegna: `py v3-recurrent/patch/test_encoder_v3.py` passa
+36/36, inclusi roll/norme/base, equivalenza dei due off, scala nulla, statistiche per banda e
+bootstrap deterministico/order-strict. `py_compile` passa sui cinque Python coinvolti;
+`bash -n` passa sui due launcher pilot e su `ops/ship_v3.sh`; `git diff --check` passa. La suite
+integrity aggiuntiva non è eseguibile con il launcher `py` locale perché nell'ambiente manca
+`pyarrow`; si arresta all'import prima di eseguire test e non riguarda i test v3, che sono verdi.

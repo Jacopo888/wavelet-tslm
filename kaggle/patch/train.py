@@ -15,6 +15,7 @@ Usage:
 import argparse
 import gc
 import json
+import math
 import os
 import random
 import time
@@ -932,6 +933,8 @@ def validate(
     category_metric_sums: dict[str, float] = {}
     category_key = dataset.category_key if dataset else None
     primary_metric = dataset.primary_metric if dataset else "accuracy"
+    collect_context_stats = os.environ.get("TSLM_V3_COLLECT_CONTEXT_STATS") == "1"
+    context_stats_rows: list[dict[str, Any]] = []
 
     # Positive coverage accounting: every example leaves exactly one JSONL
     # row (id, category, gold, prediction, parse status, metrics) and the
@@ -1008,6 +1011,15 @@ def validate(
                 with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
                     output = model(**batch_inputs)
                 loss = output["loss"]
+
+                if collect_context_stats:
+                    encoder = getattr(model, "ts_encoder", None)
+                    stats = getattr(encoder, "last_context_stats", None)
+                    final = stats.get("final") if isinstance(stats, dict) else None
+                    if isinstance(final, dict) and final:
+                        # Detach the diagnostic document from the encoder;
+                        # subsequent generation calls overwrite its cache.
+                        context_stats_rows.append(json.loads(json.dumps(final)))
 
                 if not torch.isnan(loss) and not torch.isinf(loss):
                     total_loss += loss.item()
@@ -1088,6 +1100,31 @@ def validate(
         "loss": avg_loss,
         "num_batches": num_batches,
     }
+
+    if collect_context_stats:
+        def mean_numeric_dicts(rows: list[dict[str, Any]]) -> dict[str, Any]:
+            keys = sorted({key for row in rows for key in row})
+            aggregate: dict[str, Any] = {}
+            for key in keys:
+                values = [row[key] for row in rows if key in row]
+                nested = [value for value in values if isinstance(value, dict)]
+                numeric = [
+                    float(value) for value in values
+                    if isinstance(value, (int, float)) and not isinstance(value, bool)
+                    and math.isfinite(float(value))
+                ]
+                if nested:
+                    aggregate[key] = mean_numeric_dicts(nested)
+                elif numeric:
+                    aggregate[key] = sum(numeric) / len(numeric)
+                else:
+                    aggregate[key] = None
+            return aggregate
+
+        result["context_stats"] = {
+            "n_batches": len(context_stats_rows),
+            "final_mean": mean_numeric_dicts(context_stats_rows),
+        }
 
     if jsonl_writer is not None:
         jsonl_writer.close()

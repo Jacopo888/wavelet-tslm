@@ -251,6 +251,79 @@ def test_context_snapshot_covers_all_256_slots_and_all_512_features():
         } <= set(stats)
         assert stats[f"input_series_relative_{group}"] > 0.0
 
+    assert set(stats["by_base_band"]) == {"0", "1"}
+    for band_stats in stats["by_base_band"].values():
+        assert band_stats["n_valid_tokens"] == 256
+        assert {
+            "token_variable_fraction", "mean_token_cosine",
+            "group_mean_rms_over_h_rms", "input_series_relative",
+        } <= set(band_stats)
+        assert band_stats["group_mean_rms_over_h_rms"] >= 0.0
+
+
+def test_context_eval_roll_is_valid_only_norm_preserving_and_base_invariant():
+    enc = make_small(context_scale_init=0.1).eval()
+    base = torch.randn(2, 16, 32)
+    context = torch.randn_like(base)
+    valid = torch.tensor([
+        [True] * 11 + [False] * 5,
+        [True] * 7 + [False] * 9,
+    ])
+    enc.last_base_valid = valid
+    rolled = enc._roll_valid_context(context, valid)
+    assert torch.equal(rolled[~valid], context[~valid])
+    for row in range(context.shape[0]):
+        before = context[row, valid[row]].norm(dim=-1).sort().values
+        after = rolled[row, valid[row]].norm(dim=-1).sort().values
+        assert torch.equal(before, after)
+        assert not torch.equal(rolled[row, valid[row]], context[row, valid[row]])
+
+    original_base = base.clone()
+    try:
+        os.environ["TSLM_V3_CONTEXT_EVAL"] = "roll_tokens"
+        output, gate = enc._merge_context(base, context)
+    finally:
+        os.environ.pop("TSLM_V3_CONTEXT_EVAL", None)
+    assert torch.equal(base, original_base)
+    assert torch.equal(gate, torch.ones_like(gate))
+    assert torch.equal(output, base + enc.context_scale.detach() * rolled)
+
+
+def test_context_eval_off_legacy_equivalence_and_zero_scale_conditions():
+    enc = make_small(context_scale_init=0.1).eval()
+    base = torch.randn(2, 16, 32)
+    context = torch.randn_like(base)
+    enc.last_base_valid = torch.ones(2, 16, dtype=torch.bool)
+    try:
+        os.environ["TSLM_V3_CONTEXT_EVAL"] = "off"
+        new_off, _ = enc._merge_context(base, context)
+        os.environ.pop("TSLM_V3_CONTEXT_EVAL")
+        os.environ["TSLM_V3_CONTEXT_OFF"] = "1"
+        legacy_off, _ = enc._merge_context(base, context)
+        assert torch.equal(new_off, legacy_off)
+        assert torch.equal(new_off, base)
+
+        os.environ.pop("TSLM_V3_CONTEXT_OFF")
+        with torch.no_grad():
+            enc.context_scale.zero_()
+        outputs = []
+        for mode in ("on", "off", "roll_tokens"):
+            os.environ["TSLM_V3_CONTEXT_EVAL"] = mode
+            outputs.append(enc._merge_context(base, context)[0])
+        assert all(torch.equal(output, base) for output in outputs)
+
+        enc.train()
+        os.environ["TSLM_V3_CONTEXT_EVAL"] = "roll_tokens"
+        try:
+            enc._merge_context(base, context)
+        except RuntimeError as error:
+            assert "evaluation-only" in str(error)
+        else:
+            raise AssertionError("training accepted a context intervention")
+    finally:
+        os.environ.pop("TSLM_V3_CONTEXT_OFF", None)
+        os.environ.pop("TSLM_V3_CONTEXT_EVAL", None)
+
 
 def test_one_pyramid_per_channel_is_shared_with_context():
     import src.models.wavelet_encoder as v1_module
@@ -1195,7 +1268,9 @@ def test_trainer_and_pilot_hooks_are_env_gated_and_val_only():
     root = HERE.parent.parent
     train_path = root / "kaggle" / "patch" / "train.py"
     pilot_path = HERE.parent / "node" / "node_pilot_v3.sh"
-    if not (train_path.exists() and pilot_path.exists()):
+    posthoc_path = HERE.parent / "node" / "node_pilot_posthoc.sh"
+    paired_path = HERE.parent / "audit" / "paired_eval.py"
+    if not all(path.exists() for path in (train_path, pilot_path, posthoc_path, paired_path)):
         # Repo-layout test: on the node the patch files live flat in ~/patch,
         # so the layout under test is absent and the check does not apply.
         print("SKIP (repo layout absent)", end=" ")
@@ -1204,7 +1279,7 @@ def test_trainer_and_pilot_hooks_are_env_gated_and_val_only():
     for name in (
         "TSLM_INIT_STATE_PATH", "TSLM_DATA_ORDER_SEED",
         "TSLM_V3_CTX_LOG_EVERY", "TSLM_CHECKPOINT_STEPS",
-        "TSLM_V3_CONTEXT_OFF",
+        "TSLM_V3_CONTEXT_OFF", "TSLM_V3_COLLECT_CONTEXT_STATS",
     ):
         assert name in train_text or name == "TSLM_V3_CONTEXT_OFF", name
     assert 'lr_config.get("context", default_lr)' in train_text
@@ -1216,6 +1291,61 @@ def test_trainer_and_pilot_hooks_are_env_gated_and_val_only():
     assert "--split test" not in pilot_text
     assert "node_train_v3.sh" not in pilot_text
     assert "node_eval_worker_v3.sh" not in pilot_text
+    assert "TSLM_V3_CONTEXT_EVAL=off" in pilot_text
+    assert "TSLM_V3_CONTEXT_EVAL=roll_tokens" in pilot_text
+    assert "full_val_off.json" in pilot_text
+    assert "epoch${epoch}_paired.json" in pilot_text
+    posthoc_text = posthoc_path.read_text(encoding="utf-8")
+    assert "epoch_${EPOCH}_end.pt" in posthoc_text
+    assert "KEEP $output" in posthoc_text
+    assert "--split test" not in posthoc_text
+    paired_text = paired_path.read_text(encoding="utf-8")
+    assert "BOOTSTRAP_N = 10_000" in paired_text
+    assert "BOOTSTRAP_SEED = 20260909" in paired_text
+
+
+def test_paired_bootstrap_is_seeded_category_aware_and_order_strict():
+    path = HERE.parent / "audit" / "paired_eval.py"
+    if not path.exists():
+        print("SKIP (repo layout absent)", end=" ")
+        return
+    spec = importlib.util.spec_from_file_location("v3_paired_eval", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    identities = [
+        {"id": "a", "category": "cat1", "ground_truth": "g1"},
+        {"id": "b", "category": "cat2", "ground_truth": "g2"},
+        {"id": "c", "category": "cat1", "ground_truth": "g3"},
+    ]
+    values = {
+        "on": [0.9, 0.2, 0.7],
+        "off": [0.4, 0.3, 0.1],
+        "roll": [0.5, 0.1, 0.2],
+    }
+    rows = {
+        condition: [dict(identity, primary=value) for identity, value in zip(identities, scores)]
+        for condition, scores in values.items()
+    }
+    first = module.summarize_rows(rows, 3, lambda row: row["primary"], "primary")
+    second = module.summarize_rows(rows, 3, lambda row: row["primary"], "primary")
+    assert first == second
+    assert set(first["comparisons"]) == {
+        "on_minus_off", "on_minus_roll", "off_minus_roll"
+    }
+    assert set(first["comparisons"]["on_minus_off"]["per_category"]) == {
+        "cat1", "cat2"
+    }
+    mismatched = {name: list(condition_rows) for name, condition_rows in rows.items()}
+    mismatched["roll"] = list(reversed(mismatched["roll"]))
+    try:
+        module.summarize_rows(
+            mismatched, 3, lambda row: row["primary"], "primary"
+        )
+    except ValueError as error:
+        assert "identity/order mismatch" in str(error)
+    else:
+        raise AssertionError("paired summarizer accepted reordered rows")
 
 
 if __name__ == "__main__":
