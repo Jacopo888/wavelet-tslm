@@ -16,7 +16,7 @@ va1) 0,165. Val intera a fine epoca 1: va1 0,170; replica 0,135.
 
 | pilot | contesto | step 500 on / off | step 2000 on / off | fine ep1 on / off (80) | TF Δ(on−off) fine ep1 | val intera on (520) | esito |
 |---|---|---|---|---|---|---|---|
-| 1 `cross` | cross-only, centraggio globale (`full`) | 0,032 / 0,036 | 0,065 / 0,067 | 0,095 / 0,093 | +0,0003 | **0,149** | nessun apporto |
+| 1 `cross` | cross-only, centraggio globale (`full`) | 0,032 / 0,036 | 0,065 / 0,067 | 0,095 / 0,093 (roll 0,099) | +0,0003 | **0,149 / 0,152** (Δ −0,003, IC [−0,010; +0,004]) | nessun apporto |
 | 2 `crosslocal` | cross-only, **solo locale** (centrato per banda) | 0,028 / 0,028 | 0,083 / 0,077 | 0,115 / 0,114 | +0,0001 | **0,148** | nessun apporto a 1 epoca; post-hoc in corso |
 | 3 `crossglobal` | cross-only, **solo globale** (medie per banda) | | | | | | in coda nella catena (dopo i post-hoc) |
 | — `fullsmall`, `gate` | | | | | | | rinviati: poco informativi dopo il pilot 1 |
@@ -38,6 +38,20 @@ va1) 0,165. Val intera a fine epoca 1: va1 0,170; replica 0,135.
 - gamma/beta della `context_norm` non spiegano nulla (gamma RMS 0,98, beta 0,02); scala 0,0997.
 - Primo tentativo del pilot fallito per `TSLM_EVAL_STRICT=1` sul sondaggio (80/520): corretto
   nello harness (strict solo sulla val intera); training ucciso al passo 722, rilanciato.
+
+### Post-hoc pilot 1 (09/09 14:25 UTC)
+
+- Val intera (520) sullo stesso checkpoint: acceso 0,1489, spento 0,1520; differenza appaiata
+  −0,0032, IC95 [−0,0103; +0,0039], non significativa. Per categoria: localize 0 / 0,
+  all_channels 0,333 / 0,333, magnitudo 0,264 / 0,264, classify 0 / 0, lead_lag 0,251 / 0,273
+  (−0,022, "significativo" ma è l'instabilità della moda, non percezione).
+- Contesto disallineato (roll fra token) sugli 80: generazione 0,099 (acceso 0,095, spento 0,093);
+  teacher forcing roll 0,43276 = spento 0,43276 (identico alla quinta cifra: da verificare che il
+  percorso TF applichi davvero il roll e non lo spegnimento — controllo con il pilot 2).
+- Struttura post-LN per banda esatta sui dati reali (80): banda 0 (grossolana, ~403 token per
+  esempio) coseno 0,97 e frazione variabile 0,15; bande 1-10 coseno 0,39-0,98; rapporto
+  media-di-gruppo / RMS 0,87-0,99 in tutte le bande. Conferma sui dati reali: dopo la LN il
+  contesto è quasi un vettore per banda.
 
 ## Pilot 2 `crosslocal` — dettaglio (run `pilot_crosslocal_20260909T071641Z`)
 
