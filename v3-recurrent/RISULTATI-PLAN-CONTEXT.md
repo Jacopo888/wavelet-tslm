@@ -17,8 +17,8 @@ va1) 0,165. Val intera a fine epoca 1: va1 0,170; replica 0,135.
 | pilot | contesto | step 500 on / off | step 2000 on / off | fine ep1 on / off (80) | TF Δ(on−off) fine ep1 | val intera on (520) | esito |
 |---|---|---|---|---|---|---|---|
 | 1 `cross` | cross-only, centraggio globale (`full`) | 0,032 / 0,036 | 0,065 / 0,067 | 0,095 / 0,093 | +0,0003 | **0,149** | nessun apporto |
-| 2 `crosslocal` | cross-only, **solo locale** (centrato per banda) | 0,028 / 0,028 | 0,083 / 0,077 | … | … | … | in corso (07:16 UTC) |
-| 3 `crossglobal` | cross-only, **solo globale** (medie per banda) | | | | | | in coda |
+| 2 `crosslocal` | cross-only, **solo locale** (centrato per banda) | 0,028 / 0,028 | 0,083 / 0,077 | 0,115 / 0,114 | +0,0001 | **0,148** | nessun apporto a 1 epoca; post-hoc in corso |
+| 3 `crossglobal` | cross-only, **solo globale** (medie per banda) | | | | | | in coda nella catena (dopo i post-hoc) |
 | — `fullsmall`, `gate` | | | | | | | rinviati: poco informativi dopo il pilot 1 |
 
 ## Pilot 1 `cross` — dettaglio (run `pilot_cross_20260909T014929Z`)
@@ -43,6 +43,7 @@ va1) 0,165. Val intera a fine epoca 1: va1 0,170; replica 0,135.
 
 - step 500: generazione on 0,0276 / off 0,0278 (magnitudo 0,085 / 0,086); teacher forcing on 0,4669 / off 0,4684 (**Δ −0,0015**, il contesto locale abbassa la NLL più del cross-only al passo 500, −0,0008). In attesa di fine epoca.
 - step 2000: generazione on 0,0825 / off 0,0770 (localize 0,095 / 0,048 = un esempio su 21; magnitudo 0,177 / 0,198); teacher forcing on 0,4374 / off 0,4368 (Δ +0,0007). Struttura per token conservata per costruzione (per banda: coseno ≈ 0, frazione variabile ≈ 0,99). Non conclusivo.
+- fine epoca 1: generazione on 0,1146 / off 0,1137 (magnitudo 0,259 / 0,273, all_channels 0,182 / 0,182, classify 0,03 / 0, localize 0 / 0); teacher forcing on 0,4356 / off 0,4356 (Δ +0,00005); val intera on **0,1484** (localize 0,0, magnitudo 0,289, all_channels 0,333, lead_lag 0,198, classify 0,004). Il lettore conserva la struttura per token (coseno per banda 0,04-0,07 a step 2000) ma il modello non ne ricava vantaggio a una epoca: il bivio pende verso "conserva ma non usa". Verifiche post-hoc (val intera spento, contesto disallineato, statistiche post-LN per banda esatta, bootstrap appaiato) in corso nella catena sul nodo (09/09 13:43 UTC), poi pilot 3.
 
 ## Verifiche aggiuntive richieste da Jacopo (09/09 08:20 UTC) — in implementazione (Codex)
 
