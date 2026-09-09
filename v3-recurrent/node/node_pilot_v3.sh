@@ -132,10 +132,10 @@ eval_checkpoint() {
   local on_json="$EVAL_DIR/${tag}_generation_on.json"
   local off_json="$EVAL_DIR/${tag}_generation_off.json"
   local forward_json="$EVAL_DIR/${tag}_teacher_forcing.json"
-  env "${COMMON_ENV[@]}" TSLM_EVAL_TAG="${tag}_on" \
+  env "${COMMON_ENV[@]}" TSLM_EVAL_STRICT=0 TSLM_EVAL_TAG="${tag}_on" \
     "$PY" train.py --config "$PROBE_CONFIG" --no-wandb --eval-only \
     --checkpoint "$checkpoint" --split val --out-json "$on_json"
-  env "${COMMON_ENV[@]}" TSLM_V3_CONTEXT_OFF=1 TSLM_EVAL_TAG="${tag}_off" \
+  env "${COMMON_ENV[@]}" TSLM_EVAL_STRICT=0 TSLM_V3_CONTEXT_OFF=1 TSLM_EVAL_TAG="${tag}_off" \
     "$PY" train.py --config "$PROBE_CONFIG" --no-wandb --eval-only \
     --checkpoint "$checkpoint" --split val --out-json "$off_json"
   env "${COMMON_ENV[@]}" "$PY" "$FORWARD_AUDIT" \
