@@ -58,7 +58,10 @@ run_generation_if_missing() {
   [ ! -e "$output" ] || { echo "KEEP $output"; return; }
   local intervention=()
   [ "$condition" = "on" ] || intervention=(TSLM_V3_CONTEXT_EVAL="$condition")
-  env "${COMMON_ENV[@]}" "${intervention[@]}" \
+  # Il sondaggio sugli 80 (max_samples 800) non copre i 520: strict solo sulla val intera.
+  local strict=1
+  [ "$config" = "$PROBE_CONFIG" ] && strict=0
+  env "${COMMON_ENV[@]}" TSLM_EVAL_STRICT="$strict" "${intervention[@]}" \
     TSLM_V3_COLLECT_CONTEXT_STATS=1 TSLM_EVAL_TAG="${tag}_posthoc" \
     "$PY" train.py --config "$config" --no-wandb --eval-only \
     --checkpoint "$CHECKPOINT" --split val --out-json "$output"
