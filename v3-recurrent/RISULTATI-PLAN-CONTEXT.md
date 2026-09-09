@@ -43,6 +43,16 @@ va1) 0,165. Val intera a fine epoca 1: va1 0,170; replica 0,135.
 
 - step 500: generazione on 0,0276 / off 0,0278 (magnitudo 0,085 / 0,086); teacher forcing on 0,4669 / off 0,4684 (**Δ −0,0015**, il contesto locale abbassa la NLL più del cross-only al passo 500, −0,0008). In attesa di step 2000 e fine epoca.
 
+## Verifiche aggiuntive richieste da Jacopo (09/09 08:20 UTC) — in implementazione (Codex)
+
+1. Val intera acceso/spento sullo stesso checkpoint, appaiata con IC95 (oggi solo "acceso").
+2. Struttura dopo LayerNorm per banda esatta sui dati reali (il centraggio è prima della LN).
+3. Contesto corretto contro disallineato (roll fra token / altra serie), in TF e in generazione.
+
+Bivio da chiarire: il lettore non conserva l'informazione locale, oppure la conserva ma il
+modello non ne ricava vantaggio. Le tre verifiche verranno applicate: post-hoc ai pilot 1 e 2
+(checkpoint di fine epoca), e in linea al pilot 3 `crossglobal`.
+
 ## Criteri di lettura (dal piano §5)
 
 - `local` on > off (80 e val intera) e struttura per token conservata → il contesto locale porta
