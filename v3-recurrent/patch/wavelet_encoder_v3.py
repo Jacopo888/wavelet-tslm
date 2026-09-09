@@ -6,7 +6,7 @@ positions and padding are therefore exactly v1.  Its already-computed pyramid
 is reused by a coarse-to-fine recurrent reader.  The reader's context is added
 through a learned scalar::
 
-    output = v1_tokens + context_scale * context
+    output = v1_tokens + context_scale * token_gate * context
 
 The class default remains zero so identity tests and old residual-on-v1
 checkpoints retain their exact semantics.  Run configs use a small non-zero
@@ -34,7 +34,15 @@ class _LoopBlock(nn.Module):
     """One iteration of the loop: gated cross-attention read of the current
     level, self-attention among residual tokens, MLP.  Pre-LN blocks."""
 
-    def __init__(self, dim: int, n_heads: int, mlp_ratio: int, dropout: float):
+    def __init__(
+        self,
+        dim: int,
+        n_heads: int,
+        mlp_ratio: int,
+        dropout: float,
+        self_attn_scale_init: float,
+        mlp_scale_init: float,
+    ):
         super().__init__()
         self.n_heads = n_heads
         self.ln_q = nn.LayerNorm(dim)
@@ -46,6 +54,8 @@ class _LoopBlock(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(dim, mlp_ratio * dim), nn.GELU(), nn.Linear(mlp_ratio * dim, dim)
         )
+        self.self_attn_scale = nn.Parameter(torch.tensor(float(self_attn_scale_init)))
+        self.mlp_scale = nn.Parameter(torch.tensor(float(mlp_scale_init)))
 
     def forward(
         self,
@@ -54,7 +64,8 @@ class _LoopBlock(nn.Module):
         e: torch.Tensor,
         gate: torch.Tensor | None,
         position_bias: torch.Tensor,
-    ) -> torch.Tensor:
+        reader_mode: str,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         q, kv = self.ln_q(query), self.ln_kv(e)
         attn_mask = position_bias.repeat_interleave(self.n_heads, dim=0)
         read, _ = self.cross(
@@ -63,10 +74,15 @@ class _LoopBlock(nn.Module):
         if gate is not None:
             read = read * gate
         z = z + read
+        if reader_mode == "cross_only":
+            zero = torch.zeros_like(read)
+            return z, read, zero, zero
         s = self.ln_s(z)
         mix, _ = self.self_attn(s, s, s, need_weights=False)
+        mix = self.self_attn_scale.to(mix.dtype) * mix
         z = z + mix
-        return z + self.mlp(self.ln_m(z))
+        mlp = self.mlp_scale.to(z.dtype) * self.mlp(self.ln_m(z))
+        return z + mlp, read, mix, mlp
 
 
 class RecurrentWaveletTSEncoder(WaveletTSEncoder):
@@ -93,6 +109,10 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         pos_dtype: str = "input",
         locality_sigma: float = 0.0078125,
         context_scale_init: float = 0.0,
+        reader_mode: str = "full",
+        self_attn_scale_init: float = 1.0,
+        mlp_scale_init: float = 1.0,
+        token_gate: bool = False,
         wavelet: str = "haar",
         use_coarse: bool = True,
         **_,
@@ -101,6 +121,10 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             raise ValueError(f"depth_mode must be full|sdepth|noise_gate, got {depth_mode!r}")
         if pos_dtype not in ("input", "fp32"):
             raise ValueError(f"pos_dtype must be input|fp32, got {pos_dtype!r}")
+        if reader_mode not in ("full", "cross_only"):
+            raise ValueError(
+                f"reader_mode must be full|cross_only, got {reader_mode!r}"
+            )
         if int(output_dim) <= 0 or int(num_tokens) <= 0:
             raise ValueError("output_dim and num_tokens must be positive")
         if int(max_levels) < 1 or int(coarse_blocks) < 1:
@@ -121,6 +145,10 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
             raise ValueError("locality_sigma must be finite and > 0")
         if not math.isfinite(float(context_scale_init)):
             raise ValueError("context_scale_init must be finite")
+        if not math.isfinite(float(self_attn_scale_init)):
+            raise ValueError("self_attn_scale_init must be finite")
+        if not math.isfinite(float(mlp_scale_init)):
+            raise ValueError("mlp_scale_init must be finite")
 
         # This creates the complete v1 token path with the exact same module
         # names, parameter initialization and dtype behavior as v1.
@@ -143,6 +171,19 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         self.noise_tau = float(noise_tau)
         self.pos_dtype = pos_dtype
         self.locality_sigma = float(locality_sigma)
+        self.reader_mode = reader_mode
+        self.token_gate_enabled = bool(token_gate)
+        # The audit found a large token-shared mode.  Cross-only removes it;
+        # controlled full readers approach the same local baseline smoothly,
+        # while the historical full/1.0 default has strength zero and is
+        # therefore bit-for-bit unchanged.
+        if self.reader_mode == "cross_only":
+            self.local_center_strength = 1.0
+        else:
+            transform_strength = max(
+                abs(float(self_attn_scale_init)), abs(float(mlp_scale_init))
+            )
+            self.local_center_strength = max(0.0, 1.0 - min(1.0, transform_strength))
         D = self.output_dim
         n_steps = self.max_levels + 1  # coarse + up to max_levels detail levels
 
@@ -151,7 +192,13 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         nn.init.normal_(self.step_embed.weight, mean=0.0, std=0.02)
         blocks = 1 if self.tied else n_steps
         self.blocks = nn.ModuleList(
-            [_LoopBlock(D, n_heads, mlp_ratio, dropout) for _ in range(blocks)]
+            [
+                _LoopBlock(
+                    D, n_heads, mlp_ratio, dropout,
+                    self_attn_scale_init, mlp_scale_init,
+                )
+                for _ in range(blocks)
+            ]
         )
         # gate in [0,1] from [mean base query, mean level tokens, level stats]
         self.gate_head = nn.Linear(2 * D + 4, 1) if self.level_gate else None
@@ -162,6 +209,10 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         # layer entirely and are added unchanged at the final line.
         self.context_norm = nn.LayerNorm(D)
         self.context_scale = nn.Parameter(torch.tensor(float(context_scale_init)))
+        self.context_token_gate = nn.Linear(2 * D, 1) if self.token_gate_enabled else None
+        if self.context_token_gate is not None:
+            nn.init.zeros_(self.context_token_gate.weight)
+            nn.init.zeros_(self.context_token_gate.bias)
 
         # Diagnostics stay out of state_dict.  Logging is opt-in because it
         # belongs to the run harness, not to the model architecture.
@@ -178,6 +229,7 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         self.last_steps = 0
         self.last_gates: list[float] = []
         self.last_active: list[float] = []
+        self.last_context_stats: dict[str, object] = {}
         self.last_base_positions: torch.Tensor | None = None
         self.last_base_bands: torch.Tensor | None = None
         self.last_base_valid: torch.Tensor | None = None
@@ -185,6 +237,86 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
     # ------------------------------------------------------------------
     def _block(self, step: int) -> _LoopBlock:
         return self.blocks[0] if self.tied else self.blocks[step]
+
+    def _local_context(self, z: torch.Tensor) -> torch.Tensor:
+        if self.local_center_strength == 0.0:
+            return z
+        return z - self.local_center_strength * z.mean(dim=-2, keepdim=True)
+
+    @staticmethod
+    def _rms(value: torch.Tensor) -> torch.Tensor:
+        return value.detach().float().square().mean().sqrt()
+
+    def _context_snapshot(
+        self,
+        z: torch.Tensor,
+        cross: torch.Tensor | None = None,
+        self_attn: torch.Tensor | None = None,
+        mlp: torch.Tensor | None = None,
+    ) -> dict[str, float | None]:
+        """Small detached context-only sample; never retained in state_dict."""
+        z_sample = z.detach()[:4, :64, :64].float()
+        with torch.no_grad():
+            h = self.context_norm(z.detach())[:4, :64, :64].float()
+            eps = torch.finfo(h.dtype).eps
+            h_rms = self._rms(h).clamp_min(eps)
+            centered = h - h.mean(dim=-2, keepdim=True)
+            unit = F.normalize(h, dim=-1, eps=eps)
+            n_tokens = h.shape[-2]
+            if n_tokens > 1:
+                cosine = (
+                    unit.sum(dim=-2).square().sum(dim=-1) - n_tokens
+                ) / (n_tokens * (n_tokens - 1))
+                mean_cosine = cosine.mean()
+            else:
+                mean_cosine = h.new_tensor(1.0)
+            if h.shape[0] > 1:
+                series_delta = self._rms(h[1:] - h[:-1]) / h_rms
+                series_value: float | None = float(series_delta.cpu())
+            else:
+                series_value = None
+            shift = max(1, n_tokens // 3)
+            token_translation = self._rms(h - h.roll(shift, dims=-2)) / h_rms
+
+            def component_rms(value: torch.Tensor | None) -> float:
+                if value is None:
+                    return 0.0
+                part = value.detach()[:4, :64, :64]
+                return float(self._rms(part).cpu())
+
+            return {
+                "z_rms": float(self._rms(z_sample).cpu()),
+                "h_rms": float(h_rms.cpu()),
+                "token_variable_fraction": float(
+                    (self._rms(centered) / h_rms).cpu()
+                ),
+                "mean_token_cosine": float(mean_cosine.cpu()),
+                "input_series_relative": series_value,
+                "token_translation_relative": float(token_translation.cpu()),
+                "cross_rms": component_rms(cross),
+                "self_attn_rms": component_rms(self_attn),
+                "mlp_rms": component_rms(mlp),
+            }
+
+    def _merge_context(
+        self,
+        base_tokens: torch.Tensor,
+        context: torch.Tensor,
+        token_gate_override: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Apply the output boundary; override exists for exact gate tests/audits."""
+        if token_gate_override is not None:
+            gate = token_gate_override.to(device=context.device, dtype=context.dtype)
+        elif self.context_token_gate is not None:
+            base_normalized = F.layer_norm(base_tokens, (base_tokens.shape[-1],))
+            gate_input = torch.cat([base_normalized, context], dim=-1)
+            gate = 2.0 * torch.sigmoid(self.context_token_gate(gate_input))
+        else:
+            gate = torch.ones_like(context[..., :1])
+        scale = self.context_scale.to(context.dtype)
+        if os.environ.get("TSLM_V3_CONTEXT_OFF") == "1":
+            scale = scale * 0.0
+        return base_tokens + scale * gate * context, gate
 
     def _tokens(self, v: torch.Tensor, pos: torch.Tensor, band: int) -> torch.Tensor:
         """v, pos: (B, m) -> (B, m, D); same featurisation as v1."""
@@ -330,7 +462,9 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         stats: torch.Tensor,
         band: int,
         step: int,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[
+        torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+    ]:
         """Build one level's tokens and apply one recurrent iteration.
 
         Token construction stays inside this function so activation
@@ -349,9 +483,11 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         kpos = positions.float().unsqueeze(1)
         position_bias = -torch.log1p(((qpos - kpos) / self.locality_sigma).square())
         position_bias = position_bias.to(e.dtype)
-        z_new = self._block(step)(z, query, e, gate, position_bias)
+        z_new, cross, self_attn, mlp = self._block(step)(
+            z, query, e, gate, position_bias, self.reader_mode
+        )
         gate_out = gate if gate is not None else z_new.new_empty((0,))
-        return z_new, gate_out
+        return z_new, gate_out, cross, self_attn, mlp
 
     def _num_levels(self, input_length: int) -> int:
         return max(
@@ -407,9 +543,14 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         # With a zero scale and gradients disabled, evaluating the loop cannot
         # affect the result.  This makes the mandatory 16x131072 equality gate
         # cost the same as v1 while training still builds the residual graph.
-        if not torch.is_grad_enabled() and self.context_scale.detach().item() == 0.0:
+        context_is_off = os.environ.get("TSLM_V3_CONTEXT_OFF") == "1"
+        if (
+            not torch.is_grad_enabled()
+            and (self.context_scale.detach().item() == 0.0 or context_is_off)
+        ):
             self.last_depth, self.last_steps = depth, n_steps
             self.last_gates, self.last_active = [], []
+            self.last_context_stats = {}
             return base_tokens
 
         # ---- per-level token sets, coarse-to-fine ----------------------------
@@ -463,6 +604,19 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         )
         gate_means: list[torch.Tensor] = []
         active_means: list[torch.Tensor] = []
+        iteration_stats: list[dict[str, float]] = []
+        next_call = self._forward_calls + 1
+        try:
+            trainer_ctx_every = int(os.environ.get("TSLM_V3_CTX_LOG_EVERY", "0"))
+        except ValueError as exc:
+            raise ValueError("TSLM_V3_CTX_LOG_EVERY must be an integer >= 0") from exc
+        if trainer_ctx_every < 0:
+            raise ValueError("TSLM_V3_CTX_LOG_EVERY must be >= 0")
+        collect_stats = (
+            not torch.is_grad_enabled()
+            or (self.gate_log_every and next_call % self.gate_log_every == 0)
+            or (trainer_ctx_every and next_call % trainer_ctx_every == 0)
+        )
         use_checkpoint = (
             self.training
             and torch.is_grad_enabled()
@@ -478,13 +632,13 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                         z_, base_tokens, base_positions, v_, p_, s_, _band, _step
                     )
 
-                z_new, gate_out = checkpoint(
+                z_new, gate_out, cross, self_attn, mlp = checkpoint(
                     run_step, z, values, positions, stats,
                     use_reentrant=False,
                     preserve_rng_state=True,
                 )
             else:
-                z_new, gate_out = self._iteration(
+                z_new, gate_out, cross, self_attn, mlp = self._iteration(
                     z, base_tokens, base_positions, values, positions, stats, band, step
                 )
             if self.gate_head is not None:
@@ -493,10 +647,19 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 # series whose level is below the noise floor do not read it
                 keep = has_signal.view(B, 1, 1)
                 z = torch.where(keep, z_new, z)
+                cross = torch.where(keep, cross, torch.zeros_like(cross))
+                self_attn = torch.where(keep, self_attn, torch.zeros_like(self_attn))
+                mlp = torch.where(keep, mlp, torch.zeros_like(mlp))
                 active_means.append(keep.float().mean())
             else:
                 z = z_new
                 active_means.append(torch.ones((), device=dev))
+            if collect_stats:
+                snapshot = self._context_snapshot(
+                    self._local_context(z), cross, self_attn, mlp
+                )
+                snapshot.update({"step": step, "band": band})
+                iteration_stats.append(snapshot)
 
         self.last_depth, self.last_steps = depth, n_steps
         self.last_gates = (
@@ -504,19 +667,43 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         )
         self.last_active = torch.stack(active_means).cpu().tolist()
         self._forward_calls += 1
+        z = self._local_context(z)
+        context = self.context_norm(z)
+        output, token_gate = self._merge_context(base_tokens, context)
+        if collect_stats:
+            final_stats = self._context_snapshot(z)
+            gate_sample = token_gate.detach()[:4, :64].float().flatten()
+            final_stats["gate_mean"] = float(gate_sample.mean().cpu())
+            final_stats["gate_min"] = float(gate_sample.min().cpu())
+            final_stats["gate_max"] = float(gate_sample.max().cpu())
+            final_stats["gate_p10"] = float(torch.quantile(gate_sample, 0.1).cpu())
+            final_stats["gate_p50"] = float(torch.quantile(gate_sample, 0.5).cpu())
+            final_stats["gate_p90"] = float(torch.quantile(gate_sample, 0.9).cpu())
+            final_stats["gate_saturation_low"] = float((gate_sample < 0.05).float().mean().cpu())
+            final_stats["gate_saturation_high"] = float((gate_sample > 1.95).float().mean().cpu())
+            self.last_context_stats = {
+                "reader_mode": self.reader_mode,
+                "iterations": iteration_stats,
+                "final": final_stats,
+            }
         if (
             self.gate_log_every
             and self._forward_calls % self.gate_log_every == 0
         ):
             gates_text = ",".join(f"{value:.4f}" for value in self.last_gates)
             active_text = ",".join(f"{value:.4f}" for value in self.last_active)
+            final = self.last_context_stats.get("final", {})
             print(
-                f"[V3Gates] call={self._forward_calls} depth={depth}/{n_steps} "
+                f"[V3Ctx] call={self._forward_calls} depth={depth}/{n_steps} "
+                f"reader={self.reader_mode} z_rms={final.get('z_rms', float('nan')):.6g} "
+                f"h_rms={final.get('h_rms', float('nan')):.6g} "
+                f"token_variable={final.get('token_variable_fraction', float('nan')):.6g} "
+                f"token_cosine={final.get('mean_token_cosine', float('nan')):.6g} "
+                f"token_gate_mean={final.get('gate_mean', float('nan')):.6g} "
                 f"gates=[{gates_text}] active=[{active_text}]",
                 flush=True,
             )
-        context = self.context_norm(z)
-        return base_tokens + self.context_scale.to(z.dtype) * context
+        return output
 
     def _load_from_state_dict(
         self, state_dict, prefix, local_metadata, strict, missing_keys,
@@ -532,6 +719,20 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
                 "legacy latent-only v3 checkpoint is incompatible with residual-on-v1 v3; "
                 f"found {legacy}"
             )
+        # Only an actual residual-on-v1 checkpoint has context_scale.  The v1
+        # bootstrap in WaveletV3TSModel intentionally lacks it and must retain
+        # constructor-configured scale initials instead of being "migrated".
+        if prefix + "context_scale" in state_dict:
+            for block_index, block in enumerate(self.blocks):
+                for name in ("self_attn_scale", "mlp_scale"):
+                    key = f"{prefix}blocks.{block_index}.{name}"
+                    if key not in state_dict:
+                        state_dict[key] = torch.ones_like(getattr(block, name))
+            if self.context_token_gate is not None:
+                for name, value in self.context_token_gate.state_dict().items():
+                    key = f"{prefix}context_token_gate.{name}"
+                    if key not in state_dict:
+                        state_dict[key] = value.detach().clone()
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, strict, missing_keys,
             unexpected_keys, error_msgs,
@@ -553,6 +754,78 @@ class RecurrentWaveletTSEncoder(WaveletTSEncoder):
         if x.dim() != 2:
             raise ValueError(f"expected (B, L), got {tuple(x.shape)}")
         return self._encode_channel(x)
+
+
+@torch.no_grad()
+def context_input_dependence(
+    encoder: RecurrentWaveletTSEncoder,
+    x: torch.Tensor,
+    different: torch.Tensor,
+) -> dict[str, float]:
+    """Measure context-only response to a different and a translated input.
+
+    This explicit probe is intentionally outside the normal forward: training
+    never pays for two extra encodes.  Results are also attached to
+    ``last_context_stats['final']`` for checkpoint audits.
+    """
+    if x.shape != different.shape:
+        raise ValueError("x and different must have the same shape")
+    captured: list[torch.Tensor] = []
+
+    def capture(_module, _inputs, output):
+        captured.append(output.detach().float())
+
+    was_training = encoder.training
+    handle = encoder.context_norm.register_forward_hook(capture)
+    time_dim = -2 if encoder.multi_variable else -1
+    try:
+        encoder.eval()
+        captured.clear()
+        encoder(x)
+        primary_contexts = list(captured)
+        primary = primary_contexts[-1]
+        primary_stats = encoder.last_context_stats
+        captured.clear()
+        encoder(different)
+        other_contexts = list(captured)
+        other = other_contexts[-1]
+        captured.clear()
+        shift = max(1, x.shape[time_dim] // 3)
+        encoder(torch.roll(x, shifts=shift, dims=time_dim))
+        translated_contexts = list(captured)
+        translated = translated_contexts[-1]
+    finally:
+        handle.remove()
+        encoder.train(was_training)
+    denominator = encoder._rms(primary).clamp_min(torch.finfo(primary.dtype).eps)
+    result = {
+        "different_series_relative": float(
+            (encoder._rms(primary - other) / denominator).cpu()
+        ),
+        "translated_input_relative": float(
+            (encoder._rms(primary - translated) / denominator).cpu()
+        ),
+    }
+    encoder.last_context_stats = primary_stats
+    if primary_stats:
+        primary_stats.setdefault("final", {}).update(result)
+        iterations = primary_stats.get("iterations", [])
+        if not (
+            len(primary_contexts) == len(other_contexts) == len(translated_contexts)
+        ):
+            raise RuntimeError("context diagnostic captures changed across paired inputs")
+        for index, row in enumerate(iterations):
+            source = primary_contexts[index]
+            source_rms = encoder._rms(source).clamp_min(
+                torch.finfo(source.dtype).eps
+            )
+            row["different_series_relative"] = float(
+                (encoder._rms(source - other_contexts[index]) / source_rms).cpu()
+            )
+            row["translated_input_relative"] = float(
+                (encoder._rms(source - translated_contexts[index]) / source_rms).cpu()
+            )
+    return result
 
 
 @torch.no_grad()

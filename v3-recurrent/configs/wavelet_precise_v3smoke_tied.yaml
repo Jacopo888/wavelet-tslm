@@ -30,6 +30,10 @@ model:
     pos_dtype: input
     locality_sigma: 0.0078125
     context_scale_init: 0.1
+    reader_mode: cross_only
+    self_attn_scale_init: 0.1
+    mlp_scale_init: 0.1
+    token_gate: true
     max_levels: 10
     tied: true
     depth_mode: full
@@ -53,6 +57,8 @@ training:
   learning_rate:
     default: 1.0e-4
     context: 1.0e-3
+    context_scale: 1.0e-5
+    context_token_gate: 1.0e-4
 
   weight_decay: 0.01
   max_grad_norm: 1.0

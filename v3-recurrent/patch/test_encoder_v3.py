@@ -46,13 +46,12 @@ _install_pkg()
 from src.models.wavelet_encoder import WaveletTSEncoder, haar_pyramid  # noqa: E402
 from src.models.wavelet_encoder_v3 import (  # noqa: E402
     RecurrentWaveletTSEncoder,
+    context_input_dependence,
     position_decodability,
     token_diversity,
 )
 
 D, K = 512, 256
-RUN_CONTEXT_SCALE_INIT = 0.1
-RUN_CONTEXT_LR = 1.0e-3
 RUN_CONTEXT_SCALE_INIT = 0.1
 RUN_CONTEXT_LR = 1.0e-3
 
@@ -159,6 +158,19 @@ def test_init_matches_v1_exact_fp32_bf16_short_and_16ch_long():
         assert torch.equal(actual, expected), dtype
 
 
+def test_reader_modes_and_unit_scales_preserve_disabled_residual_identity():
+    x = torch.randn(2, 96)
+    for reader_mode in ("cross_only", "full"):
+        v1, v3 = make_exact_pair(
+            context_scale_init=0.0,
+            reader_mode=reader_mode,
+            self_attn_scale_init=1.0,
+            mlp_scale_init=1.0,
+        )
+        with torch.no_grad():
+            assert torch.equal(v3(x), v1(x)), reader_mode
+
+
 def test_one_pyramid_per_channel_is_shared_with_context():
     import src.models.wavelet_encoder as v1_module
 
@@ -191,6 +203,102 @@ def test_token_diversity_and_input_dependence_at_init():
     assert location_metrics["input_relative_difference"] > 0.1, location_metrics
     assert default_metrics["input_relative_difference"] > 0.1, default_metrics
     assert enc.step_embed.weight.float().std().item() < 0.03
+
+
+def _reader_context_stats(reader_mode: str, scale: float) -> dict[str, object]:
+    torch.manual_seed(314)
+    enc = RecurrentWaveletTSEncoder(
+        output_dim=64,
+        num_tokens=256,
+        max_levels=2,
+        coarse_blocks=32,
+        level_topm=64,
+        n_pos_freqs=16,
+        n_heads=4,
+        mlp_ratio=2,
+        reader_mode=reader_mode,
+        self_attn_scale_init=scale,
+        mlp_scale_init=scale,
+        context_scale_init=0.1,
+    ).eval()
+    torch.manual_seed(315)
+    base = torch.randn(1, 512)
+    different = torch.sin(torch.linspace(0, 90, 512)).unsqueeze(0)
+    translated = torch.roll(base, 173, dims=-1)
+    batch = torch.cat([base, different, translated], dim=0)
+    with torch.no_grad():
+        enc(batch)
+    dependence = context_input_dependence(enc, base, different)
+    stats = enc.last_context_stats
+    assert len(stats["iterations"]) == enc.last_depth
+    for row in stats["iterations"]:
+        assert set(("z_rms", "h_rms", "token_variable_fraction",
+                    "mean_token_cosine", "cross_rms", "self_attn_rms",
+                    "mlp_rms", "different_series_relative",
+                    "translated_input_relative")) <= set(row)
+    stats["measured_input_dependence"] = dependence
+    return stats
+
+
+def test_context_only_diagnostics_preserve_structure_at_init():
+    cross = _reader_context_stats("cross_only", 1.0)
+    full = _reader_context_stats("full", 1.0)
+    small = _reader_context_stats("full", 0.1)
+    cross_final = cross["final"]
+    full_final = full["final"]
+    small_final = small["final"]
+
+    assert cross_final["token_variable_fraction"] >= 0.3, cross
+    assert cross["measured_input_dependence"]["different_series_relative"] > 0.1
+    assert cross["measured_input_dependence"]["translated_input_relative"] > 0.1
+    assert all(row["self_attn_rms"] == 0.0 for row in cross["iterations"])
+    assert all(row["mlp_rms"] == 0.0 for row in cross["iterations"])
+    assert any(row["self_attn_rms"] > 0.0 for row in full["iterations"])
+    assert any(row["mlp_rms"] > 0.0 for row in full["iterations"])
+    assert abs(
+        small_final["token_variable_fraction"]
+        - cross_final["token_variable_fraction"]
+    ) < 0.25
+    assert abs(
+        small_final["token_variable_fraction"]
+        - cross_final["token_variable_fraction"]
+    ) <= abs(
+        full_final["token_variable_fraction"]
+        - cross_final["token_variable_fraction"]
+    ), (cross, full, small)
+    print(
+        "CONTEXT_INIT_STATS",
+        {
+            "cross_only": cross_final,
+            "full": full_final,
+            "full_small": small_final,
+        },
+    )
+
+
+def test_token_gate_identity_and_exact_zero_slot():
+    enc = make_small(token_gate=True, context_scale_init=0.1)
+    assert enc.context_token_gate is not None
+    base = torch.randn(2, 16, 32)
+    context = torch.randn_like(base)
+    ungated = base + enc.context_scale.detach() * context
+    actual, gates = enc._merge_context(base, context)
+    assert torch.equal(gates, torch.ones_like(gates))
+    assert torch.equal(actual, ungated)
+
+    override = torch.ones(2, 16, 1)
+    override[:, 7] = 0.0
+    slotted, used = enc._merge_context(base, context, override)
+    assert torch.equal(used, override)
+    assert torch.equal(slotted[:, 7], base[:, 7])
+    assert torch.equal(slotted[:, :7], ungated[:, :7])
+
+    with torch.no_grad():
+        enc(torch.randn(2, 64))
+    gate_stats = enc.last_context_stats["final"]
+    assert gate_stats["gate_min"] == gate_stats["gate_max"] == 1.0
+    assert gate_stats["gate_saturation_low"] == 0.0
+    assert gate_stats["gate_saturation_high"] == 0.0
 
 
 def test_position_presence_and_magnitude_decodability_at_init():
@@ -320,6 +428,151 @@ def test_nonzero_run_init_breaks_zero_scale_context_deadlock():
     assert active["first_block_relative_to_value"] > 1.0e-3, active
     assert active["max_block_norm"] > 0.0, active
     assert active["scale_move"] > 1.0e-2, active
+
+
+def test_cross_only_heldout_witness_adds_missing_information_and_is_optional():
+    """Intermediate-detail location is absent from v1's eight coarse slots."""
+    previous_threads = torch.get_num_threads()
+    torch.set_num_threads(1)
+    try:
+        torch.manual_seed(901)
+        enc = RecurrentWaveletTSEncoder(
+            output_dim=8, num_tokens=8, max_levels=3, coarse_blocks=8,
+            level_topm=8, n_pos_freqs=2, n_heads=2, mlp_ratio=1,
+            reader_mode="cross_only", context_scale_init=1.0,
+            level_gate=False,
+        ).train()
+        base_encoder = WaveletTSEncoder(
+            output_dim=8, num_tokens=8, max_levels=3, coarse_blocks=8,
+            n_pos_freqs=2,
+        ).eval()
+        base_encoder.load_state_dict({
+            key: value
+            for key, value in enc.state_dict().items()
+            if key in base_encoder.state_dict()
+        })
+
+        def detail_cases(positions):
+            rows, labels = [], []
+            for position in positions:
+                row = torch.zeros(64)
+                row[position], row[position + 1] = 5.0, -5.0
+                rows.append(row)
+                labels.append(float(position >= 32))
+            return torch.stack(rows), torch.tensor(labels)
+
+        train_x, train_y = detail_cases((4, 8, 16, 24, 36, 40, 48, 56))
+        test_x, test_y = detail_cases((12, 20, 44, 52))
+        with torch.no_grad():
+            train_base = base_encoder(train_x).flatten(1)
+            test_base = base_encoder(test_x).flatten(1)
+        # The complete v1 budget is coarse; paired impulses cancel there.
+        assert bool((enc._base_metadata(
+            *enc._v1_tokens_and_pyramid(train_x)[1:], 64, train_x.dtype
+        )[1] == 0).all())
+        assert (test_base - test_base[:1]).abs().max().item() < 1.0e-6
+
+        torch.manual_seed(902)
+        base_probe = torch.nn.Linear(64, 1)
+        torch.manual_seed(902)
+        context_probe = torch.nn.Linear(64, 1)
+        base_opt = torch.optim.AdamW(base_probe.parameters(), lr=0.01)
+        context_opt = torch.optim.AdamW(
+            [*_context_parameters(enc), *context_probe.parameters()], lr=0.01
+        )
+        for _ in range(32):
+            base_opt.zero_grad(set_to_none=True)
+            base_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                base_probe(train_base).squeeze(-1), train_y
+            )
+            base_loss.backward()
+            base_opt.step()
+
+            context_opt.zero_grad(set_to_none=True)
+            context_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                context_probe(enc(train_x).flatten(1)).squeeze(-1), train_y
+            )
+            context_loss.backward()
+            context_opt.step()
+
+        enc.eval()
+        with torch.no_grad():
+            base_logits = base_probe(test_base).squeeze(-1)
+            on_logits = context_probe(enc(test_x).flatten(1)).squeeze(-1)
+            os.environ["TSLM_V3_CONTEXT_OFF"] = "1"
+            off_logits = context_probe(enc(test_x).flatten(1)).squeeze(-1)
+            os.environ.pop("TSLM_V3_CONTEXT_OFF")
+        base_bce = torch.nn.functional.binary_cross_entropy_with_logits(
+            base_logits, test_y
+        ).item()
+        on_bce = torch.nn.functional.binary_cross_entropy_with_logits(
+            on_logits, test_y
+        ).item()
+        off_bce = torch.nn.functional.binary_cross_entropy_with_logits(
+            off_logits, test_y
+        ).item()
+        on_accuracy = ((on_logits > 0) == test_y.bool()).float().mean().item()
+        assert on_accuracy == 1.0 and on_bce < 0.25 * base_bce
+        assert on_bce < 0.25 * off_bce
+
+        # Negative control: a low-frequency orientation is already present in
+        # v1.  A fresh identity-scale context is not needed; both conditions
+        # must solve the held-out rows.
+        torch.manual_seed(903)
+        optional = RecurrentWaveletTSEncoder(
+            output_dim=8, num_tokens=8, max_levels=3, coarse_blocks=8,
+            level_topm=8, n_pos_freqs=2, n_heads=2, mlp_ratio=1,
+            reader_mode="cross_only", context_scale_init=0.1,
+            level_gate=False,
+        ).eval()
+
+        def coarse_cases(n, seed):
+            generator = torch.Generator().manual_seed(seed)
+            axis = torch.linspace(-1.0, 1.0, 64)
+            rows, labels = [], []
+            for index in range(n):
+                label = index % 2
+                row = (1.0 if label else -1.0) * axis
+                row = row + 0.05 * torch.randn(64, generator=generator)
+                rows.append(row)
+                labels.append(float(label))
+            return torch.stack(rows), torch.tensor(labels)
+
+        coarse_train_x, coarse_train_y = coarse_cases(16, 1)
+        coarse_test_x, coarse_test_y = coarse_cases(8, 2)
+        torch.manual_seed(904)
+        optional_probe = torch.nn.Linear(64, 1)
+        optional_opt = torch.optim.AdamW(optional_probe.parameters(), lr=0.05)
+        with torch.no_grad():
+            optional_train = optional(coarse_train_x).flatten(1)
+        for _ in range(30):
+            optional_opt.zero_grad(set_to_none=True)
+            loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                optional_probe(optional_train).squeeze(-1), coarse_train_y
+            )
+            loss.backward()
+            optional_opt.step()
+        with torch.no_grad():
+            optional_on = optional_probe(optional(coarse_test_x).flatten(1)).squeeze(-1)
+            os.environ["TSLM_V3_CONTEXT_OFF"] = "1"
+            optional_off = optional_probe(optional(coarse_test_x).flatten(1)).squeeze(-1)
+            os.environ.pop("TSLM_V3_CONTEXT_OFF")
+        on_optional_accuracy = (
+            (optional_on > 0) == coarse_test_y.bool()
+        ).float().mean().item()
+        off_optional_accuracy = (
+            (optional_off > 0) == coarse_test_y.bool()
+        ).float().mean().item()
+        assert on_optional_accuracy == off_optional_accuracy == 1.0
+        print("HELDOUT_WITNESS", {
+            "needed": {"base_bce": base_bce, "off_bce": off_bce,
+                       "on_bce": on_bce, "on_accuracy": on_accuracy},
+            "not_needed": {"on_accuracy": on_optional_accuracy,
+                           "off_accuracy": off_optional_accuracy},
+        })
+    finally:
+        os.environ.pop("TSLM_V3_CONTEXT_OFF", None)
+        torch.set_num_threads(previous_threads)
 
 
 def test_shapes_and_steps():
@@ -621,6 +874,7 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
         "pad_token", "value_proj.0.weight", "band_embed.weight",
         "step_embed.weight", "gate_head.weight", "gate_head.bias",
         "context_norm.weight", "context_norm.bias", "context_scale",
+        "blocks.0.self_attn_scale", "blocks.0.mlp_scale",
     }
     assert required <= set(state)
 
@@ -630,6 +884,36 @@ def test_state_dict_roundtrip_and_slim_key_coverage():
     x = torch.randn(2, 64)
     with torch.no_grad():
         assert torch.equal(enc(x), restored(x))
+
+    pre_scale_state = {
+        key: value for key, value in state.items()
+        if not key.endswith(("self_attn_scale", "mlp_scale"))
+    }
+    migrated = make_small(level_gate=True, self_attn_scale_init=0.1,
+                          mlp_scale_init=0.1)
+    missing, unexpected = migrated.load_state_dict(pre_scale_state, strict=True)
+    assert not missing and not unexpected
+    assert all(block.self_attn_scale.item() == 1.0 for block in migrated.blocks)
+    assert all(block.mlp_scale.item() == 1.0 for block in migrated.blocks)
+
+    gated_migration = make_small(level_gate=True, token_gate=True)
+    missing, unexpected = gated_migration.load_state_dict(state, strict=True)
+    assert not missing and not unexpected
+    assert gated_migration.context_token_gate.weight.count_nonzero().item() == 0
+    assert gated_migration.context_token_gate.bias.count_nonzero().item() == 0
+
+    bootstrap = make_small(self_attn_scale_init=0.1, mlp_scale_init=0.1)
+    v1_bootstrap = WaveletTSEncoder(
+        output_dim=32, num_tokens=16, max_levels=3, coarse_blocks=8,
+    )
+    missing, unexpected = bootstrap.load_state_dict(
+        v1_bootstrap.state_dict(), strict=False
+    )
+    assert not unexpected
+    assert all(math.isclose(block.self_attn_scale.item(), 0.1, rel_tol=1e-6)
+               for block in bootstrap.blocks)
+    assert all(math.isclose(block.mlp_scale.item(), 0.1, rel_tol=1e-6)
+               for block in bootstrap.blocks)
 
     # The run init changes only the constructor value, never the state schema.
     # A residual-on-v1 checkpoint made with scale zero must strictly load and
@@ -700,18 +984,40 @@ def test_model_splits_context_optimizer_group_without_v1_parameters():
         model.ts_projector = torch.nn.Linear(32, 7)
         groups = model.get_trainable_parameters()
 
-        expected_context = {id(parameter) for parameter in _context_parameters(model.ts_encoder)}
+        expected_scale = {id(model.ts_encoder.context_scale)}
+        expected_context = {
+            id(parameter) for parameter in _context_parameters(model.ts_encoder)
+        } - expected_scale
         actual_context = {id(parameter) for parameter in groups["context"]}
+        actual_scale = {id(parameter) for parameter in groups["context_scale"]}
         encoder_ids = {id(parameter) for parameter in groups["encoder"]}
         projector_ids = {id(parameter) for parameter in groups["projector"]}
         assert actual_context == expected_context
+        assert actual_scale == expected_scale
         assert not actual_context & encoder_ids
         assert encoder_ids == {
             id(parameter) for parameter in model.ts_encoder.parameters()
-        } - expected_context
+        } - expected_context - expected_scale
         assert projector_ids == {id(parameter) for parameter in model.ts_projector.parameters()}
         flat_ids = [id(parameter) for params in groups.values() for parameter in params]
         assert len(flat_ids) == len(set(flat_ids))
+
+        gated = module.WaveletV3TSModel()
+        gated.ts_encoder = make_small(level_gate=True, token_gate=True)
+        gated.ts_projector = torch.nn.Linear(32, 7)
+        gated_groups = gated.get_trainable_parameters()
+        expected_gate = {
+            id(parameter) for parameter in gated.ts_encoder.context_token_gate.parameters()
+        }
+        assert {
+            id(parameter) for parameter in gated_groups["context_token_gate"]
+        } == expected_gate
+        gated_flat = [
+            id(parameter)
+            for params in gated_groups.values()
+            for parameter in params
+        ]
+        assert len(gated_flat) == len(set(gated_flat))
     finally:
         sys.modules.pop(module_name, None)
         if previous is None:
@@ -754,10 +1060,13 @@ def test_config_kwargs_like_yaml():
                n_pos_freqs=16, freeze=False, level_topm=1024, n_heads=8, mlp_ratio=4,
                dropout=0.0, level_gate=True, noise_tau=1.0, pos_dtype="input",
                locality_sigma=0.0078125, context_scale_init=RUN_CONTEXT_SCALE_INIT,
-               max_levels=10, tied=True, depth_mode="full")
+               max_levels=10, tied=True, depth_mode="full",
+               reader_mode="cross_only", self_attn_scale_init=0.1,
+               mlp_scale_init=0.1, token_gate=True)
     cfg.pop("type")
     enc = RecurrentWaveletTSEncoder(**cfg)
     assert enc.tied and enc.depth_mode == "full" and enc.level_topm == 1024
+    assert enc.reader_mode == "cross_only" and enc.token_gate_enabled
     assert math.isclose(enc.context_scale.item(), RUN_CONTEXT_SCALE_INIT, rel_tol=1e-6)
 
 
@@ -777,6 +1086,46 @@ def test_all_run_and_smoke_configs_enable_context_coadaptation():
         assert re.search(r"(?m)^\s+context_scale_init:\s+0\.1\s*$", text), path
         assert re.search(r"(?m)^\s+default:\s+1\.0e-4\s*$", text), path
         assert re.search(r"(?m)^\s+context:\s+1\.0e-3\s*$", text), path
+
+    pilot_expectations = {
+        "wavelet_precise_v3pilot_cross.yaml": ("cross_only", "false"),
+        "wavelet_precise_v3pilot_fullsmall.yaml": ("full", "false"),
+        "wavelet_precise_v3pilot_gate.yaml": ("cross_only", "true"),
+    }
+    for name, (mode, gate) in pilot_expectations.items():
+        candidates = (HERE / name, HERE.parent / "configs" / name)
+        path = next((candidate for candidate in candidates if candidate.exists()), None)
+        assert path is not None, (name, candidates)
+        text = path.read_text(encoding="utf-8")
+        assert re.search(rf"(?m)^\s+reader_mode:\s+{mode}\s*$", text), path
+        assert re.search(r"(?m)^\s+self_attn_scale_init:\s+0\.1\s*$", text), path
+        assert re.search(r"(?m)^\s+mlp_scale_init:\s+0\.1\s*$", text), path
+        assert re.search(rf"(?m)^\s+token_gate:\s+{gate}\s*$", text), path
+        assert re.search(r"(?m)^\s+context_scale:\s+1\.0e-5\s*$", text), path
+        assert re.search(r"(?m)^\s+context_token_gate:\s+1\.0e-4\s*$", text), path
+
+
+def test_trainer_and_pilot_hooks_are_env_gated_and_val_only():
+    root = HERE.parent.parent
+    train_path = root / "kaggle" / "patch" / "train.py"
+    pilot_path = HERE.parent / "node" / "node_pilot_v3.sh"
+    assert train_path.exists() and pilot_path.exists()
+    train_text = train_path.read_text(encoding="utf-8")
+    for name in (
+        "TSLM_INIT_STATE_PATH", "TSLM_DATA_ORDER_SEED",
+        "TSLM_V3_CTX_LOG_EVERY", "TSLM_CHECKPOINT_STEPS",
+        "TSLM_V3_CONTEXT_OFF",
+    ):
+        assert name in train_text or name == "TSLM_V3_CONTEXT_OFF", name
+    assert 'lr_config.get("context", default_lr)' in train_text
+    assert "optimizer checkpoint topology is incompatible" in train_text
+    pilot_text = pilot_path.read_text(encoding="utf-8")
+    assert "TSLM_SCHED_TOTAL_STEPS=22440" in pilot_text
+    assert "TSLM_SUBSET_SEED=42" in pilot_text
+    assert "trained 4488, failed 0, expected 4488" in pilot_text
+    assert "--split test" not in pilot_text
+    assert "node_train_v3.sh" not in pilot_text
+    assert "node_eval_worker_v3.sh" not in pilot_text
 
 
 if __name__ == "__main__":

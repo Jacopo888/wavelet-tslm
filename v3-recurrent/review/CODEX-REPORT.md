@@ -527,3 +527,103 @@ caricarsi per eval o per recupero dei pesi; il loro valore quasi zero non viene 
 dall'init del nuovo config. Un resume con lo stato AdamW storico non è il percorso previsto
 per la nuova ablazione, perché il nuovo gruppo `context` cambia intenzionalmente la topologia
 dell'optimizer; la replica parte da init e protocollo puliti.
+
+## 13. 09/09 — PLAN-CONTEXT-COLLAPSE, parte ingegneristica
+
+### Lettore e conservazione locale
+
+`model.encoder.reader_mode` accetta `full` (default storico) e `cross_only`. Il secondo accumula
+soltanto l'uscita gated della cross-attention: self-attention e MLP non vengono eseguite e le loro
+componenti diagnostiche sono esattamente zero. Ogni `_LoopBlock` possiede inoltre gli scalari
+appresi `self_attn_scale` e `mlp_scale`; in untied sono quindi distinti per livello. I default
+`self_attn_scale_init=1.0` e `mlp_scale_init=1.0` preservano il calcolo `full` precedente.
+
+L'audit aveva mostrato che anche la lettura cross contiene un grande modo condiviso fra token.
+Ho scelto di sottrarre quel modo nel controllo `cross_only`. Perché `full` a scale piccole sia una
+reintroduzione continua delle trasformazioni, il contesto passato alla LN usa
+`z_local = z - c mean_token(z)`, con `c=1` in `cross_only` e
+`c=1-min(1,max(|self_scale_init|,|mlp_scale_init|))` in `full`. Quindi `full/1.0` ha `c=0` ed è
+invariato; `full/0.1` ha `c=0.9`. `c` è una scelta costruttiva fissata dal config iniziale, non un
+parametro né un ulteriore percorso di gradiente. Le scale apprese moltiplicano soltanto le uscite
+self-attention/MLP come richiesto.
+
+`last_context_stats` contiene una lista per iterazione e un record finale. Le statistiche sono
+detached e campionate deterministicamente (primi 4 elementi, 64 token e 64 feature): RMS di z
+prima della LN, RMS di h, `RMS(h-mean_token(h))/RMS(h)`, coseno medio off-diagonal, differenza fra
+serie nel batch, differenza per traslazione dei token e RMS cross/self/MLP. Il probe esplicito
+`context_input_dependence()` esegue, fuori dal normale forward, serie diversa e traslazione vera
+dell'input. `TSLM_V3_GATE_LOG_EVERY` emette la riga compatta `[V3Ctx]`; nel trainer
+`TSLM_V3_GRAD_LOG=1` più `TSLM_V3_CTX_LOG_EVERY=N` emette gradienti e stats ogni N step. Default 0:
+nessun nuovo costo/log nel training normale.
+
+Numeri deterministici CPU a init (D=64, K=256, tre livelli, seed 314/315):
+
+| lettore | frac. variabile h | coseno token | RMS z | dip. serie diversa | dip. traslazione input |
+|---|---:|---:|---:|---:|---:|
+| `cross_only` | **0,931603** | 0,118358 | 0,063540 | 0,677816 | 0,831370 |
+| `full`, scale 1,0 | 0,055383 | 0,996884 | 1,140591 | 0,040345 | 0,048574 |
+| `full`, scale 0,1 | **0,708851** | 0,489558 | 0,082526 | 0,522685 | 0,633636 |
+
+Il caso 0,1 dista 0,222752 dal controllo `cross_only` sulla frazione variabile, contro 0,876219
+del `full` storico. Il test impone `cross_only >= 0,3`, entrambe le dipendenze >0,1 e distanza
+`full-small/cross_only <0,25`.
+
+Il witness held-out usa otto token tutti occupati dalla banda grossolana. Impulsi adiacenti +5/-5
+si cancellano nella banda v1; la loro posizione early/late è presente nei dettagli intermedi letti
+dal contesto. Dopo K=32 step su lettore+probe lineare, la BCE held-out è 0,000657 contro 0,693389
+del probe sulla sola base (accuracy contesto 1,0); forzando off lo stesso modello dà BCE 0,694933.
+Nel controllo negativo a bassa frequenza, già leggibile dalla base, accuracy on=off=1,0.
+
+### Uscita, optimizer e checkpoint
+
+Con `token_gate: true`, una sola `Linear(1024,1)` condivisa calcola
+`g_i=2 sigmoid(w^T[LN_noaffine(base_i),h_i]+b)`. Peso e bias sono zero: g=1 e l'uscita coincide
+bit-per-bit con la v3 senza gate. `_merge_context(..., token_gate_override=...)` rende verificabile
+che g=0 su uno slot restituisca esattamente il token base. Media, min/max, p10/p50/p90 e frazioni
+sature sotto 0,05/sopra 1,95 sono nel record finale.
+
+I gruppi sono ora `context` (lettore), `context_scale` (solo lo scalare) e, se presente,
+`context_token_gate`. Se `training.learning_rate.context_scale` manca, il trainer usa il LR di
+`context`, quindi i config storici non cambiano. I pilot usano rispettivamente 1e-3, 1e-5 e 1e-4.
+Ogni checkpoint nuovo salva nomi e cardinalità dei gruppi. Un resume con optimizer privo di questi
+metadati o con topologia diversa fallisce indicando `TSLM_RESUME_WEIGHTS_ONLY=1`; perciò gli stati
+Adam dei checkpoint `1b0f9fa`/`b2d6808` non possono essere accettati silenziosamente. Come soli
+pesi, checkpoint residual-on-v1 precedenti migrano le nuove scale a 1 e il token gate a identità.
+
+### Smoke e pilot val-only
+
+Lo smoke usa `cross_only`, scale 0,1, token gate e LR scala 1e-5. Conserva i gate su gradienti
+finiti del lettore (`blocks_grad_norm>0`, `blocks_relative>=1e-3`) e ora campiona direttamente lo
+spostamento dei pesi dei blocchi fra init e ciascuno dei quattro update: l'ultimo deve essere >0.
+Non esiste più una soglia sul movimento di `context_scale`. Il JSON include `context_stats` e
+`context_input_dependence`; fallisce se la frazione variabile finale è <1e-3.
+
+`node_pilot_v3.sh <pilot_name> <config.yaml> <n_epochs>` crea
+`results/anomaly_xl_precise/pilot_<name>_<UTC timestamp>`, senza cancellare altre run e senza
+invocare `node_train_v3.sh`/worker. Usa `TSLM_MAX_TRAIN_STEPS=n*4488`, arresto esterno al confine
+d'epoca, `TSLM_SCHED_TOTAL_STEPS=22440` (warmup 673), checkpoint esatti 500/2000, seed 42,
+`TSLM_DATA_ORDER_SEED=42` e `TSLM_SUBSET_SEED=42`. Non imposta `TSLM_REQUIRE_FULL_COVERAGE`, ma
+verifica dal log una e una sola coverage 4488/0/4488 per epoca.
+
+Al primo pilot il trainer salva in `~/pilots/init_common.pt` tutti i parametri allenabili comuni
+(encoder v1, proiettore, LoRA e lettore); i successivi fanno copia strict per nome/shape. Le sole
+chiavi aggiuntive ammesse sono quelle del token gate e devono essere ancora zero/identità. Il
+primo pilot deve quindi essere uno senza token gate. L'ordine del DataLoader usa un generator
+dedicato e non dipende dal consumo RNG dei moduli opzionali.
+
+A step 500, 2000 e a ogni fine epoca, un worker parallelo valuta solo validation: generazione
+on/off sui medesimi 80 esempi (`max_samples=800`, rapporto 0,1) con primary per categoria,
+teacher forcing on/off tramite `audit/20260908-ctx01/forward_audit.py` e diagnostiche del contesto.
+A fine epoca aggiunge generation on sull'intera val da 520 esempi. Manifest, config effettivi e
+hash SHA-256 restano nella run dir. Il test split non compare in alcun comando del pilot.
+
+Ordine consigliato per stanotte, circa 5 ore per pilot A40 (una epoca ciascuno):
+
+```bash
+bash ~/node_pilot_v3.sh cross configs/wavelet_precise_v3pilot_cross.yaml 1
+bash ~/node_pilot_v3.sh fullsmall configs/wavelet_precise_v3pilot_fullsmall.yaml 1
+bash ~/node_pilot_v3.sh gate configs/wavelet_precise_v3pilot_gate.yaml 1
+```
+
+Eseguire prima `bash ~/node_smoke_v3.sh`. Non rimuovere `~/pilots/init_common.pt` tra i tre pilot;
+rimuoverlo soltanto per iniziare deliberatamente una nuova famiglia di inizializzazione comune.

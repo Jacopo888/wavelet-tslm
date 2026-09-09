@@ -1,0 +1,78 @@
+{
+  "status": "complete",
+  "val_sha256_verified": "90b805b8f40e203b76873a9cf3a0f986e21700c9185c74acc33c44a183b1d977",
+  "result_files": [
+    {
+      "file": "masters/checkpoint_epoch_2_batch_2500_masters_forward.jsonl",
+      "rows": 80,
+      "sha256": "a8bb7069cec744f4bbb1879f517e64eceb63877c4b11dedaedb440bb67f41c32",
+      "conditions": [
+        "on",
+        "off",
+        "scale03",
+        "scale10",
+        "roll"
+      ]
+    },
+    {
+      "file": "masters/checkpoint_epoch_2_batch_3000_masters_forward.jsonl",
+      "rows": 80,
+      "sha256": "8f18077361744fc5535909c2f40921b6d73a8b9f038b51fd046e4643561cac6d",
+      "conditions": [
+        "on",
+        "off",
+        "scale03",
+        "scale10",
+        "roll"
+      ]
+    },
+    {
+      "file": "masters/epoch_1_end_masters_forward.jsonl",
+      "rows": 80,
+      "sha256": "818ec0ff6f80b9e130336738dc526119e348ddb61a0a8b96c822c46ae5d79c72",
+      "conditions": [
+        "on",
+        "off",
+        "scale03",
+        "scale10",
+        "roll"
+      ]
+    },
+    {
+      "file": "masters/init_masters_forward.jsonl",
+      "rows": 80,
+      "sha256": "5ef456a1391bb7f932be18753a7457ce96146ad1c6b9e8bef5de9732fcec7ebe",
+      "conditions": [
+        "on",
+        "off",
+        "scale03",
+        "scale10",
+        "roll"
+      ]
+    },
+    {
+      "file": "eval_generation/checkpoint_epoch_2_batch_3000_eval_generation.jsonl",
+      "rows": 80,
+      "sha256": "7c79e37d7a251bfd5d9268f1244c2f1556265be4949404f37418fb79c9f99820",
+      "conditions": [
+        "on",
+        "off"
+      ]
+    }
+  ],
+  "positive_only_generation": {
+    "localize": {
+      "positive_count": 18,
+      "metric": "iou",
+      "on": 0.0,
+      "off": 0.0
+    },
+    "localize_all_channels": {
+      "positive_count": 9,
+      "metric": "f1",
+      "on": 0.0,
+      "off": 0.0
+    }
+  },
+  "note": "No model or optimizer updates. Init is reconstructed; confidence intervals cover examples, not training variance."
+}

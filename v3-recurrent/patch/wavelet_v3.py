@@ -40,23 +40,41 @@ class WaveletV3TSModel(WaveletTSModel):
             *encoder.blocks.parameters(),
             *encoder.step_embed.parameters(),
             *encoder.context_norm.parameters(),
-            encoder.context_scale,
         ]
         if encoder.gate_head is not None:
             candidates.extend(encoder.gate_head.parameters())
         context = [parameter for parameter in candidates if id(parameter) in grouped_ids]
-        if not context:
+        context_scale = (
+            [encoder.context_scale] if id(encoder.context_scale) in grouped_ids else []
+        )
+        token_gate = (
+            [
+                parameter
+                for parameter in encoder.context_token_gate.parameters()
+                if id(parameter) in grouped_ids
+            ]
+            if encoder.context_token_gate is not None
+            else []
+        )
+        separated = context + context_scale + token_gate
+        if not separated:
             return groups
 
-        context_ids = {id(parameter) for parameter in context}
+        context_ids = {id(parameter) for parameter in separated}
         split = {
             name: [parameter for parameter in params if id(parameter) not in context_ids]
             for name, params in groups.items()
         }
         split = {name: params for name, params in split.items() if params}
-        if "context" in split:
-            raise RuntimeError("optimizer group 'context' already exists")
-        split["context"] = context
+        for name in ("context", "context_scale", "context_token_gate"):
+            if name in split:
+                raise RuntimeError(f"optimizer group {name!r} already exists")
+        if context:
+            split["context"] = context
+        if context_scale:
+            split["context_scale"] = context_scale
+        if token_gate:
+            split["context_token_gate"] = token_gate
         return split
 
     @classmethod
@@ -87,6 +105,7 @@ class WaveletV3TSModel(WaveletTSModel):
                 p.requires_grad_(False)
         n_par = sum(p.numel() for p in enc.parameters())
         print(f"  v3 encoder: tied={enc.tied} level_topm={enc.level_topm} "
-              f"gate={enc.level_gate} depth_mode={enc.depth_mode} "
+              f"gate={enc.level_gate} reader={enc.reader_mode} "
+              f"token_gate={enc.token_gate_enabled} depth_mode={enc.depth_mode} "
               f"context_scale={enc.context_scale.item():.6g} params={n_par/1e6:.2f}M")
         return model

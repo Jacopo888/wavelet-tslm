@@ -1,0 +1,562 @@
+[
+  {
+    "index": 114,
+    "id": "696d625786c39d35",
+    "category": "localize",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 25,
+    "id": "5a49f9dee9d8a9ad",
+    "category": "classify_with_evidence",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 281,
+    "id": "2798b5d7283facda",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 250,
+    "id": "33e803694f9b596a",
+    "category": "classify_with_evidence",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 228,
+    "id": "0d9187472dddddb6",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 142,
+    "id": "3d2aeb02dd20a3af",
+    "category": "classify_with_evidence",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 104,
+    "id": "873c1a8948f3525d",
+    "category": "localize",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 89,
+    "id": "7f8e06ab87bae2ed",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 432,
+    "id": "69dc9b5b32b26bff",
+    "category": "localize_all_channels",
+    "length": 131072,
+    "n_channels": 16
+  },
+  {
+    "index": 32,
+    "id": "36835722cbf73dda",
+    "category": "classify_with_evidence",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 30,
+    "id": "26fb5d8069e9024b",
+    "category": "classify_with_evidence",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 95,
+    "id": "75adf4b32692a37d",
+    "category": "localize",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 223,
+    "id": "4e0d8c766331c098",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 238,
+    "id": "f7fe85dbf6e8c89d",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 517,
+    "id": "b1ae235726c600b7",
+    "category": "lead_lag_with_magnitude",
+    "length": 131072,
+    "n_channels": 2
+  },
+  {
+    "index": 27,
+    "id": "3aa0b03078419654",
+    "category": "classify_with_evidence",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 203,
+    "id": "e3b96e618571dd02",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 429,
+    "id": "45c8547adb9c23dc",
+    "category": "localize_all_channels",
+    "length": 131072,
+    "n_channels": 16
+  },
+  {
+    "index": 225,
+    "id": "beb3f1d1d5e77e20",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 459,
+    "id": "cdcfdcf3029d3bc8",
+    "category": "lead_lag_with_magnitude",
+    "length": 32768,
+    "n_channels": 2
+  },
+  {
+    "index": 284,
+    "id": "3203d6cdccf1a5db",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 6,
+    "id": "180828470b2f480b",
+    "category": "localize",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 163,
+    "id": "0814638ebafa9b90",
+    "category": "classify_with_evidence",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 348,
+    "id": "acbb80b7c7491636",
+    "category": "measure_magnitude",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 159,
+    "id": "127caf03edd6ccc4",
+    "category": "classify_with_evidence",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 220,
+    "id": "54c7668a68f885e0",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 344,
+    "id": "4a21e95670d6ed2a",
+    "category": "measure_magnitude",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 94,
+    "id": "a6fa68ab78bd67da",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 389,
+    "id": "914b11263fd1a856",
+    "category": "localize_all_channels",
+    "length": 32768,
+    "n_channels": 16
+  },
+  {
+    "index": 99,
+    "id": "b4fed9a32d5451ea",
+    "category": "localize",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 367,
+    "id": "21edae74e15fe6e5",
+    "category": "measure_magnitude",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 352,
+    "id": "4ece236b89253e93",
+    "category": "measure_magnitude",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 270,
+    "id": "fb6830c0ad3f84e7",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 44,
+    "id": "b4c3f4f63b348394",
+    "category": "classify_with_evidence",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 470,
+    "id": "79f5ce6088f71ed6",
+    "category": "lead_lag_with_magnitude",
+    "length": 32768,
+    "n_channels": 2
+  },
+  {
+    "index": 127,
+    "id": "3654d9e851d8b0cf",
+    "category": "localize",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 387,
+    "id": "2e0ffb234fbfe783",
+    "category": "localize_all_channels",
+    "length": 32768,
+    "n_channels": 16
+  },
+  {
+    "index": 80,
+    "id": "048070eac0eabf12",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 300,
+    "id": "f5ca27c8ec4676e6",
+    "category": "localize",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 370,
+    "id": "5d1790a7ed067a94",
+    "category": "measure_magnitude",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 196,
+    "id": "c46c9a4f8a4324c6",
+    "category": "measure_magnitude",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 71,
+    "id": "42fb3a88880f15c1",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 46,
+    "id": "966c3ad6055b91d4",
+    "category": "classify_with_evidence",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 233,
+    "id": "cfc2757e123c557a",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 296,
+    "id": "cb54009c0d5c589b",
+    "category": "localize",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 81,
+    "id": "34d804bacaaeeb49",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 103,
+    "id": "7f88c941dc0ea530",
+    "category": "localize",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 464,
+    "id": "cd70492c635b20d3",
+    "category": "lead_lag_with_magnitude",
+    "length": 32768,
+    "n_channels": 2
+  },
+  {
+    "index": 373,
+    "id": "c33c6c7206e20468",
+    "category": "localize_all_channels",
+    "length": 32768,
+    "n_channels": 16
+  },
+  {
+    "index": 166,
+    "id": "3740886f351938aa",
+    "category": "measure_magnitude",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 379,
+    "id": "233a2ba0eebdaf91",
+    "category": "localize_all_channels",
+    "length": 32768,
+    "n_channels": 16
+  },
+  {
+    "index": 363,
+    "id": "8cda700b140d2fb1",
+    "category": "measure_magnitude",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 214,
+    "id": "5ec7b2d8ca2207ee",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 273,
+    "id": "44016e38abeceab2",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 73,
+    "id": "1f5bd6e46d73bfda",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 175,
+    "id": "68f87f1354c53ff4",
+    "category": "measure_magnitude",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 167,
+    "id": "a91dd9c01e637f0a",
+    "category": "measure_magnitude",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 473,
+    "id": "4fddb3fce838266e",
+    "category": "lead_lag_with_magnitude",
+    "length": 32768,
+    "n_channels": 2
+  },
+  {
+    "index": 388,
+    "id": "10c6e864e5762298",
+    "category": "localize_all_channels",
+    "length": 32768,
+    "n_channels": 16
+  },
+  {
+    "index": 276,
+    "id": "7cb70ba908f3a4d9",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 224,
+    "id": "88e03f905165cb07",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 332,
+    "id": "d691da1aa7ca6e64",
+    "category": "classify_with_evidence",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 57,
+    "id": "4115357dbd6b2c91",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 234,
+    "id": "1b5ddc264a85d04a",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 323,
+    "id": "d1676522cfdff948",
+    "category": "classify_with_evidence",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 410,
+    "id": "c08dbf96ef7060bd",
+    "category": "localize_all_channels",
+    "length": 131072,
+    "n_channels": 16
+  },
+  {
+    "index": 274,
+    "id": "f2dbd4f64cbefaef",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 67,
+    "id": "819c1e042afeaa85",
+    "category": "measure_magnitude",
+    "length": 16384,
+    "n_channels": 1
+  },
+  {
+    "index": 216,
+    "id": "9b3fd889641eb02e",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 322,
+    "id": "e7eb81913e3f2f57",
+    "category": "classify_with_evidence",
+    "length": 131072,
+    "n_channels": 1
+  },
+  {
+    "index": 217,
+    "id": "974be9e265586f57",
+    "category": "localize",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 511,
+    "id": "36b59403803cdd07",
+    "category": "lead_lag_with_magnitude",
+    "length": 131072,
+    "n_channels": 2
+  },
+  {
+    "index": 405,
+    "id": "34d1b22ed48c4cae",
+    "category": "localize_all_channels",
+    "length": 131072,
+    "n_channels": 16
+  },
+  {
+    "index": 469,
+    "id": "7c230446db6e4f86",
+    "category": "lead_lag_with_magnitude",
+    "length": 32768,
+    "n_channels": 2
+  },
+  {
+    "index": 146,
+    "id": "056f2063149127f6",
+    "category": "classify_with_evidence",
+    "length": 32768,
+    "n_channels": 1
+  },
+  {
+    "index": 271,
+    "id": "3e33a1a1032ef7ff",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 252,
+    "id": "08ab2a6f90ca9fbc",
+    "category": "classify_with_evidence",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 269,
+    "id": "5aa40e2f8de9aeec",
+    "category": "measure_magnitude",
+    "length": 65536,
+    "n_channels": 1
+  },
+  {
+    "index": 438,
+    "id": "25835b9f35f6e824",
+    "category": "localize_all_channels",
+    "length": 131072,
+    "n_channels": 16
+  },
+  {
+    "index": 408,
+    "id": "7c9a549579805896",
+    "category": "localize_all_channels",
+    "length": 131072,
+    "n_channels": 16
+  }
+]

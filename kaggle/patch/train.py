@@ -237,6 +237,74 @@ def configure_training_mode(
     return param_groups
 
 
+def apply_common_initial_state(model, config: ExperimentConfig) -> None:
+    """Create/load the pilot's shared trainable initialization (env-gated)."""
+    path_text = os.environ.get("TSLM_INIT_STATE_PATH")
+    if not path_text:
+        return
+    path = Path(path_text).expanduser()
+    current = {
+        name: parameter
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    if path.exists():
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+        if payload.get("format") != "tslm_init_common_v1":
+            raise RuntimeError(f"unsupported common init format in {path}")
+        state = payload.get("state_dict")
+        if not isinstance(state, dict) or not state:
+            raise RuntimeError(f"empty common init state in {path}")
+        saved = set(state)
+        unknown = saved - set(current)
+        if unknown:
+            raise RuntimeError(
+                f"common init has keys absent from this model: {sorted(unknown)[:8]}"
+            )
+        new_keys = set(current) - saved
+        allowed_new = {
+            name for name in new_keys
+            if name.startswith("ts_encoder.context_token_gate.")
+        }
+        if new_keys != allowed_new:
+            raise RuntimeError(
+                "common init key mismatch; non-identity modules are not allowed: "
+                f"{sorted(new_keys - allowed_new)[:8]}"
+            )
+        with torch.no_grad():
+            for name in sorted(saved):
+                source = state[name]
+                target = current[name]
+                if source.shape != target.shape:
+                    raise RuntimeError(
+                        f"common init shape mismatch for {name}: "
+                        f"saved={tuple(source.shape)}, current={tuple(target.shape)}"
+                    )
+                target.copy_(source.to(device=target.device, dtype=target.dtype))
+        if any(bool(current[name].detach().count_nonzero()) for name in allowed_new):
+            raise RuntimeError("new token-gate parameters are not at identity initialization")
+        print(
+            f"  [CommonInit] loaded {len(saved)} shared trainable tensors from {path}; "
+            f"identity-only new tensors={sorted(allowed_new)}"
+        )
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "format": "tslm_init_common_v1",
+            "state_dict": {
+                name: parameter.detach().cpu().clone()
+                for name, parameter in current.items()
+            },
+            "trainable_names": sorted(current),
+            "reference_config": config.to_dict(),
+            "timestamp": datetime.now().isoformat(),
+        }
+        temporary = path.with_name(path.name + f".tmp.{os.getpid()}")
+        torch.save(payload, temporary)
+        os.replace(temporary, path)
+        print(f"  [CommonInit] created {path} with {len(current)} trainable tensors")
+
+
 # ==============================================================================
 # Data Loading
 # ==============================================================================
@@ -330,7 +398,14 @@ def create_dataloaders(
         persistent_workers=num_workers > 0,
     )
 
-    train_loader = DataLoader(train_dataset, shuffle=True, **loader_kwargs)
+    order_seed = os.environ.get("TSLM_DATA_ORDER_SEED")
+    train_generator = None
+    if order_seed not in (None, ""):
+        train_generator = torch.Generator().manual_seed(int(order_seed))
+        print(f"  Train DataLoader order seed: {int(order_seed)}")
+    train_loader = DataLoader(
+        train_dataset, shuffle=True, generator=train_generator, **loader_kwargs
+    )
     val_loader = DataLoader(val_dataset, shuffle=False, **loader_kwargs)
     test_loader = DataLoader(test_dataset, shuffle=False, **loader_kwargs)
 
@@ -382,6 +457,12 @@ def save_checkpoint(
         "best_val_metric": best_val_metric,
         "config": config.to_dict(),
         "timestamp": datetime.now().isoformat(),
+        "optimizer_group_names": [
+            group.get("name") for group in optimizer.param_groups
+        ],
+        "optimizer_group_sizes": [
+            len(group["params"]) for group in optimizer.param_groups
+        ],
     }
 
     latest_path = checkpoint_dir / "latest_checkpoint.pt"
@@ -441,11 +522,42 @@ def load_checkpoint(
     else:
         model.load_state_dict(checkpoint["model_state"])
 
-    if optimizer is not None and checkpoint.get("optimizer_state") is not None:
-        optimizer.load_state_dict(checkpoint["optimizer_state"])
+    if optimizer is not None:
+        saved_optimizer = checkpoint.get("optimizer_state")
+        if saved_optimizer is None:
+            raise RuntimeError(
+                "checkpoint has no optimizer state; use "
+                "TSLM_RESUME_WEIGHTS_ONLY=1 for an explicit weights-only load"
+            )
+        saved_sizes = [len(group["params"]) for group in saved_optimizer["param_groups"]]
+        current_sizes = [len(group["params"]) for group in optimizer.param_groups]
+        saved_names = checkpoint.get("optimizer_group_names")
+        current_names = [group.get("name") for group in optimizer.param_groups]
+        topology_changed = saved_sizes != current_sizes
+        if saved_names is not None:
+            topology_changed = topology_changed or saved_names != current_names
+        elif any(
+            name in ("context_scale", "context_token_gate")
+            for name in current_names
+        ):
+            topology_changed = True
+        if topology_changed:
+            raise RuntimeError(
+                "optimizer checkpoint topology is incompatible: "
+                f"saved names={saved_names}, sizes={saved_sizes}; "
+                f"current names={current_names}, sizes={current_sizes}. "
+                "Use TSLM_RESUME_WEIGHTS_ONLY=1 for an explicit weights-only load."
+            )
+        optimizer.load_state_dict(saved_optimizer)
 
-    if scheduler is not None and checkpoint.get("scheduler_state") is not None:
-        scheduler.load_state_dict(checkpoint["scheduler_state"])
+    if scheduler is not None:
+        saved_scheduler = checkpoint.get("scheduler_state")
+        if saved_scheduler is None:
+            raise RuntimeError(
+                "checkpoint has no scheduler state; use "
+                "TSLM_RESUME_WEIGHTS_ONLY=1 for an explicit weights-only load"
+            )
+        scheduler.load_state_dict(saved_scheduler)
 
     print(f"  Resumed from epoch {checkpoint['epoch']}")
     print(f"  Validation loss: {checkpoint['val_loss']:.4f}")
@@ -460,6 +572,15 @@ def load_checkpoint(
 def _log_v3_gradient_diagnostics(model, step: int) -> None:
     """Emit one post-unscale gradient record for the env-gated v3 smoke."""
     if os.environ.get("TSLM_V3_GRAD_LOG") != "1":
+        return
+    ctx_every_text = os.environ.get("TSLM_V3_CTX_LOG_EVERY", "0")
+    try:
+        ctx_every = int(ctx_every_text)
+    except ValueError as exc:
+        raise ValueError("TSLM_V3_CTX_LOG_EVERY must be an integer >= 0") from exc
+    if ctx_every < 0:
+        raise ValueError("TSLM_V3_CTX_LOG_EVERY must be >= 0")
+    if ctx_every and (step + 1) % ctx_every:
         return
 
     named = list(model.named_parameters())
@@ -489,6 +610,46 @@ def _log_v3_gradient_diagnostics(model, step: int) -> None:
         f"[V3Grad] step={step} context_scale={scale:.9g} "
         f"context_scale_grad={scale_grad:.9g} blocks_grad_norm={block_norm:.9g} "
         f"value_proj_grad_norm={value_norm:.9g} blocks_relative={relative:.9g}",
+        flush=True,
+    )
+    if ctx_every:
+        encoder = getattr(model, "ts_encoder", None)
+        stats = getattr(encoder, "last_context_stats", {})
+        print(
+            f"[V3Ctx] step={step} stats="
+            + json.dumps(stats, sort_keys=True, separators=(",", ":"), allow_nan=True),
+            flush=True,
+        )
+
+
+def _log_v3_block_update(model, step: int) -> None:
+    """Sampled block-weight displacement after an optimizer step (smoke only)."""
+    if os.environ.get("TSLM_V3_GRAD_LOG") != "1":
+        return
+    every = int(os.environ.get("TSLM_V3_CTX_LOG_EVERY", "0"))
+    if every and (step + 1) % every:
+        return
+    sampled = [
+        (name, parameter.detach().reshape(-1)[:256].float().cpu())
+        for name, parameter in model.named_parameters()
+        if "ts_encoder.blocks." in name
+    ]
+    initial = getattr(model, "_v3_blocks_initial_sample", None)
+    if initial is None:
+        raise RuntimeError("missing pre-step v3 block sample")
+    initial_by_name = dict(initial)
+    delta_terms = []
+    weight_terms = []
+    for name, value in sampled:
+        if name not in initial_by_name:
+            raise RuntimeError(f"v3 block sample changed topology at {name}")
+        delta_terms.append((value - initial_by_name[name]).square().sum())
+        weight_terms.append(initial_by_name[name].square().sum())
+    delta = torch.stack(delta_terms).sum().sqrt().item() if delta_terms else 0.0
+    weight = torch.stack(weight_terms).sum().sqrt().item() if weight_terms else 0.0
+    print(
+        f"[V3Update] step={step} blocks_weight_shift={delta:.9g} "
+        f"blocks_weight_relative={delta / max(weight, 1e-30):.9g}",
         flush=True,
     )
 
@@ -539,9 +700,27 @@ def train_epoch(
         "cuda", enabled=use_amp and amp_dtype == torch.float16)
 
     pbar = tqdm(train_loader, desc=f"Epoch {epoch} [Train]", leave=False)
+    if (
+        os.environ.get("TSLM_V3_GRAD_LOG") == "1"
+        and not hasattr(model, "_v3_blocks_initial_sample")
+    ):
+        model._v3_blocks_initial_sample = [
+            (name, parameter.detach().reshape(-1)[:256].float().cpu().clone())
+            for name, parameter in model.named_parameters()
+            if "ts_encoder.blocks." in name
+        ]
     # Opt-in smoke diagnostic.  Synchronization is deliberately restricted to
     # this env gate so production runs keep their normal asynchronous timing.
     log_step_timing = os.environ.get("TSLM_STEP_TIMING") == "1"
+    exact_steps_text = os.environ.get("TSLM_CHECKPOINT_STEPS", "")
+    try:
+        exact_steps = {
+            int(value) for value in exact_steps_text.split(",") if value.strip()
+        }
+    except ValueError as exc:
+        raise ValueError("TSLM_CHECKPOINT_STEPS must be comma-separated integers") from exc
+    if any(value < 1 for value in exact_steps):
+        raise ValueError("TSLM_CHECKPOINT_STEPS values must be >= 1")
 
     def _log_step_timing(step_started_: float) -> None:
         if not log_step_timing:
@@ -583,6 +762,7 @@ def train_epoch(
                 clip_grad_norm_(model.parameters(), config.training.max_grad_norm)
 
                 optimizer.step()
+            _log_v3_block_update(model, global_step)
             scheduler.step()
 
             _count(batch, cat_ok)
@@ -609,7 +789,12 @@ def train_epoch(
 
             # Save intra-epoch checkpoint every N batches
             ckpt_interval = config.checkpoint_interval
-            if ckpt_interval > 0 and (batch_idx + 1) % ckpt_interval == 0:
+            should_checkpoint = (
+                global_step in exact_steps
+                if exact_steps_text
+                else ckpt_interval > 0 and (batch_idx + 1) % ckpt_interval == 0
+            )
+            if should_checkpoint:
                 save_checkpoint(
                     model, optimizer, scheduler, epoch,
                     val_loss=avg_loss,
@@ -689,6 +874,7 @@ def train_epoch(
                             _log_v3_gradient_diagnostics(model, global_step)
                             clip_grad_norm_(model.parameters(), config.training.max_grad_norm)
                             optimizer.step()
+                        _log_v3_block_update(model, global_step)
                         scheduler.step()
                         _count(batch, cat_ok)
                         total_loss += loss.item()
@@ -1082,6 +1268,11 @@ def train(
                 promoted += 1
         print(f"  [AMP] promoted {promoted} trainable tensors to fp32 masters")
 
+    # Pilot-only common initialization.  Absent TSLM_INIT_STATE_PATH this is
+    # exactly inert; when enabled it runs after LoRA injection and fp32 master
+    # promotion, before any data-order RNG is consumed.
+    apply_common_initial_state(model, config)
+
     # Create dataloaders (+ raw dataset instances for evaluation methods)
     eos_token = model.get_eos_token()
     (train_loader, val_loader, test_loader,
@@ -1091,8 +1282,15 @@ def train(
     lr_config = config.training.learning_rate
     optimizer_groups = []
     for group_name, params in param_groups.items():
-        group_lr = lr_config.get(group_name, default_lr)
-        optimizer_groups.append({"params": params, "lr": group_lr})
+        if group_name == "context_scale":
+            group_lr = lr_config.get(
+                "context_scale", lr_config.get("context", default_lr)
+            )
+        else:
+            group_lr = lr_config.get(group_name, default_lr)
+        optimizer_groups.append({
+            "params": params, "lr": group_lr, "name": group_name
+        })
 
     optimizer = AdamW(
         optimizer_groups,
@@ -1328,6 +1526,18 @@ def train(
             _latest = output_dir / "checkpoints" / "latest_checkpoint.pt"
             _shutil.copy(_latest, output_dir / "checkpoints" / f"epoch_{epoch}_end.pt")
             print(f"  [EpochCkpt] kept epoch_{epoch}_end.pt")
+
+        # A schedule-faithful pilot sets a cap at an exact epoch boundary.
+        # Stop the outer loop too, or the next epoch would execute one surplus
+        # update before train_epoch observed the already-reached cap.
+        step_cap = int(os.environ.get("TSLM_MAX_TRAIN_STEPS", "0"))
+        if step_cap and global_step >= step_cap:
+            print(
+                f"  [StepBudget] completed at epoch boundary: "
+                f"global_step={global_step}, cap={step_cap}",
+                flush=True,
+            )
+            break
 
         # Early stopping — honor the config's enabled flag (upstream's
         # early_stop_patience property ignores it and fired on m30 despite

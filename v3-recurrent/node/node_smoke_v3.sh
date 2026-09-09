@@ -415,6 +415,7 @@ import torch
 from src.models.wavelet_encoder import WaveletTSEncoder
 from src.models.wavelet_encoder_v3 import (
     RecurrentWaveletTSEncoder,
+    context_input_dependence,
     position_decodability,
     token_diversity,
 )
@@ -434,6 +435,7 @@ prefixes = {
     "blocks": "ts_encoder.blocks.",
     "context_norm": "ts_encoder.context_norm.",
     "context_scale": "ts_encoder.context_scale",
+    "context_token_gate": "ts_encoder.context_token_gate.",
 }
 matches = {}
 for group, prefix in prefixes.items():
@@ -467,9 +469,8 @@ context_scale_initial = float(encoder_config["context_scale_init"])
 context_scale_move = abs(context_scale - context_scale_initial)
 
 # Gate the failure mode itself: every smoke step must train the contextual
-# blocks materially, the logged scale must move at least once, and its own
-# gradient must be nonzero.  The final checkpoint may legitimately return
-# close to the initial scale after several oscillating optimizer updates.
+# blocks materially.  The context scale deliberately has a slow LR and is
+# diagnostic only; block-weight displacement is the update witness.
 train_text = open(
     train_log, encoding="utf-8", errors="replace"
 ).read().replace("\r", "\n")
@@ -499,12 +500,7 @@ assert all(
     for row in gradient_rows
     for field in diagnostic_fields
 ), gradient_rows
-context_scale_trajectory = [
-    row["context_scale"] for row in gradient_rows
-]
-context_scale_max_abs_move = max(
-    abs(scale - context_scale_initial) for scale in context_scale_trajectory
-)
+context_scale_trajectory = [row["context_scale"] for row in gradient_rows]
 blocks_grad_norm_min = min(
     row["blocks_grad_norm"] for row in gradient_rows
 )
@@ -517,17 +513,27 @@ assert blocks_grad_norm_min > 0.0, (
 assert blocks_relative_min >= 1.0e-3, (
     "blocks_relative fell below 1e-3", gradient_rows,
 )
-assert context_scale_max_abs_move >= 1.0e-4, (
-    "context_scale never moved at least 1e-4 from its initial value",
-    context_scale_initial, context_scale_trajectory,
-)
-assert any(abs(row["context_scale_grad"]) > 0.0 for row in gradient_rows), (
-    "context_scale_grad was zero at every smoke step", gradient_rows,
-)
+update_rows = [
+    {"step": int(step), "shift": float(shift), "relative": float(relative)}
+    for step, shift, relative in re.findall(
+        r"\[V3Update\] step=(\d+) blocks_weight_shift=(\S+) "
+        r"blocks_weight_relative=(\S+)", train_text,
+    )
+]
+assert [row["step"] for row in update_rows] == list(range(expected_steps)), update_rows
+assert all(
+    math.isfinite(row[field])
+    for row in update_rows for field in ("shift", "relative")
+), update_rows
+assert update_rows[-1]["shift"] > 0.0, update_rows
 torch.manual_seed(20260906)
 probe = torch.randn(1, 4096)
 probe[:, 896:1024] += 30.0
 diversity = token_diversity(encoder, probe)
+different = torch.sin(torch.linspace(0, 90, 4096)).unsqueeze(0)
+input_dependence = context_input_dependence(encoder, probe, different)
+context_stats = encoder.last_context_stats
+context_final = context_stats["final"]
 torch.manual_seed(0)
 v1 = WaveletTSEncoder(**encoder_config).eval()
 v1_decodability = position_decodability(v1, n=36, batch_pairs=6)
@@ -550,9 +556,11 @@ doc = {
     "context_scale_after_4_steps": context_scale,
     "context_scale_abs_move": context_scale_move,
     "context_scale_trajectory": context_scale_trajectory,
-    "context_scale_max_abs_move": context_scale_max_abs_move,
     "blocks_grad_norm_min": blocks_grad_norm_min,
     "blocks_relative_min": blocks_relative_min,
+    "blocks_weight_updates": update_rows,
+    "context_stats": context_stats,
+    "context_input_dependence": input_dependence,
     "token_diversity": diversity,
     "decodability": {
         "v1_init": v1_decodability,
@@ -566,6 +574,7 @@ with open(out, "w", encoding="utf-8") as handle:
 print("CHECKPOINT_DIAGNOSTICS", json.dumps(doc, separators=(",", ":")))
 assert diversity["mean_token_cosine"] <= 0.9, diversity
 assert diversity["input_relative_difference"] > 0.1, diversity
+assert context_final["token_variable_fraction"] >= 1.0e-3, context_final
 assert position_ratio <= 1.5, doc["decodability"]
 assert v3_decodability["presence_accuracy"] >= 0.55, v3_decodability
 assert v3_decodability["magnitude_mae"] <= 0.25, v3_decodability
@@ -642,9 +651,9 @@ category_match = re.search(
 )
 assert category_match and int(category_match.group(1)) >= 1
 gate_lines = [
-    line for line in train_text.splitlines() if "[V3Gates]" in line
+    line for line in train_text.splitlines() if "[V3Ctx]" in line
 ]
-assert gate_lines, "no [V3Gates] line in training output"
+assert gate_lines, "no [V3Ctx] line in training output"
 gradient_rows = [
     (int(step), float(blocks), float(value), float(relative))
     for step, blocks, value, relative in re.findall(
@@ -702,9 +711,11 @@ doc = {
     "context_scale_after_4_steps": checkpoint["context_scale_after_4_steps"],
     "context_scale_abs_move": checkpoint["context_scale_abs_move"],
     "context_scale_trajectory": checkpoint["context_scale_trajectory"],
-    "context_scale_max_abs_move": checkpoint["context_scale_max_abs_move"],
     "blocks_grad_norm_min": checkpoint["blocks_grad_norm_min"],
     "blocks_relative_min": checkpoint["blocks_relative_min"],
+    "blocks_weight_updates": checkpoint["blocks_weight_updates"],
+    "context_stats": checkpoint["context_stats"],
+    "context_input_dependence": checkpoint["context_input_dependence"],
     "token_diversity": checkpoint["token_diversity"],
     "decodability": checkpoint["decodability"],
     "eval": {

@@ -4,16 +4,37 @@ Variante **separata** dell'encoder del Livello 1. La v1 (`kaggle/patch/wavelet_e
 riferimento va1) non viene toccata: la v3 vive in questa cartella, viene sovrapposta sul nodo
 come file nuovi (`src/models/wavelet_encoder_v3.py`, `src/models/wavelet_v3.py`) e si seleziona
 con `model.architecture: wavelet_v3`. Le sole modifiche fuori cartella sono in
-`kaggle/patch/train.py`: la registrazione condizionale della classe (la chiave `wavelet` resta
-identica), il log `[StepTiming]` protetto da `TSLM_STEP_TIMING=1` e la diagnostica `[V3Grad]`
-protetta da `TSLM_V3_GRAD_LOG=1`; entrambi gli hook sono inerti di default e usati dallo smoke.
+`kaggle/patch/train.py`: registrazione condizionale, diagnostiche, init comune, ordine dati e
+arresto/checkpoint dei pilot. Ogni hook nuovo è protetto da env ed è inerte di default; la chiave
+`wavelet` e i file v1 restano invariati.
+
+## Stato corrente (09/09/2026)
+
+L'audit ha mostrato che il lettore `full` storico collassa verso un modo quasi condiviso fra token.
+L'implementazione corrente aggiunge, in quest'ordine:
+
+- `reader_mode: cross_only|full`; `cross_only` accumula soltanto letture cross-attention e rimuove
+  il modo medio condiviso, mentre `full` conserva self-attention e MLP;
+- scale apprese per blocco `self_attn_scale_init` e `mlp_scale_init`; il default 1,0 conserva il
+  forward `full` storico. Con init 0,1 il centraggio locale interpola verso il controllo
+  `cross_only` (`local_center_strength=0,9`), senza cambiare il default;
+- `context_scale` in un gruppo optimizer separato, con fallback al LR `context` quando la chiave
+  dedicata manca; i pilot usano 1e-5;
+- `token_gate: true` opzionale, condiviso fra token, inizializzato a identità: dopo LN,
+  `g_i=2 sigmoid(Linear([LN_noaffine(base_i),h_i]))` e `out_i=base_i+a g_i h_i`;
+- statistiche del solo contesto in `last_context_stats` e righe `[V3Ctx]`: RMS prima/dopo LN,
+  diversità/coseno fra token, dipendenza dall'input, componenti cross/self/MLP e gate finale.
+
+I tre config `v3pilot_{cross,fullsmall,gate}` sono i candidati attuali. I vecchi config
+`v3tied/v3untied/v3sdepth` restano descrittivi della ricetta `full`, scale 1,0 e LR scala ereditato:
+non sono l'ordine consigliato per i pilot dopo l'audit.
 
 ## Idea in una riga
 
 V3 parte dagli stessi 256 token di v1 e somma soltanto un residuo contestuale letto
-ricorrentemente dalla piramide. I config di run inizializzano la scala a 0,1 per dare gradiente
-ai blocchi dal primo backward; l'identità bit-per-bit con v1 resta un test esplicito con scala
-forzata a zero.
+ricorrentemente dalla piramide. I config inizializzano la scala a 0,1 per dare gradiente ai
+blocchi dal primo backward; disabilitando il residuo, `cross_only` e `full` restano entrambi
+bit-per-bit identici a v1.
 
 ## Architettura (`patch/wavelet_encoder_v3.py`, classe `RecurrentWaveletTSEncoder`)
 
@@ -31,13 +52,14 @@ forzata a zero.
    piccolo `step_embed`. Leggono A_L, poi D_L … D_1; ogni dettaglio espone al massimo
    `level_topm=1024` coefficienti scelti per lo stesso |d|/σ. La cross-attention usa un prior
    Cauchy centrato sulla posizione reale `p_i` del token base (`locality_sigma=0.0078125`), non
-   su `i/256`; seguono self-attention e MLP sul residuo accumulato. `tied: true` riusa un solo
-   blocco, `tied: false` ne usa uno per iterazione.
+   su `i/256`. In `cross_only` si accumulano solo queste letture; in `full` seguono self-attention
+   e MLP, ciascuna moltiplicata dalla propria scala appresa. `tied: true` riusa un solo blocco,
+   `tied: false` ne usa uno per iterazione.
 4. **Gate per livello** (`level_gate: true`): uno scalare sigmoid per (serie, iterazione) calcolato
    da [media delle query base, media dei token del livello, statistiche del livello: frazione sopra
    2σ e 3σ, log del massimo, indice], che moltiplica la lettura. Inizializzato quasi aperto
    (0,88). È il modo *morbido* di ignorare un livello inutile; i valori restano in
-   `last_gates` e il launcher emette `[V3Gates]` ogni 100 chiamate: sono la prima
+   `last_gates` e il launcher emette `[V3Ctx]` ogni 100 chiamate: sono la prima
    evidenza empirica su "quali livelli usa".
 5. **Profondità** (`depth_mode`): `full` = tutte le iterazioni; `sdepth` = in training si tronca
    a una profondità casuale per esempio (stile Huginn), così a inferenza ogni profondità è
@@ -47,7 +69,9 @@ forzata a zero.
    In eval `TSLM_V3_DEPTH=r` tronca a r iterazioni per qualsiasi modello. `sdepth` estrae una
    sola profondità per chiamata (quindi condivisa dai canali dell'esempio con batch 1) dal RNG
    globale torch: il seed del trainer la rende riproducibile, ma la sequenza RNG diverge da `full`.
-6. **Uscita residuale e fix del deadlock**: `out = token_v1 + context_scale · LN(contesto)`.
+6. **Uscita residuale e fix del deadlock**: senza token gate,
+   `out = token_v1 + context_scale · LN(contesto)`; con gate,
+   `out_i = token_v1_i + context_scale · g_i · LN(contesto)_i`.
    La LayerNorm vede solo il contesto e non può rimescolare il token base. Il default della
    classe resta `context_scale_init: 0.0` per compatibilità e per il gate `v3 == v1`; i cinque
    config consegnati usano invece `0.1`. Infatti al primo step
@@ -55,17 +79,18 @@ forzata a zero.
    step embedding e norm non co-adattano, mentre lo scalare vede soltanto la correlazione con
    un ramo casuale. È il deadlock osservato nella run `1b0f9fa`: scala 0,0001/−0,0006/0,0004
    a epoca 1/3/5 e gate bias circa 1,98. Con init 0,1 il gradiente dei blocchi è non nullo dal
-   primo backward. `WaveletV3TSModel.get_trainable_parameters()` separa inoltre `context`
-   (blocks, gate, step embedding, context norm e scala) dal percorso v1: lr 1e-3 contro 1e-4.
-   Nessuna chiave dello state dict cambia, quindi i checkpoint residual-on-v1 `1b0f9fa`
-   restano caricabili.
+   primo backward. `WaveletV3TSModel.get_trainable_parameters()` separa `context` (lettore),
+   `context_scale` e `context_token_gate` dal percorso v1. I checkpoint residual-on-v1 restano
+   caricabili come pesi (scale mancanti migrano a 1 e il gate a identità), ma uno stato optimizer
+   con topologia storica non viene caricato silenziosamente: occorre l'esplicito
+   `TSLM_RESUME_WEIGHTS_ONLY=1`.
 
 Costo: cross-attention 256 × ≤1024 per livello × ≤11 livelli × canali. La prior posizionale
 usa una matrice target×source per ciascun batch/head. Con `TSLM_GRAD_CKPT=1` ogni iterazione
 ricomputa embedding del livello, prior locale, gate e blocco: non restano
 vive le grandi attivazioni `(16,1024,512)` di tutti i livelli; restano soprattutto i confini
 ricorrenti `(16,256,512)`. Test CPU:
-`py v3-recurrent/patch/test_encoder_v3.py` (25 test:
+`py v3-recurrent/patch/test_encoder_v3.py` (30 test:
 forme, budget, override, sdepth riproducibile, noise-gate, tied/untied, gradienti, bf16, serie
 costanti/corte, fail-fast non-finiti, parità di featurizzazione v1, checkpoint slim e round-trip,
 identità v1/v3 fp32 e bf16 anche su serie corte e 16×131072, una sola piramide, diversità,
@@ -78,7 +103,7 @@ una serie di confronto (per default la stessa serie traslata temporalmente).
 I D_1 non consumano token Qwen: possono soltanto modificare il residuo. Top-m, gate e arresto
 controllano quanto rumore fine venga aggiunto alla base v1.
 
-## Le tre ablazioni (protocollo va1 identico: seed 42, 4488 × 5 epoche, Qwen3.5-4B LoRA r16/α32, lr 1e-4 salvo il gruppo context a 1e-3, batch 1, bf16, grad-ckpt, coverage garantita, best-by-val-primary, test 800 hfpin)
+## Ablazioni storiche a cinque epoche (non sono i pilot correnti)
 
 | # | Run | Cosa cambia rispetto alla precedente | Domanda a cui risponde |
 |---|-----|--------------------------------------|------------------------|
@@ -93,9 +118,8 @@ produceva finestre quasi costanti: primary 0,053 e localize IoU 0,0 su 80 esempi
 primary 0,17 di va1 alla stessa epoca. Il nuovo residuo elimina quel deficit a init per
 costruzione.
 
-Ordine di esecuzione: 1 → 2 → 3 (su A40-24Q ≈ 20 h di training + ≈ 4 h di eval per run, ≈ $21
-per run; su MI300X 192 GB le tre run girano in parallelo). Ogni run è confrontata a va1 con il
-test appaiato di `integrity/diagnostics.py` (bootstrap sulle 800 righe).
+Questa sequenza precede l'audit del collasso ed è conservata soltanto come storia. Per i pilot
+attuali usare `cross → fullsmall → gate`; nessun pilot legge il test.
 
 Rischi dichiarati: (i) il noise-gate è una regola sul massimo, quindi cieca alle anomalie di
 varianza (che non producono coefficienti grandi ma piccoli): l'ablazione 3 lo misura per
@@ -121,6 +145,9 @@ ora interrompe test e smoke prima di spendere una run completa.
   `node/node_train_v3.sh <run>` (launcher va1 parametrizzato, una run per chiamata, sessioni tmux
   separate), `node/node_eval_worker_v3.sh` (fail-closed: coverage dal log, 5 val, best, test 800,
   poi curva di profondità sulla val).
+- `node/node_pilot_v3.sh <nome> <config> <n_epochs>` — run dir univoca, scheduler fisso
+  22440/673, init comune e ordine dati fissato; valuta soltanto val a step 500/2000 e fine epoca,
+  con probe80 generation/teacher-forcing on/off più val intera on a fine epoca.
 - `ops/gpu_watch.py` + `ops/start_watch.ps1` — watcher/grab detached (Vultr A40-24 / L40S-48 in
   qualunque regione, DO MI300X in qualunque regione; stato in `%LOCALAPPDATA%\wavelet-v3\`);
   `ops/ship_v3.sh <ip>` — spedizione sul nodo da WSL.
@@ -133,10 +160,11 @@ bash ~/node_prep_v3.sh                       # PREP_OK
 bash ~/node_env_v3.sh                        # V3_ENV_OK  (V3_ROCM=1 bash ~/node_env_v3.sh su MI300X)
 bash ~/node_smoke_v3.sh                      # A40: deve terminare con SMOKE_OK
 python3 -m json.tool ~/logs/v3smoke.ok        # entrambe le varianti pass=true, picco <= 23000 MiB
-bash ~/node_train_v3.sh v3tied               # solo dopo il gate; A40 una run alla volta
-cat ~/evalq/v3tied_BEST_EPOCH ~/evalq/v3tied_FINAL_test.json   # dopo FINAL_DONE in ~/logs/evw_v3tied.log
+bash ~/node_pilot_v3.sh cross configs/wavelet_precise_v3pilot_cross.yaml 1
+bash ~/node_pilot_v3.sh fullsmall configs/wavelet_precise_v3pilot_fullsmall.yaml 1
+bash ~/node_pilot_v3.sh gate configs/wavelet_precise_v3pilot_gate.yaml 1
 ```
 
-Stato: fix zero-init incorporato; suite CPU 25/25, smoke con identità a scala zero, gradiente
-dei blocchi post-unscale e spostamento assoluto di `context_scale` ≥1e-3 dopo quattro passi.
-La run `1b0f9fa` è archiviata come replica va1; nessuna nuova run GPU lanciata.
+Stato: suite CPU 30/30; lo smoke richiede gradienti e spostamento misurabile dei pesi del lettore,
+non uno spostamento minimo della scala lenta, e fallisce se la frazione variabile del contesto è
+inferiore a 1e-3. La run `1b0f9fa` è archiviata come replica va1; nessuna nuova run GPU lanciata.
