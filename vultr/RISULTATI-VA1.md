@@ -100,3 +100,20 @@ JSONL per-esempio di ogni eval-only, id/categoria/gold/predizione/parse_status/m
 `RUN_MANIFEST.json`, `config.yaml`, `logs/` (coverage, worker fail-closed, tail dell'eval
 finale, listing del run dir). Checkpoint (`epoch_1..5_end.pt`, ~3.7 MB l'uno) sul nodo in
 `~/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/`.
+
+## Addendum 10/09/2026 — identità del checkpoint e riproduzione esatta
+
+- Il numero di riferimento (0,2744) viene da **`epoch_5_end.pt`** (sha256
+  `cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531`, 41.276.034 B, epoch 5,
+  val_loss 0,3478), non da `best_model.pt` (selezione per val loss). Hash di tutti i 47 checkpoint
+  in `integrity/artifacts/va1/checkpoints_SHA256SUMS.txt`; copia fuori nodo verificata 47/47.
+- Caricamento esatto (`l3/tools/check_va1_exact_load.py`, CPU): 42 tensori nel checkpoint = 42
+  tensori allenabili del modello costruito come `--eval-only` (LoRA 32, encoder 6, proiettore 4),
+  3.435.520 parametri, nessuna chiave mancante/in più, forme uguali, tutto finito
+  (`integrity/artifacts/va1/exact_load_ep5.json`).
+- Riproduzione del test 800 con lo stesso comando del worker (`TSLM_EVAL_TAG=repro20260910`,
+  A40, 26 min): primary **0,2743539445041715**, loss 0,35340173219068677, 800/800, 0 errori —
+  identici a tutte le cifre al FINAL del 03/09; per categoria identici (localize 0,2410,
+  classify 0,0642, MMag 0,5783, all_channels 0,2613, lead_lag 0,1664); confronto riga per riga
+  dei due JSONL: 0 righe diverse su 800 per ogni campo, testo generato incluso. La generazione
+  greedy in bf16 su questo stack è deterministica. JSON: `integrity/artifacts/va1/evalq/va1_repro20260910_test.json`.
