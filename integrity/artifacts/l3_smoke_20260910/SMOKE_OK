@@ -1,0 +1,4 @@
+{
+  "status": "SMOKE_OK",
+  "stages_file": "/root/l3/smoke/stages.json"
+}

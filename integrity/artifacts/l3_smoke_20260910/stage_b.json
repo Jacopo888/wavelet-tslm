@@ -1,0 +1,74 @@
+{
+  "checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+  "ok": true,
+  "optimized_tensor_count": 32,
+  "rows": [
+    {
+      "baseline_text": " localize:{\"_L\": 16384, \"end\": 9801, \"present\": true, \"start\": 9691}",
+      "category": "localize",
+      "id": "be6fd62e503fd5de",
+      "logprob_equal_reference": true,
+      "max_logprob_diff": 0.0,
+      "ratio_all_exact_one": true,
+      "ratio_mean": 1.0,
+      "text_equal": true,
+      "tokens_equal": true,
+      "train_index": 46,
+      "wrapper_text": " localize:{\"_L\": 16384, \"end\": 9801, \"present\": true, \"start\": 9691}"
+    },
+    {
+      "baseline_text": " classify_with_evidence:{\"_L\": 16384, \"end\": 11590, \"kind\": \"Change in Trend\", \"start\": 11564}",
+      "category": "classify_with_evidence",
+      "id": "fb29a93be6978a7d",
+      "logprob_equal_reference": true,
+      "max_logprob_diff": 0.0,
+      "ratio_all_exact_one": true,
+      "ratio_mean": 1.0,
+      "text_equal": true,
+      "tokens_equal": true,
+      "train_index": 348,
+      "wrapper_text": " classify_with_evidence:{\"_L\": 16384, \"end\": 11590, \"kind\": \"Change in Trend\", \"start\": 11564}"
+    },
+    {
+      "baseline_text": " measure_magnitude:{\"_L\": 16384, \"magnitude_sigma\": 14.013825}",
+      "category": "measure_magnitude",
+      "id": "4dc987f2f4b6460f",
+      "logprob_equal_reference": true,
+      "max_logprob_diff": 0.0,
+      "ratio_all_exact_one": true,
+      "ratio_mean": 1.0,
+      "text_equal": true,
+      "tokens_equal": true,
+      "train_index": 617,
+      "wrapper_text": " measure_magnitude:{\"_L\": 16384, \"magnitude_sigma\": 14.013825}"
+    },
+    {
+      "baseline_text": " localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_01\", \"end\": 31580, \"start\": 31490}, {\"channel\": \"ch_09\", \"end\": 2211, \"start\": 2000}]}",
+      "category": "localize_all_channels",
+      "id": "6c6c55e1389e9b14",
+      "logprob_equal_reference": true,
+      "max_logprob_diff": 0.0,
+      "ratio_all_exact_one": true,
+      "ratio_mean": 1.0,
+      "text_equal": true,
+      "tokens_equal": true,
+      "train_index": 3484,
+      "wrapper_text": " localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_01\", \"end\": 31580, \"start\": 31490}, {\"channel\": \"ch_09\", \"end\": 2211, \"start\": 2000}]}"
+    },
+    {
+      "baseline_text": " lead_lag_with_magnitude:{\"_L\": 32768, \"direction\": \"independent\", \"lag_samples\": 0}",
+      "category": "lead_lag_with_magnitude",
+      "id": "0d42ae47b434dc8b",
+      "logprob_equal_reference": true,
+      "max_logprob_diff": 0.0,
+      "ratio_all_exact_one": true,
+      "ratio_mean": 1.0,
+      "text_equal": true,
+      "tokens_equal": true,
+      "train_index": 4030,
+      "wrapper_text": " lead_lag_with_magnitude:{\"_L\": 32768, \"direction\": \"independent\", \"lag_samples\": 0}"
+    }
+  ],
+  "stage": "b_init_equals_va1",
+  "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+}

@@ -1,0 +1,343 @@
+{
+  "composed_slim_names": [
+    "llm_model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_B.default.weight",
+    "ts_encoder.band_embed.weight",
+    "ts_encoder.pad_token",
+    "ts_encoder.value_proj.0.bias",
+    "ts_encoder.value_proj.0.weight",
+    "ts_encoder.value_proj.2.bias",
+    "ts_encoder.value_proj.2.weight",
+    "ts_projector.projector.0.bias",
+    "ts_projector.projector.0.weight",
+    "ts_projector.projector.1.bias",
+    "ts_projector.projector.1.weight"
+  ],
+  "created_utc": "2026-09-10T19:44:30.366972+00:00",
+  "cuda": "12.4",
+  "format": "l3_grpo_manifest_v1",
+  "initial_checkpoint": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt",
+  "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+  "mode": "memory-gate",
+  "optimized_names": [
+    "llm_model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_B.default.weight"
+  ],
+  "resolved_config": {
+    "_l3": {
+      "base_config_path": "/root/timerlm/sft/tslm/configs/wavelet_precise_va1.yaml",
+      "config_path": "/root/timerlm/sft/tslm/l3/configs/l3_smoke.yaml"
+    },
+    "backbone": {
+      "model_id": "Qwen/Qwen3.5-4B",
+      "name": "qwen"
+    },
+    "dataset": {
+      "extra_kwargs": {
+        "train_dir": "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise",
+        "variant": "precise"
+      },
+      "name": "anomaly_xl_precise"
+    },
+    "model": {
+      "architecture": "wavelet",
+      "encoder": {
+        "coarse_blocks": 128,
+        "freeze": false,
+        "n_pos_freqs": 16,
+        "num_tokens": 256,
+        "output_dim": 512,
+        "type": "wavelet"
+      },
+      "extra_kwargs": {
+        "encoding_method": "raw",
+        "freeze_lm_embeddings": true
+      },
+      "projector": {
+        "type": "mlp"
+      }
+    },
+    "name": "anomaly_xl_wavelet_va1",
+    "rl": {
+      "G": 4,
+      "advantage_eps": 1e-08,
+      "clip_eps": 0.2,
+      "dataset_revision": "df363a467f855e55aaad414b0bdd58590829df9a",
+      "do_sample": true,
+      "expected_train_rows": 4488,
+      "format_penalty": 0.0,
+      "init_prompt_indices": [
+        46,
+        348,
+        617,
+        3484,
+        4030
+      ],
+      "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+      "kl_coef": 0.01,
+      "lr": 1e-05,
+      "max_grad_norm": 1.0,
+      "memory_gate_index": 3804,
+      "peak_limit_mib": 22528,
+      "prompt_split": "train",
+      "prompts_per_step": 1,
+      "seed": 20260910,
+      "steps": 20,
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "train_prompt_expectations": {
+        "1251": {
+          "category": "classify_with_evidence",
+          "id": "1f57944adf26c923",
+          "length": 32768,
+          "n_channels": 1
+        },
+        "1654": {
+          "category": "measure_magnitude",
+          "id": "5860b7a361f2f44c",
+          "length": 32768,
+          "n_channels": 1
+        },
+        "1768": {
+          "category": "localize",
+          "id": "c5aeb11eb91f29da",
+          "length": 65536,
+          "n_channels": 1
+        },
+        "2000": {
+          "category": "classify_with_evidence",
+          "id": "70016e78be514184",
+          "length": 65536,
+          "n_channels": 1
+        },
+        "2382": {
+          "category": "measure_magnitude",
+          "id": "f824eb273e45a721",
+          "length": 65536,
+          "n_channels": 1
+        },
+        "2599": {
+          "category": "localize",
+          "id": "c939e82b51c07835",
+          "length": 131072,
+          "n_channels": 1
+        },
+        "2897": {
+          "category": "classify_with_evidence",
+          "id": "e29a0a0ddd3c6bc6",
+          "length": 131072,
+          "n_channels": 1
+        },
+        "3174": {
+          "category": "measure_magnitude",
+          "id": "f5ddc3accf68a9fb",
+          "length": 131072,
+          "n_channels": 1
+        },
+        "348": {
+          "category": "classify_with_evidence",
+          "id": "fb29a93be6978a7d",
+          "length": 16384,
+          "n_channels": 1
+        },
+        "3484": {
+          "category": "localize_all_channels",
+          "id": "6c6c55e1389e9b14",
+          "length": 32768,
+          "n_channels": 16
+        },
+        "3658": {
+          "category": "localize_all_channels",
+          "id": "d5889f01db6218cf",
+          "length": 32768,
+          "n_channels": 16
+        },
+        "3753": {
+          "category": "localize_all_channels",
+          "id": "d6bb17d43f1d7578",
+          "length": 131072,
+          "n_channels": 16
+        },
+        "3804": {
+          "category": "localize_all_channels",
+          "id": "ec313c0ed31f8e1c",
+          "length": 131072,
+          "n_channels": 16
+        },
+        "3930": {
+          "category": "localize_all_channels",
+          "id": "2e0a358df6184934",
+          "length": 131072,
+          "n_channels": 16
+        },
+        "4030": {
+          "category": "lead_lag_with_magnitude",
+          "id": "0d42ae47b434dc8b",
+          "length": 32768,
+          "n_channels": 2
+        },
+        "4162": {
+          "category": "lead_lag_with_magnitude",
+          "id": "3c320a914112fae7",
+          "length": 32768,
+          "n_channels": 2
+        },
+        "4277": {
+          "category": "lead_lag_with_magnitude",
+          "id": "a5d1be6b7ed70932",
+          "length": 131072,
+          "n_channels": 2
+        },
+        "4353": {
+          "category": "lead_lag_with_magnitude",
+          "id": "a247dedf7c023f38",
+          "length": 131072,
+          "n_channels": 2
+        },
+        "46": {
+          "category": "localize",
+          "id": "be6fd62e503fd5de",
+          "length": 16384,
+          "n_channels": 1
+        },
+        "617": {
+          "category": "measure_magnitude",
+          "id": "4dc987f2f4b6460f",
+          "length": 16384,
+          "n_channels": 1
+        },
+        "925": {
+          "category": "localize",
+          "id": "d387b278d6a72a3e",
+          "length": 32768,
+          "n_channels": 1
+        }
+      },
+      "train_prompt_indices": [
+        348,
+        4030,
+        46,
+        3484,
+        617,
+        1251,
+        4162,
+        925,
+        3658,
+        1654,
+        2000,
+        4277,
+        1768,
+        3753,
+        2382,
+        2897,
+        4353,
+        2599,
+        3930,
+        3174
+      ],
+      "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d",
+      "trainable": "lora"
+    },
+    "runtime": {
+      "max_samples": null,
+      "output_dir": "results",
+      "run_name": "anomaly_xl_wavelet_va1"
+    },
+    "seed": 42,
+    "training": {
+      "backbone_training": "lora",
+      "batch_size": 1,
+      "checkpointing": {
+        "metric": "val_loss",
+        "mode": "min",
+        "save_best": true,
+        "save_every_n_steps": 500
+      },
+      "dataloader": {
+        "num_workers": 0,
+        "pin_memory": false
+      },
+      "early_stopping": {
+        "enabled": false,
+        "metric": "val_loss",
+        "mode": "min",
+        "patience": 3
+      },
+      "eval_max_new_tokens": 500,
+      "learning_rate": {
+        "default": 0.0001
+      },
+      "logging": {
+        "wandb": {
+          "enabled": false
+        }
+      },
+      "max_grad_norm": 1.0,
+      "num_epochs": 5,
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01
+    }
+  },
+  "torch": "2.6.0+cu124",
+  "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+}

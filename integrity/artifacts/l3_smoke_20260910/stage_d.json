@@ -1,0 +1,17 @@
+{
+  "loss": 0.39626070607628205,
+  "num_batches": 80,
+  "eval_errors": 0,
+  "eval_jsonl": "results/anomaly_xl_precise/anomaly_xl_wavelet_va1_valprobe/output_logs/evalonly_val_eval_composed_after_20_steps_l3_smoke_20260910T195700Z_epoch_0.jsonl",
+  "samples_evaluated": 80,
+  "primary": 0.3109113184099054,
+  "category_primary": {
+    "localize": 0.17509819440266833,
+    "classify_with_evidence": 0.16522060164808616,
+    "measure_magnitude": 0.5665926804283052,
+    "localize_all_channels": 0.3333333333333333,
+    "lead_lag_with_magnitude": 0.04563685825892857
+  },
+  "checkpoint": "/root/l3/smoke/c/eval_composed_after_20_steps.pt",
+  "split": "val"
+}

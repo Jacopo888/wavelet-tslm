@@ -1,0 +1,19 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
