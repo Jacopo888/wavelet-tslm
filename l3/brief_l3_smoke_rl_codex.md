@@ -1,8 +1,10 @@
 # Brief per Codex — Livello 3, punto 3: smoke GRPO sulla policy multimodale va1 (4B, senza ricorrenza)
 
-Stato: bozza del 10/09/2026 (Claude). Codex scrive il codice, Claude controlla il diff ed esegue
-(regola del 05/09). Prima di scrivere codice, Codex apre il file con una sezione **Decisioni di
-disegno** (punto 6) e la lascia nel PR.
+Stato: **rev. 2 del 10/09/2026** (Claude), dopo la revisione di Codex del brief rev. 1
+(commit `0fb3a46`): corretti l'uso della validation nello smoke (P1), la separazione fra
+old policy e reference (P1), il numero di rollout (P2) e fissate le scelte elencate al §4.
+Codex scrive il codice, Claude controlla il diff ed esegue (regola del 05/09). Prima di
+scrivere codice, Codex apre il file con una sezione **Decisioni di disegno** (§7) e la lascia nel PR.
 
 ## 1. Cosa vogliamo e perché
 
@@ -14,13 +16,15 @@ I coefficienti wavelet entrano nel modello **come embedding** (il percettore del
 come testo. `wavelet_zoom` potrà restare uno strumento aggiuntivo (punto 4, fuori da questo brief).
 Il kit `l2/` NON è riusabile: serve Qwen3.5-2B testuale via vLLM e non sa caricare il checkpoint
 multimodale. Qui si costruisce un **loop GRPO minimale in puro HF/PyTorch**, single-turn, sulla
-stessa architettura di va1, che sostituisce i placeholder con gli embedding temporali sia nei
+stessa architettura di va1 (**Qwen3.5-4B, non il 2B di L2**), modello unico in memoria (nessun
+server, nessun trainer separato), che sostituisce i placeholder con gli embedding temporali sia nei
 rollout sia nel calcolo dei log-prob.
 
 Sequenza obbligata (Jacopo): (1) checkpoint salvati fuori dal nodo con SHA-256 ✔; (2) caricamento
-esatto verificato ✔ e riproduzione dello 0,2744 (in corso, `~/evalq/va1_repro_test.json`);
-**(3) questo brief**; (4) solo dopo il ciclo agentico/tool; (5) confronto `va1 SFT` vs `va1 + RL`
-su stessi dati e stesso checkpoint iniziale.
+esatto verificato ✔ e riproduzione **esatta** dello 0,2744 ✔ (10/09: primary
+0,2743539445041715, 0/800 righe diverse, testo generato incluso → la decodifica greedy bf16 su
+questo stack è deterministica); **(3) questo brief**; (4) solo dopo il ciclo agentico/tool;
+(5) confronto `va1 SFT` vs `va1 + RL` su stessi dati e stesso checkpoint iniziale.
 
 ## 2. Fatti sul modello e sul checkpoint (verificati)
 
@@ -42,7 +46,7 @@ su stessi dati e stesso checkpoint iniziale.
   `integrity/artifacts/va1/checkpoints_SHA256SUMS.txt`. `load_checkpoint` (train.py) con
   `TSLM_SAVE_TRAINABLE_ONLY=1` carica strict=False: verifica esatta in
   `integrity/artifacts/va1/exact_load_ep5.json` (42/42, 0 mancanti, 0 in più, tutto finito);
-  script `check_va1_exact_load.py` (scratchpad → da portare in `l3/tools/`).
+  script `l3/tools/check_va1_exact_load.py`.
 - Env di eval che ha prodotto 0,2744 (`vultr/node_eval_worker_single.sh`):
   `TSLM_TORCH_DTYPE=bfloat16 TSLM_AMP=1 TSLM_AMP_DTYPE=bfloat16 TSLM_ATTN_IMPL=sdpa
   TSLM_SAVE_TRAINABLE_ONLY=1 TSLM_EVAL_STRICT=1 TSLM_QWEN_REVISION=851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`,
@@ -61,68 +65,97 @@ su stessi dati e stesso checkpoint iniziale.
 - Nessuna modifica all'architettura, al percettore, ai config va1, allo scorer.
   `kaggle/patch/wavelet_encoder.py` e `wavelet.py` restano byte-identici; il codice RL vive in `l3/`.
 - A init la policy RL deve essere **va1 bit-per-bit**: stesso `load_model` + `configure_training_mode`
-  + `load_checkpoint(epoch_5_end.pt)`; test che lo dimostri (risposta greedy identica a va1 su 5
-  esempi fissi di val, log-prob identici alla reference al passo 0).
+  + `load_checkpoint(epoch_5_end.pt)`; test che lo dimostri (risposta greedy identica a va1 e
+  log-prob identici alla reference al passo 0, vedi §5 stadio b).
 - A40-24Q vGPU: batch 1, `TSLM_GRAD_CKPT=1`, bf16 AMP, `sdpa`; NIENTE `expandable_segments`
   (VMM non supportata), NIENTE NCCL/multi-processo, niente vLLM. Picco misurato < 22 GB anche sulla
-  cella 16ch × 131072.
-- Contatori prima delle conclusioni: per step `rollouts`, `parsable`, `reward_mean/std`,
-  per categoria, `zero_variance_groups`, `kl`, `grad_norm`, `tokens`, `s/step`; un passo che
-  perde rollout senza contarli è un bug. Niente budget silenziosi, cartelle di run mai riusate,
-  fail-closed (marker DONE/FAILED).
+  cella 16ch × 131072 (stadio c0).
+- Contatori prima delle conclusioni: per step `rollouts`, `parsable`, `unparsable`,
+  `reward_mean/std`, per categoria, `zero_variance_groups`, `kl_mean`, `ratio_mean` (deve valere 1
+  con un solo aggiornamento per batch), `grad_norm`, `tokens_prompt/answer`, `peak_mem_mib`,
+  `s/step`; un passo che perde rollout senza contarli è un bug. Niente budget silenziosi,
+  cartelle di run mai riusate, fail-closed (marker DONE/FAILED).
 - Test CPU eseguibili in locale con `py -m pytest l3/tests -q` (niente GPU in locale) e sul nodo.
-- Il test 800 pinnato NON entra in nessuna scelta di disegno: RL sul train split, selezione
-  sulla val (o sui probe80 fissi), test una volta sola al punto 5.
+- **Separazione degli split (P1 di Codex)**: i prompt di RL vengono SOLO dal **train split**
+  (4488). La **validation** serve solo a selezionare/gate (stadio d sui probe80 fissi) e non
+  entra mai nei rollout né nel gradiente. Il **test 800** pinnato non viene toccato fino alla
+  selezione su validation del punto 5: nessun `--split test` in `l3/` prima di quel momento.
 
-## 4. Deliverable
+## 4. Scelte fissate (Codex, revisione del 10/09; non riaprirle)
+
+| scelta | valore |
+|---|---|
+| modello | Qwen3.5-4B va1 (`epoch_5_end.pt`), stesso `load_model`/`configure_training_mode` di SFT |
+| reference per la KL | **va1 `epoch_5_end.pt`**, congelata, conservata come copia CPU dei tensori allenabili (nel primo smoke bastano i 32 tensori LoRA, 1,8 M param) e applicata con uno swap/context manager; **non** "LoRA spenta", **non** la old policy |
+| old policy vs reference | due oggetti distinti: la **old policy** è la policy che ha campionato (log-prob registrati al campionamento, senza grad, usati per il ratio PPO); la **reference** è va1 e serve solo alla KL. Con un solo aggiornamento per batch il ratio vale 1 al passo (test) e la struttura resta pronta per più epoche interne |
+| parametri allenabili | **solo LoRA** (`backbone_lora`, 32 tensori); `encoder` e `projector` congelati (`requires_grad=False`); flag di config per sbloccarli in seguito, non nello smoke |
+| campionamento | `G=4`, temperatura `0.7`, `top_p=0.95`, `do_sample=True`; `max_new_tokens = eval_max_new_tokens` di va1 |
+| budget dello smoke | **1 prompt di train per step, 20 step, rollout sequenziali** → 80 rollout in tutto (+4 dello stadio c0) |
+| reward | metrica primaria ufficiale della categoria via `extract_answer`/`evaluate_answer`; output non parsabile → reward **0** e contato in `unparsable`; al massimo una piccola **penalità di formato separata** (`format_penalty`, default 0, loggata a parte, mai mescolata nella metrica) |
+| loss | policy gradient con ratio clippato (PPO/GRPO), vantaggi normalizzati nel gruppo (eps; gruppo a varianza zero → vantaggi 0, contato) + **KL token-level solo sui token della risposta**, stimatore k3, coefficiente iniziale `0.01`; nessuna penalità di lunghezza nello smoke |
+| memoria | **una** cella 16 canali × 131072 come gate (stadio c0, 1 step, G=4), non a ogni step; picco loggato |
+| test 800 | mai, fino alla selezione su validation (punto 5) |
+| lr | LoRA `1e-5` (proposta; Codex motiva al §7), AdamW, niente scheduler nello smoke, clip grad 1.0 |
+
+## 5. Deliverable
 
 1. `l3/grpo.py` — loop GRPO single-turn su un `WaveletTSModel` già caricato:
-   - per ogni prompt del batch: `G` completamenti campionati (`do_sample=True`, temperatura e
-     top_p in config) da `model.generate(**gen_inputs)`; reward = metrica primaria ufficiale della
-     categoria (`evaluate_answer`) + penalità di formato documentata per output non parsabile;
-   - vantaggi normalizzati per gruppo; loss policy-gradient con ratio clippato (PPO/GRPO) e KL
-     verso la **reference = va1 iniziale** (cioè i 42 tensori allenabili all'init, NON "LoRA
-     spenta": Codex progetta uno swap economico dei 3,4 M parametri, es. copia in CPU e context
-     manager); coefficiente KL e loss a livello sequenza o token: scelta motivata al punto 6;
-   - log-prob del completamento calcolati con lo stesso `_merge_features` (prompt multimodale +
-     completamento), un forward per completamento con grad ckpt, accumulo dei gradienti;
-   - gruppo/i di parametri allenabili configurabili: `lora` sola oppure `lora+encoder+projector`
-     (default proposto da Codex al punto 6), stesso split di `get_trainable_parameters()`;
-   - checkpoint slim (solo tensori allenabili, come SFT) + `RUN_MANIFEST` con sha del checkpoint
-     iniziale.
-2. `l3/configs/l3_smoke.yaml` (eredita `wavelet_precise_va1.yaml`; sezione `rl:` con G,
-   temperatura, top_p, lr per gruppo, clip, kl_coef, steps, prompts per step, `max_new_tokens`).
+   - per il prompt dello step: `G` completamenti campionati **in sequenza** da
+     `model.generate(**gen_inputs)`; al campionamento si registrano i token della risposta e i
+     log-prob della old policy (senza grad);
+   - reward per completamento come da §4; vantaggi normalizzati per gruppo;
+   - log-prob correnti del completamento con lo stesso `_merge_features` (prompt multimodale +
+     completamento), un forward per completamento con grad ckpt, accumulo dei gradienti sui `G`;
+   - forward della reference (swap dei tensori LoRA, `no_grad`) per la KL token-level sui soli
+     token della risposta;
+   - un aggiornamento per step; contatori del §3; checkpoint slim (solo tensori allenabili, come
+     SFT) + `RUN_MANIFEST` con sha del checkpoint iniziale e config risolto.
+2. `l3/configs/l3_smoke.yaml` (eredita `wavelet_precise_va1.yaml`; sezione `rl:` con i valori del
+   §4: `G`, `temperature`, `top_p`, `lr`, `clip_eps`, `kl_coef`, `steps`, `prompts_per_step=1`,
+   `trainable=lora`, `format_penalty=0`, `train_prompt_indices` fissi).
 3. `l3/node_l3_smoke.sh` — sul nodo, nella venv L1 (`~/venv`), mai nella venv di prime-rl:
-   (a) test CPU; (b) `V3_INIT_EQUALS_VA1`-style: greedy su 5 esempi fissi di val == output di
-   va1 (stessi `output_logs` di `evalonly_val_epoch_5_end`), ratio log-prob = 1 al passo 0;
-   (c) 20 step su 8 prompt fissi di val × G=4 che coprono le 5 categorie, incluse una cella 16ch
-   e una lead_lag: nessun OOM (picco loggato), nessun NaN, reward e KL finiti, `s/step`;
-   (d) eval-only sui probe80 fissi (`configs/wavelet_precise_va1_valprobe.yaml`, 80 esempi) del
-   checkpoint dopo 20 step: deve restare ≥ 0,10 (va1 ep5 sugli stessi 80: vedi
-   `~/evalq/va1_ep5_valprobe80.json`), cioè lo smoke non deve distruggere la policy;
-   scrive `~/l3/smoke/SMOKE_OK` solo se a-d passano; JSON con tutti i contatori.
-4. `l3/tests/test_l3_kit.py` — config, reward sul parser ufficiale (casi parsabile / non
-   parsabile / categoria sbagliata), normalizzazione dei vantaggi con gruppo a varianza zero,
-   swap della reference (round-trip esatto), contatori.
+   - (a) test CPU;
+   - (b) **init == va1**: greedy su 5 esempi fissi (indici fissi del **train** split, per non
+     toccare la val) == output di va1 con lo stesso `--eval-only` sugli stessi 5; log-prob
+     policy == log-prob reference al passo 0 (differenza 0) e `ratio == 1`;
+   - (c0) **gate memoria**: 1 step su una cella 16ch × 131072 del train, G=4: nessun OOM, picco
+     loggato < 22 GB, reward/KL finiti;
+   - (c) **20 step su 20 prompt fissi del train** (1 per step, G=4, sequenziali) che coprono le 5
+     categorie con lunghezze miste (incluse una lead_lag e una 16ch di lunghezza media): nessun
+     NaN, reward e KL finiti, `ratio_mean` = 1, `grad_norm` > 0, `s/step`, contatori completi;
+   - (d) **gate di non distruzione su validation**: eval-only greedy sui probe80 fissi
+     (`configs/wavelet_precise_va1_valprobe.yaml`, 80 esempi di val) del checkpoint dopo i 20
+     step: primary ≥ 0,10 (va1 ep5 sugli stessi 80: `~/evalq/va1_ep5_valprobe80.json`). È
+     l'unico uso della validation nello smoke e non sceglie nulla;
+   - scrive `~/l3/smoke/SMOKE_OK` solo se a-d passano; JSON con tutti i contatori per stadio.
+4. `l3/tests/test_l3_kit.py` — config, reward sul parser ufficiale (parsabile / non parsabile /
+   categoria sbagliata), normalizzazione dei vantaggi con gruppo a varianza zero, swap della
+   reference (round-trip esatto), KL k3 su un caso a mano, maschera dei token di risposta,
+   ratio = 1 con old policy = policy, contatori, split guard (nessun indice di val/test fra i
+   `train_prompt_indices`).
 5. `l3/PROTOCOL-L3.md` — cosa si misura al punto 5: `va1 SFT` (epoch_5_end.pt) vs `va1 + RL`
    sullo stesso test 800 pinnato con bootstrap appaiato 10k (`v3-recurrent/audit/paired_eval.py`
-   esiste già), stesso `max_new_tokens`, stessa decodifica greedy; budget RL dichiarato in step,
-   rollout e ore A40; deviazioni dichiarate.
+   esiste già), stesso `max_new_tokens`, stessa decodifica greedy (deterministica, verificato);
+   selezione del checkpoint RL **solo** sulla validation; budget RL dichiarato in step, rollout e
+   ore A40; deviazioni dichiarate.
 
-## 5. Ordine di lavoro
+## 6. Ordine di lavoro
 
-1. Sezione **Decisioni di disegno** (punto 6) nel PR, con le alternative scartate.
+1. Sezione **Decisioni di disegno** (§7) nel PR, con le alternative scartate.
 2. Codice + test CPU (`py -m pytest l3/tests -q` deve passare in locale).
 3. Claude spedisce sul nodo e lancia `node_l3_smoke.sh`; Codex legge i JSON e decide se il gate è
    passato. Nessun run lungo prima di `SMOKE_OK`.
 
-## 6. Decisioni di disegno (da compilare, Codex)
+Fuori dal brief ma da ricordare: prima di distruggere il nodo, copia dei sei checkpoint
+essenziali su un supporto indipendente dal PC (la copia WSL sta sullo stesso disco fisico).
 
-- Reference per la KL: come si conserva e si applica lo stato iniziale dei 42 tensori.
-- Loss: GRPO a livello sequenza vs token; clip; `kl_coef`; eventuale penalità di lunghezza (no
-  budget impliciti).
-- Parametri allenabili in RL: solo LoRA vs LoRA+encoder+projector; lr per gruppo.
-- Campionamento: G, temperatura, top_p; `max_new_tokens` (le risposte sono JSON corti).
-- Memoria: stima e misura per la cella 16ch × 131072 (4096 token percettivi + testo + G completamenti).
-- Reward: primaria ufficiale per categoria + penalità di formato; come si contano i non parsabili.
-- Cosa NON è coperto: ciclo agentico/tool (punto 4), ricorrenza (v3), Livello 2 testuale.
+## 7. Decisioni di disegno (da compilare, Codex)
+
+- Reference: come si conserva e si applica lo stato iniziale dei tensori LoRA (swap/context manager).
+- Old policy: come si registrano i log-prob al campionamento e come si verifica ratio = 1.
+- Loss: forma esatta (clip, stimatore KL, media per token vs per sequenza), motivazione del lr.
+- Memoria: stima e misura per la cella 16ch × 131072 (4096 token percettivi + testo + G completamenti sequenziali).
+- Reward: primaria ufficiale per categoria; come si contano i non parsabili; `format_penalty`.
+- Scelta dei 20 indici di train e dei 5 dello stadio b (seed, copertura per categoria e lunghezza).
+- Cosa NON è coperto: ciclo agentico/tool (punto 4), ricorrenza (v3), Livello 2 testuale,
+  sblocco di encoder/proiettore.
