@@ -1,0 +1,33 @@
+{
+ "config": "configs/wavelet_precise_va1.yaml",
+ "checkpoint": "results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt",
+ "checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+ "checkpoint_meta": {
+  "epoch": 5,
+  "batch_idx": null,
+  "val_loss": 0.3478469033900183,
+  "best_val_metric": -0.3478469033900183,
+  "timestamp": "2026-09-03T18:19:03.495113"
+ },
+ "tensors_in_checkpoint": 42,
+ "trainable_tensors_in_model": 42,
+ "params_in_checkpoint": 3435520,
+ "trainable_params_in_model": 3435520,
+ "frozen_tensors_kept_from_init": 427,
+ "by_prefix": {
+  "llm_model": 32,
+  "ts_encoder": 6,
+  "ts_projector": 4
+ },
+ "missing_in_ckpt (trainable, would keep init)": [],
+ "extra_in_ckpt (saved but frozen)": [],
+ "not_in_model": [],
+ "shape_mismatch": [],
+ "unexpected_on_load": [],
+ "trainable_kept_from_init_on_load": [],
+ "non_finite": [],
+ "dtypes": [
+  "torch.float32"
+ ],
+ "EXACT_LOAD_OK": true
+}
