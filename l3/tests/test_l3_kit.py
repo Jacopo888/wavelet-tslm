@@ -4,6 +4,7 @@ import json
 import math
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -16,16 +17,19 @@ sys.path.insert(0, str(UPSTREAM))
 
 from l3.grpo import (  # noqa: E402
     LoraReference,
+    MAX_ABS_LOG_RATIO,
     REQUIRED_CATEGORIES,
     RewardResult,
     RolloutAccounting,
     k3_kl,
     load_l3_config,
+    max_abs_log_ratio,
     normalize_advantages,
     official_score_any,
     ppo_ratio,
     response_token_mask,
     reward_completion,
+    grpo_step,
 )
 
 
@@ -136,10 +140,97 @@ def test_response_mask_marks_only_answer_tokens():
         response_token_mask(3, 0)
 
 
-def test_ratio_is_exactly_one_for_old_policy_equal_policy():
+def test_ratio_exact_flag_is_diagnostic_but_log_ratio_has_tolerant_gate():
     log_probs = torch.tensor([-0.1, -2.5, -0.7])
     ratio = ppo_ratio(log_probs, log_probs.detach().clone())
     assert torch.equal(ratio, torch.ones_like(ratio))
+    perturbed = log_probs + torch.tensor([0.0, MAX_ABS_LOG_RATIO / 2, 0.0])
+    perturbed_ratio = ppo_ratio(perturbed, log_probs)
+    assert not torch.equal(perturbed_ratio, torch.ones_like(perturbed_ratio))
+    assert max_abs_log_ratio(perturbed, log_probs) <= MAX_ABS_LOG_RATIO
+
+
+class TinyTokenizer:
+    eos_token_id = 7
+    pad_token_id = 0
+
+    def batch_decode(self, token_ids, skip_special_tokens=True):
+        return ['localize:{"_L":100,"present":true,"start":10,"end":20}']
+
+
+class TinyLlm(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lora_gain = torch.nn.Parameter(torch.tensor(0.1))
+        self.training_modes = []
+
+    def forward(self, *, inputs_embeds, attention_mask, use_cache, logits_to_keep):
+        self.training_modes.append(self.training)
+        vocab = torch.arange(8, dtype=torch.float32).view(1, 1, 8)
+        kernel_delta = torch.zeros_like(vocab)
+        if torch.is_grad_enabled():
+            kernel_delta[..., 3] = MAX_ABS_LOG_RATIO / 2
+        logits = (self.lora_gain * vocab + kernel_delta).expand(
+            1, inputs_embeds.shape[1], 8
+        )
+        return SimpleNamespace(logits=logits)
+
+
+class TinyGrpoModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.llm_model = TinyLlm()
+        self.tokenizer = TinyTokenizer()
+        self.generate_modes = []
+
+    def prepare_batch(self, samples, training=False):
+        return {
+            "input_ids": torch.tensor([[1, 2]]),
+            "attention_mask": torch.ones((1, 2), dtype=torch.long),
+            "time_series": torch.zeros((1, 1)),
+        }
+
+    def _encode_and_project(self, time_series):
+        return torch.zeros((1, 1))
+
+    def _merge_features(self, ts_features, full_ids):
+        return full_ids.float().unsqueeze(-1)
+
+    def generate(self, **kwargs):
+        self.generate_modes.append(self.training)
+        return torch.tensor([[3]])
+
+
+def test_grpo_generates_in_eval_then_teacher_forces_in_train_mode():
+    model = TinyGrpoModel()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+    dataset = OfficialFakeDataset()
+    sample = {
+        "_l3_train_index": 46,
+        "id": "tiny",
+        "category": "localize",
+        "length": 100,
+        "n_channels": 1,
+        "answer": 'localize:{"_L":100,"present":true,"start":10,"end":20}</s>',
+    }
+    rl = {
+        "G": 1,
+        "max_new_tokens": 1,
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "format_penalty": 0.0,
+        "advantage_eps": 1e-8,
+        "clip_eps": 0.2,
+        "kl_coef": 0.01,
+        "max_grad_norm": 1.0,
+    }
+
+    row = grpo_step(model, optimizer, LoraReference(model), dataset, sample, rl, 1)
+
+    assert model.generate_modes == [False]
+    assert model.llm_model.training_modes == [True, True, True]
+    assert not row["ratio_all_exact_one"]
+    assert row["max_abs_log_ratio"] <= MAX_ABS_LOG_RATIO
 
 
 def test_positive_rollout_accounting_detects_loss():

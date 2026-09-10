@@ -23,15 +23,20 @@ stato corrente. Il round-trip è verificato con `torch.equal`. Non viene mai
 disattivata la LoRA: farlo cambierebbe la reference da va1 al backbone base. Non si
 mantiene una seconda copia del 4B in GPU, che non entrerebbe nel budget A40-24Q.
 
-La old policy è invece lo stato che ha prodotto ciascun rollout. Subito dopo ogni
-`model.generate`, prima di qualsiasi `optimizer.step`, si calcolano in `no_grad` i
-log-prob teacher-forced dei token campionati e se ne conserva una copia. Policy e
-old policy sono quindi oggetti concettualmente distinti anche se, con una sola epoca
-interna, hanno gli stessi pesi. Il forward corrente avviene prima dell'update e in
-modalità training per attivare gradient checkpointing, ma tutti i moduli `Dropout`
-sono posti in eval: deve perciò riprodurre esattamente gli old log-prob. Il gate
-richiede `ratio_mean == 1.0`, non una semplice
-tolleranza. Conservare la reference come old policy è scartato perché dal secondo
+La old policy è invece lo stato che ha prodotto ciascun rollout. La generazione
+avviene con il modello in `eval()`: così il decoder usa la KV-cache anche quando
+`TSLM_GRAD_CKPT=1` ed elimina il dropout. Subito dopo la generazione si ripristina
+`_gradient_checkpoint_train_mode`; prima di qualsiasi `optimizer.step`, si calcolano
+in `no_grad` i log-prob teacher-forced dei token campionati e se ne conserva una
+copia. Anche i forward reference e corrente restano nella medesima modalità train,
+con tutti i moduli `Dropout` posti in eval. Policy e old policy sono quindi oggetti
+concettualmente distinti anche se, con una sola epoca interna, hanno gli stessi pesi.
+
+I percorsi senza gradiente e con gradiente possono selezionare kernel SDPA diversi
+sullo stesso input e differire agli ultimi bit. Il gate fatale richiede perciò, per
+ogni completamento, `max |logpi - logpi_old| <= 1e-3`; ogni step registra il massimo
+come `max_abs_log_ratio`. `ratio_all_exact_one` resta un flag diagnostico riportato,
+non un gate. Conservare la reference come old policy è scartato perché dal secondo
 step confonderebbe il vincolo KL verso va1 con il denominatore PPO.
 
 ### Loss
@@ -121,8 +126,9 @@ stessi `load_model`, `configure_training_mode` e `load_checkpoint` di va1. Prima
 genera il baseline nel percorso eval bf16; poi i soli master LoRA sono promossi a
 fp32, il checkpoint viene ricaricato senza perdita e la seconda generazione passa
 dal wrapper rollout L3. Token e testo devono essere identici. Nello stesso stadio
-policy/reference log-prob devono avere
-differenza massima zero e il ratio deve essere uno.
+policy/reference log-prob devono avere differenza massima non superiore a `1e-3`.
+`logprob_equal_reference` e `ratio_all_exact_one` sono comunque riportati come flag
+diagnostici, senza essere fatali.
 
 ### Stato salvato
 
@@ -147,14 +153,20 @@ Lo script `node_l3_smoke.sh` crea una directory nuova e marker fail-closed.
 
 1. **a — CPU:** tutta `l3/tests` passa nella venv L1.
 2. **b — identità:** sui cinque prompt train fissi, greedy va1 e wrapper L3 hanno
-   token identici; policy/reference hanno log-prob identici e ratio uno.
+   token identici; la differenza massima policy/reference è al più `1e-3`, mentre
+   l'uguaglianza esatta resta riportata.
 3. **c0 — memoria:** un update, quattro rollout sequenziali, sulla cella
-   16×131072; picco sotto 22528 MiB, valori finiti.
+   16×131072; picco sotto 22528 MiB, valori finiti e
+   `max_abs_log_ratio <= 1e-3`.
 4. **c — update:** 20 prompt train fissi, 80 rollout contati, nessun NaN/Inf,
-   ratio medio uno a ogni step, almeno un gradiente strettamente positivo e tutti i
-   contatori obbligatori presenti.
+   `max_abs_log_ratio <= 1e-3` a ogni step, almeno un gradiente strettamente positivo
+   e tutti i contatori obbligatori presenti.
 5. **d — non distruzione:** eval greedy del checkpoint composto sui probe80 fissi
-   della validation; primary almeno 0.10. È il solo uso della validation nello
+   della validation; primary almeno 0.10. Solo questo comando usa
+   `TSLM_EVAL_STRICT=0`, perché il probe copre 80 righe delle 520 della validation;
+   in cambio il gate richiede `split == "val"`, `samples_evaluated == 80`,
+   `eval_errors == 0` e conta esattamente 80 righe nel JSONL. La modalità strict
+   resta attiva per le validation intere. È il solo uso della validation nello
    smoke e non seleziona un checkpoint.
 
 `SMOKE_OK` è scritto solo dopo tutti e quattro i gate; altrimenti resta `FAILED` con

@@ -35,6 +35,7 @@ REQUIRED_CATEGORIES = {
     "localize_all_channels",
     "lead_lag_with_magnitude",
 }
+MAX_ABS_LOG_RATIO = 1.0e-3
 
 
 def sha256_file(path: str | Path) -> str:
@@ -165,6 +166,13 @@ def ppo_ratio(log_policy: torch.Tensor, log_old: torch.Tensor) -> torch.Tensor:
     if log_policy.shape != log_old.shape:
         raise ValueError("policy/old log-prob shapes differ")
     return torch.exp(log_policy - log_old)
+
+
+def max_abs_log_ratio(log_policy: torch.Tensor, log_old: torch.Tensor) -> torch.Tensor:
+    """Largest token-level |log pi - log pi_old| for the pre-update gate."""
+    if log_policy.shape != log_old.shape or log_policy.numel() == 0:
+        raise ValueError("policy/old log-probs must have the same non-empty shape")
+    return (log_policy - log_old).abs().max()
 
 
 def response_token_mask(prompt_tokens: int, answer_tokens: int) -> torch.Tensor:
@@ -462,7 +470,6 @@ def grpo_step(
     started = time.perf_counter()
     group_size = int(rl["G"])
     accounting = RolloutAccounting(group_size)
-    _gradient_checkpoint_train_mode(model)
     optimizer.zero_grad(set_to_none=True)
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
@@ -470,6 +477,7 @@ def grpo_step(
     prompt_inputs = model.prepare_batch([sample], training=False)
     prompt_inputs = {key: value for key, value in prompt_inputs.items() if key != "labels"}
     prompt_tokens = int(prompt_inputs["attention_mask"].sum().item())
+    model.eval()
     with torch.no_grad(), _autocast_for(model):
         shared_features = model._encode_and_project(prompt_inputs["time_series"])
 
@@ -478,9 +486,11 @@ def grpo_step(
     rewards: list[RewardResult] = []
     tokenizer = model.tokenizer
     for _ in range(group_size):
+        model.eval()
         completion = generate_completion(model, prompt_inputs, rl, sample=True)
         text = tokenizer.batch_decode(completion, skip_special_tokens=True)[0]
         reward = reward_completion(dataset, text, sample, float(rl["format_penalty"]))
+        _gradient_checkpoint_train_mode(model)
         with torch.no_grad(), _autocast_for(model):
             old_lp = completion_log_probs(model, prompt_inputs, completion, shared_features)
         if not torch.isfinite(old_lp).all():
@@ -500,6 +510,7 @@ def grpo_step(
     )
 
     ratio_values: list[torch.Tensor] = []
+    max_abs_log_ratios: list[torch.Tensor] = []
     kl_values: list[torch.Tensor] = []
     losses: list[float] = []
     for completion, old_lp, advantage in zip(completions, old_log_probs, advantages):
@@ -512,12 +523,17 @@ def grpo_step(
             policy_loss = -torch.minimum(ratio * advantage, clipped * advantage).mean()
             kl = k3_kl(current_lp, ref_lp).mean()
             loss = policy_loss + float(rl["kl_coef"]) * kl
-        if not torch.equal(ratio.detach(), torch.ones_like(ratio)):
-            raise RuntimeError("ratio is not exactly one before the single update")
+        log_ratio_max = max_abs_log_ratio(current_lp.detach(), old_lp)
+        if not torch.isfinite(log_ratio_max) or log_ratio_max.item() > MAX_ABS_LOG_RATIO:
+            raise RuntimeError(
+                "pre-update max |log ratio| "
+                f"{log_ratio_max.item():.6g} exceeds {MAX_ABS_LOG_RATIO:.6g}"
+            )
         if not torch.isfinite(loss):
             raise RuntimeError("non-finite GRPO loss")
         (loss / group_size).backward()
         ratio_values.append(ratio.detach())
+        max_abs_log_ratios.append(log_ratio_max)
         kl_values.append(kl.detach())
         losses.append(float(loss.detach().item()))
 
@@ -551,6 +567,7 @@ def grpo_step(
         "kl_mean": float(torch.stack(kl_values).mean().item()),
         "ratio_mean": float(flat_ratios.mean().item()),
         "ratio_all_exact_one": bool(torch.equal(flat_ratios, torch.ones_like(flat_ratios))),
+        "max_abs_log_ratio": float(torch.stack(max_abs_log_ratios).max().item()),
         "grad_norm": float(grad_norm.item()),
         "loss_mean": sum(losses) / len(losses),
         "tokens_prompt": prompt_tokens,
@@ -561,7 +578,7 @@ def grpo_step(
         "s_per_step": time.perf_counter() - started,
     }
     if not all(_finite_number(result[key]) for key in (
-        "reward_mean", "reward_std", "kl_mean", "ratio_mean", "grad_norm",
+        "reward_mean", "reward_std", "kl_mean", "ratio_mean", "max_abs_log_ratio", "grad_norm",
         "peak_mem_mib", "s_per_step",
     )):
         raise RuntimeError("step counters contain a non-finite value")
@@ -725,8 +742,8 @@ def _init_check(args: argparse.Namespace) -> None:
             "ratio_all_exact_one": bool(torch.equal(ratio, torch.ones_like(ratio))),
         })
     ok = all(
-        row["tokens_equal"] and row["text_equal"] and row["logprob_equal_reference"]
-        and row["max_logprob_diff"] == 0.0 and row["ratio_all_exact_one"]
+        row["tokens_equal"] and row["text_equal"]
+        and row["max_logprob_diff"] <= MAX_ABS_LOG_RATIO
         for row in rows
     )
     report = {
@@ -865,8 +882,8 @@ def _train(args: argparse.Namespace) -> None:
         total_unparsable = sum(row["unparsable"] for row in step_rows)
         if total_rollouts != expected_rollouts or total_parsable + total_unparsable != total_rollouts:
             raise RuntimeError("aggregate rollout accounting mismatch")
-        if not all(row["ratio_all_exact_one"] for row in step_rows):
-            raise RuntimeError("a step ratio was not exactly one")
+        if not all(row["max_abs_log_ratio"] <= MAX_ABS_LOG_RATIO for row in step_rows):
+            raise RuntimeError("a step exceeded the pre-update max |log ratio| gate")
         peak = max(row["peak_mem_mib"] for row in step_rows)
         if args.mode == "memory-gate" and peak >= float(rl["peak_limit_mib"]):
             raise RuntimeError(f"memory peak {peak:.1f} MiB reached limit")
@@ -912,7 +929,8 @@ def _train(args: argparse.Namespace) -> None:
             "parsable": total_parsable,
             "unparsable": total_unparsable,
             "zero_variance_groups": sum(row["zero_variance_groups"] for row in step_rows),
-            "ratio_all_exact_one": True,
+            "ratio_all_exact_one": all(row["ratio_all_exact_one"] for row in step_rows),
+            "max_abs_log_ratio": max(row["max_abs_log_ratio"] for row in step_rows),
             "reward_mean": reward_mean,
             "reward_std": math.sqrt(reward_variance),
             "format_penalty": sum(row["format_penalty"] * row["rollouts"] for row in step_rows) / total_rollouts,
