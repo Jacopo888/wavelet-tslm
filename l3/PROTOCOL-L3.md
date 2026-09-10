@@ -1,7 +1,7 @@
 # Protocollo L3 — GRPO multimodale va1
 
-Stato: protocollo dello smoke, 10/09/2026. Il gate descritto qui precede qualunque
-run lunga e qualunque accesso al test pinnato.
+Stato: protocollo smoke e run lunga, congelato prima della run il 10/09/2026.
+Il gate smoke precede la catena lunga e qualunque accesso al test pinnato.
 
 ## Scopo dello smoke
 
@@ -144,8 +144,8 @@ un checkpoint RL selezionabile.
 ### Fuori perimetro
 
 Non sono coperti il ciclo agentico/tool del punto 4, ricorrenza v3, il Livello 2
-testuale, lo sblocco di encoder/proiettore, più epoche PPO interne o una run RL
-lunga. Queste estensioni richiedono un nuovo protocollo e un nuovo gate.
+testuale, lo sblocco di encoder/proiettore o più epoche PPO interne. Queste
+estensioni richiedono un nuovo protocollo e un nuovo gate.
 
 ## Gate smoke a–d
 
@@ -173,6 +173,105 @@ Lo script `node_l3_smoke.sh` crea una directory nuova e marker fail-closed.
 stadio e motivo. Un path di run esistente causa errore e non viene ripulito o
 riutilizzato automaticamente.
 
+## Decisioni run lunga
+
+Queste regole sono dichiarate prima della run e non vengono adattate dopo aver
+osservato validation o test.
+
+### Contratto di ottimizzazione
+
+La temperatura resta fissa a `0.7`: per decisione di Jacopo non si esegue il pilot
+di temperatura. Restano fissi `top_p=0.95`, LR LoRA `1e-5`, clip globale `1.0`,
+`format_penalty=0` e KL k3 con beta `0.01`. Il k3 è calcolato in fp32 come
+`expm1(delta) - delta`, deve essere finito e non può scendere sotto `-1e-7`; i
+residui negativi entro tolleranza sono portati a zero.
+
+Ogni optimizer step contiene due prompt elaborati uno dopo l'altro. Per ogni prompt
+si generano otto completamenti in sequenza, si normalizzano i vantaggi soltanto
+all'interno del suo gruppo G8 e si media prima sui token, poi sui completamenti e
+infine sui due prompt. Le feature del primo prompt vengono eliminate prima di
+preparare il secondo; i prompt non sono mai una dimensione batch. Si effettua un
+solo `optimizer.step` per i due gruppi. Le norme dei gradienti policy e KL sono
+calcolate con due backward separati sullo stesso forward, poi i gradienti sono combinati come
+`policy + 0.01 * KL` e sottoposti al clip globale.
+
+`rl.weight_decay=0` è una deviazione intenzionale dal decay SFT 0.01: se vantaggi e
+KL sono nulli, va1 deve restare un punto fisso. Sono allenabili esclusivamente i 32
+tensori LoRA; encoder e proiettore restano congelati. `positive_grad_steps` rimane,
+se presente negli artefatti smoke, una diagnostica e non è un gate della run lunga.
+
+### Pool train-only
+
+Il pool è filtrato una volta, prima del training, sul solo train pinnato. Con seed
+`20260911` gli indici sono mescolati entro strati `(categoria, lunghezza)` e visitati
+round-robin. Ogni candidato riceve G8 a T 0.7; è ammissibile soltanto se
+`reward_std > 0`. Il tetto è 200 candidati, cioè 1600 rollout. Dal risultato si
+scelgono esattamente otto prompt per ciascuna delle cinque categorie, ciclando le
+lunghezze disponibili per bilanciarle. Se una categoria non raggiunge otto prompt,
+L1 fallisce. `pool.json`, seed, lista ordinata, SHA del contenuto e SHA del file sono
+congelati nei manifest. Durante il training non esiste rejection sampling online.
+
+L'ordine di training è una singola permutazione del pool prodotta dal seed della
+run e ripetuta ciclicamente. La principale usa `20260911`; le repliche usano
+`20260912` e `20260913`. Il cursore conta prompt consumati, non step.
+
+### Checkpoint e ripresa
+
+Si salva allo step zero e ogni 25 step, oltre all'eventuale confine richiesto dal
+driver. Ogni punto contiene un checkpoint LoRA-only a 32 tensori e il composto slim
+a 42 chiavi. Entrambi sono scritti con rename atomico e registrati con SHA-256 nel
+manifest; il LoRA-only contiene inoltre stato AdamW, step, cursore del pool, contatori
+cumulativi e RNG Python, torch CPU e CUDA. Il resume seleziona l'ultimo record di cui
+entrambi i file e gli SHA sono validi, tronca i JSONL dopo quello step e riparte dal
+cursore salvato: rollout parziali non vengono né duplicati né saltati.
+
+`rollouts.jsonl` registra per ogni completamento step, ordinale del prompt, indice
+train, ID, categoria, reward primario e di ottimizzazione, parsabilità, token di
+risposta e SHA-256 del testo. `steps.jsonl` registra i due prompt, gruppi informativi,
+step con segnale policy, norme policy/KL, KL, memoria e tempo. Le due norme sono
+ottenute con due `backward` immediati sullo stesso forward (`retain_graph` soltanto
+per il primo): è il percorso compatibile con il gradient checkpointing re-entrant;
+il costo è accettato per rendere il segnale verificabile senza un secondo modello.
+
+### Fasi, selezione e stop
+
+- L0 esegue un update P2/G8 sui due prompt peggiori 16×131072, indici 3804 e 3930;
+  richiede 16 rollout contati, finitezza e picco strettamente sotto 22528 MiB.
+- L1 costruisce il pool congelato con il gate appena descritto.
+- L2 esegue al massimo 400 step della run principale. Probe80 greedy ogni 25 step è
+  solo monitor con `TSLM_EVAL_STRICT=0`; val520 greedy completa e strict avviene a
+  100, 200, 300 e 400.
+- L3 valuta una sola volta sul test 800 il candidato L2 già congelato e lo confronta
+  col JSONL va1 archiviato. Il test non seleziona né modifica alcun checkpoint.
+- L4 ripete la stessa procedura con i due seed dichiarati, senza test e senza ritocchi.
+
+La selezione L2 e delle repliche usa il massimo primary val520. Se più checkpoint
+sono entro 0.002 dal massimo osservato, vince il primo temporalmente. Il training si
+ferma a 400 o dopo due val520 consecutive che non migliorano il massimo precedente
+di almeno 0.005. Il riferimento descrittivo va1 ep5 sulla validation intera è
+0.3105, ma non cambia la regola.
+
+Sono hard stop: NaN/Inf, rollout persi, SHA o insieme delle chiavi LoRA errati,
+picco `>=22528 MiB`, oppure per due finestre non sovrapposte consecutive da 50 gruppi
+parsabilità sotto 95% o gruppi informativi sotto 50%. Ogni fase ha directory nuova,
+log, `summary.json` e marker esclusivo `OK`/`FAILED`; la successiva richiede l'`OK`.
+Il driver richiede una A40 libera, venv L1, processo singolo, bf16 AMP, SDPA,
+gradient checkpointing e allocator nativo.
+
+### Budget e valutazioni
+
+Il budget dichiarato è 50–60 ore A40, circa 45–52 USD a 0.86 USD/ora: L0 circa 7
+minuti, L1 3.2–3.9 ore, ogni seed 13–16 ore di training più circa 2.1 ore di
+validation, e il test finale circa 0.6 ore. Il driver stampa ore trascorse e stima
+residua a ogni fase.
+
+Prima e dopo ogni probe80, val520 o test si calcola lo SHA del checkpoint composto.
+Il JSON sigillato dell'eval contiene entrambi gli SHA e il confronto positivo con
+il record del manifest. Il confronto finale usa `l3/paired_eval_l3.py`, non modifica
+`v3-recurrent/audit/paired_eval.py`, impone copertura 800/800 (520/520 su validation),
+identità ordinate `(id, category, ground_truth)`, valori finiti e bootstrap appaiato
+10.000 con seed dichiarato, complessivo e per categoria.
+
 ## Confronto del punto 5
 
 Dopo lo smoke, ogni candidato RL lungo viene selezionato soltanto sulla validation
@@ -184,8 +283,8 @@ stesso test pinnato di 800 esempi per:
 
 Le due condizioni usano stesso `eval_max_new_tokens`, decodifica greedy e stack
 bf16/SDPA pinnato. Il confronto è appaiato per `(id, category, ground_truth)` e usa
-10.000 bootstrap con seed dichiarato, adattando
-`v3-recurrent/audit/paired_eval.py` alla coppia SFT/RL. Si riportano primary medio,
+10.000 bootstrap con seed dichiarato tramite `l3/paired_eval_l3.py`, lasciando
+`v3-recurrent/audit/paired_eval.py` intatto. Si riportano primary medio,
 differenza appaiata con CI 95%, risultati per categoria e conteggio esatto 800/800.
 
 Ogni report dichiara budget RL in optimizer step, prompt, rollout totali e ore A40,

@@ -17,6 +17,7 @@ rl:
   top_p: 0.95
   do_sample: true
   lr: 1.0e-5
+  weight_decay: 0.0
   clip_eps: 0.2
   kl_coef: 0.01
   advantage_eps: 1.0e-8

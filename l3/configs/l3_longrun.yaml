@@ -1,0 +1,52 @@
+# Long-run overlay.  l3/grpo.py resolves this against the immutable va1 config.
+base_config: ../../kaggle/patch/wavelet_precise_va1.yaml
+
+training:
+  eval_max_new_tokens: 500
+
+rl:
+  contract: longrun
+  prompt_split: train
+  expected_train_rows: 4488
+  dataset_revision: df363a467f855e55aaad414b0bdd58590829df9a
+  train_sha256: b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d
+  initial_checkpoint_sha256: cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531
+
+  G: 8
+  prompts_per_step: 2
+  temperature: 0.7
+  top_p: 0.95
+  do_sample: true
+  lr: 1.0e-5
+  weight_decay: 0.0
+  clip_eps: 0.2
+  kl_coef: 0.01
+  advantage_eps: 1.0e-8
+  format_penalty: 0.0
+  max_grad_norm: 1.0
+  trainable: lora
+
+  steps: 400
+  checkpoint_every: 25
+  seed: 20260911
+  peak_limit_mib: 22528
+
+  pool_seed: 20260911
+  pool_max_rollouts: 1600
+  min_pool_per_category: 8
+  memory_gate_indices: [3804, 3930]
+
+  # Runtime checks for the two worst-shape prompts used by L0.
+  train_prompt_expectations:
+    "3804": {id: ec313c0ed31f8e1c, category: localize_all_channels, length: 131072, n_channels: 16}
+    "3930": {id: 2e0a358df6184934, category: localize_all_channels, length: 131072, n_channels: 16}
+
+  monitor:
+    probe_every: 25
+    full_val_steps: [100, 200, 300, 400]
+    tie_tolerance: 0.002
+    minimum_improvement: 0.005
+    stale_full_validations: 2
+    parsability_floor: 0.95
+    informative_group_floor: 0.50
+    window_groups: 50
