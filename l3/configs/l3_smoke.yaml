@@ -1,0 +1,78 @@
+# Resolved by l3/grpo.py. On the node the fallback is configs/<basename>.
+base_config: ../../kaggle/patch/wavelet_precise_va1.yaml
+
+# Materialize the inherited dataclass default in the resolved manifest.
+training:
+  eval_max_new_tokens: 500
+
+rl:
+  prompt_split: train
+  expected_train_rows: 4488
+  dataset_revision: df363a467f855e55aaad414b0bdd58590829df9a
+  train_sha256: b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d
+  initial_checkpoint_sha256: cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531
+
+  G: 4
+  temperature: 0.7
+  top_p: 0.95
+  do_sample: true
+  lr: 1.0e-5
+  clip_eps: 0.2
+  kl_coef: 0.01
+  advantage_eps: 1.0e-8
+  steps: 20
+  prompts_per_step: 1
+  trainable: lora
+  format_penalty: 0.0
+  max_grad_norm: 1.0
+  seed: 20260910
+  peak_limit_mib: 22528
+
+  # Seed 20260910, one draw from each category quartile; stored, not redrawn.
+  train_prompt_indices:
+    - 348
+    - 4030
+    - 46
+    - 3484
+    - 617
+    - 1251
+    - 4162
+    - 925
+    - 3658
+    - 1654
+    - 2000
+    - 4277
+    - 1768
+    - 3753
+    - 2382
+    - 2897
+    - 4353
+    - 2599
+    - 3930
+    - 3174
+
+  init_prompt_indices: [46, 348, 617, 3484, 4030]
+  memory_gate_index: 3804
+
+  train_prompt_expectations:
+    "46": {id: be6fd62e503fd5de, category: localize, length: 16384, n_channels: 1}
+    "348": {id: fb29a93be6978a7d, category: classify_with_evidence, length: 16384, n_channels: 1}
+    "617": {id: 4dc987f2f4b6460f, category: measure_magnitude, length: 16384, n_channels: 1}
+    "925": {id: d387b278d6a72a3e, category: localize, length: 32768, n_channels: 1}
+    "1251": {id: 1f57944adf26c923, category: classify_with_evidence, length: 32768, n_channels: 1}
+    "1654": {id: 5860b7a361f2f44c, category: measure_magnitude, length: 32768, n_channels: 1}
+    "1768": {id: c5aeb11eb91f29da, category: localize, length: 65536, n_channels: 1}
+    "2000": {id: 70016e78be514184, category: classify_with_evidence, length: 65536, n_channels: 1}
+    "2382": {id: f824eb273e45a721, category: measure_magnitude, length: 65536, n_channels: 1}
+    "2599": {id: c939e82b51c07835, category: localize, length: 131072, n_channels: 1}
+    "2897": {id: e29a0a0ddd3c6bc6, category: classify_with_evidence, length: 131072, n_channels: 1}
+    "3174": {id: f5ddc3accf68a9fb, category: measure_magnitude, length: 131072, n_channels: 1}
+    "3484": {id: 6c6c55e1389e9b14, category: localize_all_channels, length: 32768, n_channels: 16}
+    "3658": {id: d5889f01db6218cf, category: localize_all_channels, length: 32768, n_channels: 16}
+    "3753": {id: d6bb17d43f1d7578, category: localize_all_channels, length: 131072, n_channels: 16}
+    "3804": {id: ec313c0ed31f8e1c, category: localize_all_channels, length: 131072, n_channels: 16}
+    "3930": {id: 2e0a358df6184934, category: localize_all_channels, length: 131072, n_channels: 16}
+    "4030": {id: 0d42ae47b434dc8b, category: lead_lag_with_magnitude, length: 32768, n_channels: 2}
+    "4162": {id: 3c320a914112fae7, category: lead_lag_with_magnitude, length: 32768, n_channels: 2}
+    "4277": {id: a5d1be6b7ed70932, category: lead_lag_with_magnitude, length: 131072, n_channels: 2}
+    "4353": {id: a247dedf7c023f38, category: lead_lag_with_magnitude, length: 131072, n_channels: 2}
