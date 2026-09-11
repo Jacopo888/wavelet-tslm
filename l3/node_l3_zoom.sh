@@ -91,6 +91,8 @@ fi
 
 mkdir -p "$RUN_ROOT"
 cd "$ROOT"
+# zoom.py / zoom_sft.py import the l3 package; running them as scripts puts l3/ (not ROOT) first on sys.path.
+export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
 git rev-parse HEAD > "$RUN_ROOT/KIT_COMMIT.txt"
 git status --porcelain -- l3 >> "$RUN_ROOT/KIT_COMMIT.txt"
 unset PYTORCH_CUDA_ALLOC_CONF WORLD_SIZE RANK LOCAL_RANK MASTER_ADDR MASTER_PORT
