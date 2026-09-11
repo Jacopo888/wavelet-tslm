@@ -316,7 +316,11 @@ def heuristic_zoom(sample: Mapping[str, Any], buckets: int = 64) -> ZoomAction:
     except ImportError:
         if str(REPO_ROOT) not in sys.path:
             sys.path.insert(0, str(REPO_ROOT))
-        from l2.overlay.timerlm.environments.timeseries_qa.wavelet_pyramid import WaveletPyramid
+        try:
+            from l2.overlay.timerlm.environments.timeseries_qa.wavelet_pyramid import WaveletPyramid
+        except ImportError:
+            # On the node the kit ships without l2/: use the byte-identical vendored copy.
+            from l3.wavelet_pyramid import WaveletPyramid
 
     length = series_length(sample)
     names = channel_names(sample)
