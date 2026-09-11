@@ -291,3 +291,104 @@ Ogni report dichiara budget RL in optimizer step, prompt, rollout totali e ore A
 checkpoint iniziale e finale con SHA-256, config risolto, criterio di selezione e
 ogni deviazione dal protocollo. Nessun risultato parziale o non appaiato viene
 presentato come confronto finale.
+
+## Punto 4 — azione zoom (protocollo congelato prima della run)
+
+Questa sezione definisce il confronto a quattro bracci va1, va1+RL,
+va1+zoom (`vz1`) e va1+zoom+RL. Lo zoom non cambia l'architettura: è un blocco
+percettivo aggiuntivo elaborato dallo stesso encoder e proiettore congelati.
+
+### Decisioni di disegno
+
+Il testo aggiunto, identico in SFT, RL ed eval, è:
+
+```
+Optional action: before answering, you may output exactly zoom:{"channel":"<name>","start":s,"end":e}. Use one listed channel and absolute sample coordinates [start,end). Otherwise output the final answer now.
+```
+
+L'azione deve occupare l'intero output del primo turno e avere esattamente le
+chiavi `channel`, `start`, `end`; valori booleani, coordinate non intere, chiavi
+extra e canali non elencati sono invalidi. Il blocco inserito dall'ambiente ha
+sempre l'intestazione:
+
+```
+Zoom on channel <name>, samples [s, e) of L:
+```
+
+Nel secondo turno il post-prompt riporta, dopo domanda e istruzione, la riga
+`Assistant action: <azione canonica>` e chiede `Now output the final answer in
+absolute coordinates.`. Le coordinate restano quindi riferite alla serie
+originale, mai alla finestra.
+
+Una richiesta con intersezione non vuota viene clampata a `[0,L)`. Se dopo il
+clamp è più corta di 1024 campioni, viene estesa simmetricamente (con compensazione
+al bordo) fino a `min(1024,L)`; la lunghezza massima è `L`. Intervallo invertito o
+senza intersezione, canale ignoto o azione non parsabile producono nessun blocco e
+incrementano `zoom_invalid`. Un output finale al primo turno non è invalido e
+termina l'episodio senza zoom. È ammesso un solo zoom.
+
+L'oracle usa l'intervallo gold pertinente con margine del 25% della sua
+durata su ciascun lato. Per `localize_all_channels`, dove un episodio può leggere
+un solo canale, Z0 sceglie l'evento gold più lungo (pareggio: ordine dei canali,
+poi start); Z1 sceglie uniformemente fra gli eventi gold ordinati usando RNG
+deterministico per sample. Per categorie senza intervallo gold utilizzabile si usa
+la finestra euristica. In Z1 il 70% delle traiettorie usa una finestra gold con
+margine casuale uniforme fra 10% e 50% per lato e il 30% usa l'euristica.
+
+L'euristica costruisce la piramide Haar di `wavelet_pyramid.py`, divide la serie in
+64 bucket e somma, per livello e bucket, l'energia detail normalizzata per
+l'energia mediana robusta del livello. Il primo candidato è il massimo globale su
+canale e bucket (pareggi: ordine canale e tempo); attorno al bucket viene estratta
+una finestra di lunghezza `max(1024, ceil(L/8))`, limitata a `L`. È un singolo scan
+NumPy deterministico, senza accesso al gold.
+
+`prepare_batch` viene usato per costruire testo, placeholder, attention mask e
+label. Poiché il suo stacking riempirebbe la finestra corta con zeri fino alla
+lunghezza dei canali originali, il wrapper L3 codifica separatamente il tensore
+dei canali originali e il tensore `(1, e-s)` dello zoom tramite
+`_encode_and_project`, concatena le feature nello stesso ordine dei placeholder e
+usa `_merge_features`. Questo dettaglio è necessario perché le 256 feature zoom
+abbiano posizioni relative e normalizzazione MAD sulla vera finestra, non su una
+finestra zero-padded a `L`; non introduce parametri né modifica `kaggle/patch/`.
+
+I log-prob RL sono calcolati con un forward teacher-forced separato per ciascun
+segmento emesso: azione e, se lo zoom è valido, risposta. Per un episodio senza
+azione esiste il solo segmento di risposta. Il valore PPO e la KL sono mediati su
+tutti e soli i token emessi, concatenando i due vettori; header zoom, action-history
+e istruzioni dell'ambiente non sono target. Due forward evitano di materializzare
+la traiettoria multimodale più lunga in un unico grafo, mantengono batch uno e
+permettono il gate `old == current` sul prompt realmente visto da ogni segmento.
+
+Il pool Z2 non usa filtro di informatività: quel filtro richiederebbe 1600 rollout
+aggiuntivi a ogni ricampionamento e selezionerebbe prompt in funzione degli output
+della policy. A step 0 e 100 si campionano invece 200 prompt train-only, 50 per
+ciascuna delle quattro categorie ammesse, bilanciati round-robin anche per
+lunghezza. Il seed del round è `20260911 + round`; i 200 prompt coprono esattamente
+100 step P2. `lead_lag_with_magnitude` è esclusa dal pool e dalla reward RL, ma
+resta nelle eval.
+
+Z1 costa circa 2 secondi per ciascuno dei 4488 optimizer step già misurati, più il
+secondo forward e l'eval: la previsione prudente è 6 ore + 0,5 ore. Z0 richiede tre
+letture di probe80 e val520 (circa 1,5 ore); Z2 200 step G8 P2 più quattro val520
+(circa 14 + 2 ore); Z3 due letture test800 (circa 1,2 ore). Totale dichiarato:
+circa 25 ore A40, circa 22 USD.
+
+Non sono coperti più zoom per episodio, encoder o proiettore allenabili, né
+`lead_lag_with_magnitude` nel pool RL. `vz1` è un nuovo SFT e non deve essere
+identico a va1; il gate di identità esatta vale soltanto per l'inizializzazione Z2
+rispetto a `vz1`.
+
+### Fasi e accesso ai dati
+
+Z0 esegue no-zoom, oracle e heuristic su probe80 e val520. Z1 addestra una sola
+epoca completa e richiede coverage esatta per categoria; il suo gate usa val520
+con zoom scelto dalla policy. Z2 usa G8, P2, 200 step, checkpoint ogni 25 e val520
+agli step 50/100/150/200; seleziona il massimo primary (pareggio entro 0.002: primo)
+e si ferma dopo due validation senza miglioramento di almeno 0.005. Z3 è l'unica
+fase autorizzata a usare `--split test` e confronta entrambi i bracci zoom con i
+due JSONL di controllo tramite bootstrap appaiato 10.000.
+
+Ogni fase richiede il marker `OK` della precedente, usa una directory nuova e
+scrive `summary.json`, log e marker terminale `OK` oppure `FAILED`. Il worker deve
+essere lanciato in tmux con redirezione esplicita su file: il self-detach senza
+redirezione perde l'output operativo.

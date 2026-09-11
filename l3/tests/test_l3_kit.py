@@ -504,5 +504,10 @@ def test_test_split_command_is_confined_to_longrun_l3_phase():
                 l4_start = text.index("# L4: two untouched-seed replicas")
                 assert forbidden not in text[:l3_start]
                 assert forbidden not in text[l4_start:]
+            elif path.name == "node_l3_zoom.sh":
+                assert occurrences == 2
+                text = path.read_text(encoding="utf-8")
+                z3_start = text.index("# Z3: the only test access")
+                assert forbidden not in text[:z3_start]
             else:
                 assert occurrences == 0

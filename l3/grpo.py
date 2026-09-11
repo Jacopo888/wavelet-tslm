@@ -36,6 +36,7 @@ REQUIRED_CATEGORIES = {
     "localize_all_channels",
     "lead_lag_with_magnitude",
 }
+ZOOM_RL_CATEGORIES = REQUIRED_CATEGORIES - {"lead_lag_with_magnitude"}
 MAX_ABS_LOG_RATIO = 1.0e-3
 KL_NEGATIVE_TOLERANCE = -1.0e-7
 
@@ -138,13 +139,27 @@ def validate_l3_config(config: Mapping[str, Any]) -> None:
             raise ValueError("longrun memory gate must use train indices [3804, 3930]")
         if rl.get("min_pool_per_category") != 8:
             raise ValueError("longrun requires at least 8 pool prompts per category")
+    elif contract == "zoom":
+        fixed = {
+            "G": 8, "prompts_per_step": 2, "steps": 200,
+            "weight_decay": 0.0, "checkpoint_every": 25,
+            "pool_size": 200, "resample_every": 100,
+        }
+        if set(rl.get("excluded_categories", ())) != {"lead_lag_with_magnitude"}:
+            raise ValueError("zoom RL must exclude lead_lag_with_magnitude")
+        if int(rl.get("pool_per_category", 0)) != 50:
+            raise ValueError("zoom RL requires 50 prompts per allowed category")
+        if int(rl.get("pool_seed", -1)) != 20260911:
+            raise ValueError("zoom RL pool seed must be 20260911")
+        if rl.get("memory_gate_indices") != [3804, 3930]:
+            raise ValueError("zoom memory gate must use train indices [3804, 3930]")
     else:
         raise ValueError(f"unknown rl.contract {contract!r}")
     for key, expected in fixed.items():
         if rl.get(key) != expected:
             raise ValueError(f"{contract} rl.{key} must be {expected!r}")
 
-    if contract == "longrun":
+    if contract in {"longrun", "zoom"}:
         expected = rl.get("train_prompt_expectations")
         if not isinstance(expected, Mapping):
             raise ValueError("missing longrun train_prompt_expectations")
@@ -156,6 +171,13 @@ def validate_l3_config(config: Mapping[str, Any]) -> None:
                 "localize_all_channels", 16, 131072
             ):
                 raise ValueError(f"invalid longrun memory-gate metadata at {index}")
+        if contract == "longrun":
+            return
+
+    if contract == "zoom":
+        init_indices = rl.get("init_prompt_indices")
+        if not isinstance(init_indices, list) or not init_indices:
+            raise ValueError("zoom init_prompt_indices must be non-empty")
         return
 
     indices = rl.get("train_prompt_indices")
@@ -656,6 +678,273 @@ def _longrun_prompt_group(
     return result
 
 
+def zoom_episode_log_probs(model: Any, episode: Any) -> torch.Tensor:
+    """Concatenate action/answer log-probs; environment-inserted text is masked."""
+    segments: list[tuple[Mapping[str, torch.Tensor], torch.Tensor]] = []
+    if episode.action_ids is not None:
+        if episode.action_prompt is None:
+            raise ValueError("zoom episode has action ids without its prompt")
+        segments.append((episode.action_prompt, episode.action_ids))
+    segments.append((episode.final_prompt, episode.final_ids))
+    values = [completion_log_probs(
+        model, prompt, ids, prompt.get("_l3_ts_features")
+    ) for prompt, ids in segments]
+    if any(value.numel() == 0 for value in values):
+        raise RuntimeError("zoom episode contains an empty emitted segment")
+    return torch.cat(values)
+
+
+def _zoom_prompt_group(
+    model: Any,
+    reference: LoraReference,
+    dataset: Any,
+    sample: Mapping[str, Any],
+    rl: Mapping[str, Any],
+    step_index: int,
+    prompt_ordinal: int,
+    trainable: Sequence[torch.nn.Parameter],
+    policy_accumulator: list[torch.Tensor | None],
+    kl_accumulator: list[torch.Tensor | None],
+    rollout_log: Any,
+) -> dict[str, Any]:
+    from l3.zoom import run_zoom_episode, zoom_iou_with_gold
+
+    group_size = int(rl["G"])
+    accounting = RolloutAccounting(group_size)
+    episodes: list[Any] = []
+    old_log_probs: list[torch.Tensor] = []
+    rewards: list[RewardResult] = []
+    prompt_tokens = 0
+    zoom_count = 0
+    zoom_invalid = 0
+    zoom_lengths: list[int] = []
+    zoom_ious: list[float] = []
+    for rollout_ordinal in range(1, group_size + 1):
+        model.eval()
+        episode = run_zoom_episode(
+            model, sample, sample_generation=True,
+            max_action_tokens=int(rl.get("action_max_new_tokens", rl["max_new_tokens"])),
+            max_answer_tokens=int(rl["max_new_tokens"]),
+            temperature=float(rl["temperature"]), top_p=float(rl["top_p"]),
+        )
+        reward = reward_completion(
+            dataset, episode.final_text, sample, float(rl["format_penalty"])
+        )
+        _gradient_checkpoint_train_mode(model)
+        with torch.no_grad(), _autocast_for(model):
+            old_lp = zoom_episode_log_probs(model, episode)
+        if not torch.isfinite(old_lp).all():
+            raise RuntimeError("old zoom policy produced non-finite log-prob")
+        episodes.append(episode)
+        old_log_probs.append(old_lp.detach().clone())
+        rewards.append(reward)
+        emitted_tokens = int(old_lp.numel())
+        accounting.record(reward, emitted_tokens)
+        prompt_tokens += int(episode.final_prompt["attention_mask"].sum().item())
+        if episode.action_prompt is not None:
+            prompt_tokens += int(episode.action_prompt["attention_mask"].sum().item())
+        zoom_count += int(episode.zoomed)
+        zoom_invalid += int(episode.zoom_invalid)
+        if episode.zoomed:
+            zoom_lengths.append(int(episode.action.window_len))
+            zoom_ious.append(float(zoom_iou_with_gold(sample, episode.action)))
+        _write_jsonl(rollout_log, {
+            "step": step_index, "prompt": prompt_ordinal, "rollout": rollout_ordinal,
+            "train_index": int(sample["_l3_train_index"]),
+            "id": str(sample.get("id", "")),
+            "category": str(sample.get(dataset.category_key, "unknown")),
+            "reward_primary": reward.primary, "reward_optimization": reward.optimization,
+            "parsable": reward.parsable, "response_tokens": int(episode.final_ids.shape[1]),
+            "action_tokens": 0 if episode.action_ids is None else int(episode.action_ids.shape[1]),
+            "zoom_valid": episode.zoomed, "zoom_invalid": episode.zoom_invalid,
+            "zoom_window_len": int(episode.action.window_len) if episode.zoomed else 0,
+            "zoom_iou_with_gold": zoom_ious[-1] if episode.zoomed else 0.0,
+            "text_sha256": _sha256_text(episode.final_text),
+            "action_text_sha256": (_sha256_text(episode.action_text)
+                                   if episode.action_text is not None else None),
+        })
+
+    reward_tensor = torch.tensor(
+        [reward.optimization for reward in rewards], device=old_log_probs[0].device,
+        dtype=torch.float32,
+    )
+    advantages, zero_variance = normalize_advantages(
+        reward_tensor, float(rl["advantage_eps"])
+    )
+    ratio_values: list[torch.Tensor] = []
+    max_log_ratios: list[torch.Tensor] = []
+    kl_values: list[torch.Tensor] = []
+    policy_losses: list[float] = []
+    kl_losses: list[float] = []
+    scale = 1.0 / (int(rl["prompts_per_step"]) * group_size)
+    for episode, old_lp, advantage in zip(episodes, old_log_probs, advantages):
+        with reference.applied(model), torch.no_grad(), _autocast_for(model):
+            ref_lp = zoom_episode_log_probs(model, episode)
+        with _autocast_for(model):
+            current_lp = zoom_episode_log_probs(model, episode)
+            ratio = ppo_ratio(current_lp, old_lp)
+            clipped = ratio.clamp(1.0 - float(rl["clip_eps"]),
+                                  1.0 + float(rl["clip_eps"]))
+            policy_loss = -torch.minimum(ratio * advantage, clipped * advantage).mean()
+            kl_loss = k3_kl(current_lp, ref_lp).mean()
+        log_ratio = max_abs_log_ratio(current_lp.detach(), old_lp)
+        if not torch.isfinite(log_ratio) or log_ratio.item() > MAX_ABS_LOG_RATIO:
+            raise RuntimeError(
+                f"pre-update zoom max |log ratio| {log_ratio.item():.6g} exceeds "
+                f"{MAX_ABS_LOG_RATIO:.6g}"
+            )
+        if not torch.isfinite(policy_loss) or not torch.isfinite(kl_loss):
+            raise RuntimeError("non-finite zoom GRPO loss")
+        for parameter in trainable:
+            parameter.grad = None
+        (policy_loss * scale).backward(retain_graph=True)
+        _add_gradients(policy_accumulator, [p.grad for p in trainable])
+        for parameter in trainable:
+            parameter.grad = None
+        (kl_loss * scale).backward()
+        _add_gradients(kl_accumulator, [p.grad for p in trainable])
+        for parameter in trainable:
+            parameter.grad = None
+        ratio_values.append(ratio.detach())
+        max_log_ratios.append(log_ratio)
+        kl_values.append(kl_loss.detach())
+        policy_losses.append(float(policy_loss.detach().item()))
+        kl_losses.append(float(kl_loss.detach().item()))
+
+    base = accounting.finalize()
+    ratios = torch.cat(ratio_values)
+    return {
+        "prompt": prompt_ordinal,
+        "train_index": int(sample["_l3_train_index"]),
+        "id": str(sample.get("id", "")),
+        "category": str(sample.get(dataset.category_key, "unknown")),
+        "length": int(sample.get("length", 0)), "n_channels": int(sample.get("n_channels", 0)),
+        **base, "informative": not zero_variance,
+        "kl_mean": float(torch.stack(kl_values).mean().item()),
+        "ratio_mean": float(ratios.mean().item()),
+        "ratio_all_exact_one": bool(torch.equal(ratios, torch.ones_like(ratios))),
+        "max_abs_log_ratio": float(torch.stack(max_log_ratios).max().item()),
+        "policy_loss_mean": sum(policy_losses) / len(policy_losses),
+        "kl_loss_mean": sum(kl_losses) / len(kl_losses),
+        "tokens_prompt": prompt_tokens, "zoom_count": zoom_count,
+        "zoom_invalid": zoom_invalid,
+        "zoom_window_len_sum": sum(zoom_lengths),
+        "zoom_iou_sum": sum(zoom_ious),
+    }
+
+
+def grpo_zoom_step(
+    model: Any,
+    optimizer: torch.optim.Optimizer,
+    reference: LoraReference,
+    dataset: Any,
+    samples: Sequence[Mapping[str, Any]],
+    rl: Mapping[str, Any],
+    step_index: int,
+    rollout_log: Any,
+) -> dict[str, Any]:
+    """P2/G8 two-turn GRPO update with separate action and answer forwards."""
+    started = time.perf_counter()
+    if len(samples) != int(rl["prompts_per_step"]):
+        raise ValueError("zoom step received the wrong prompt count")
+    if any(str(sample.get(dataset.category_key)) not in ZOOM_RL_CATEGORIES for sample in samples):
+        raise ValueError("excluded category reached zoom RL")
+    optimizer.zero_grad(set_to_none=True)
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+    trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    policy_accumulator: list[torch.Tensor | None] = [None] * len(trainable)
+    kl_accumulator: list[torch.Tensor | None] = [None] * len(trainable)
+    groups = [
+        _zoom_prompt_group(model, reference, dataset, sample, rl, step_index, ordinal,
+                           trainable, policy_accumulator, kl_accumulator, rollout_log)
+        for ordinal, sample in enumerate(samples, start=1)
+    ]
+    policy_grad_norm = _gradient_norm(policy_accumulator)
+    kl_grad_norm = _gradient_norm(kl_accumulator)
+    with torch.no_grad():
+        for parameter, policy_gradient, kl_gradient in zip(
+            trainable, policy_accumulator, kl_accumulator
+        ):
+            combined = torch.zeros_like(parameter)
+            if policy_gradient is not None:
+                combined.add_(policy_gradient)
+            if kl_gradient is not None:
+                combined.add_(kl_gradient, alpha=float(rl["kl_coef"]))
+            parameter.grad = combined
+    grad_norm = torch.nn.utils.clip_grad_norm_(trainable, float(rl["max_grad_norm"]))
+    if not torch.isfinite(grad_norm):
+        raise RuntimeError("non-finite zoom gradient norm")
+    optimizer.step()
+    rollouts = sum(int(group["rollouts"]) for group in groups)
+    reward_sum = sum(float(group["reward_sum"]) for group in groups)
+    reward_square_sum = sum(float(group["reward_square_sum"]) for group in groups)
+    zoom_count = sum(int(group["zoom_count"]) for group in groups)
+    by_category: dict[str, dict[str, float]] = {}
+    for group in groups:
+        bucket = by_category.setdefault(group["category"], {
+            "episodes": 0, "zoom_count": 0, "zoom_invalid": 0,
+            "zoom_window_len_sum": 0.0, "zoom_iou_sum": 0.0,
+        })
+        bucket["episodes"] += group["rollouts"]
+        bucket["zoom_count"] += group["zoom_count"]
+        bucket["zoom_invalid"] += group["zoom_invalid"]
+        bucket["zoom_window_len_sum"] += group["zoom_window_len_sum"]
+        bucket["zoom_iou_sum"] += group["zoom_iou_sum"]
+    for bucket in by_category.values():
+        z = max(1, int(bucket["zoom_count"]))
+        bucket["zoom_rate"] = bucket["zoom_count"] / bucket["episodes"]
+        bucket["zoom_window_len"] = bucket["zoom_window_len_sum"] / z
+        bucket["zoom_iou_with_gold"] = bucket["zoom_iou_sum"] / z
+    informative_groups = sum(bool(group["informative"]) for group in groups)
+    row = {
+        "step": step_index,
+        "prompts": [{key: group[key] for key in (
+            "prompt", "train_index", "id", "category", "length", "n_channels",
+            "reward_mean", "reward_std", "parsable", "unparsable", "informative",
+        )} for group in groups],
+        "categories": [group["category"] for group in groups],
+        "rollouts": rollouts,
+        "parsable": sum(int(group["parsable"]) for group in groups),
+        "unparsable": sum(int(group["unparsable"]) for group in groups),
+        "reward_sum": reward_sum, "reward_square_sum": reward_square_sum,
+        "reward_mean": reward_sum / rollouts,
+        "reward_std": math.sqrt(max(0.0, reward_square_sum / rollouts -
+                                    (reward_sum / rollouts) ** 2)),
+        "optimization_reward_mean": sum(
+            float(group["optimization_reward_mean"]) * group["rollouts"] for group in groups
+        ) / rollouts,
+        "informative_groups": informative_groups,
+        "policy_informative_steps": int(informative_groups > 0),
+        "zero_variance_groups": len(groups) - informative_groups,
+        "kl_mean": sum(group["kl_mean"] for group in groups) / len(groups),
+        "ratio_mean": sum(group["ratio_mean"] for group in groups) / len(groups),
+        "ratio_all_exact_one": all(group["ratio_all_exact_one"] for group in groups),
+        "max_abs_log_ratio": max(group["max_abs_log_ratio"] for group in groups),
+        "policy_grad_norm": policy_grad_norm, "kl_grad_norm": kl_grad_norm,
+        "grad_norm": float(grad_norm.item()),
+        "tokens_prompt": sum(group["tokens_prompt"] for group in groups),
+        "tokens_answer": sum(group["tokens_answer"] for group in groups),
+        "zoom_rate": zoom_count / rollouts,
+        "zoom_invalid": sum(group["zoom_invalid"] for group in groups),
+        "zoom_window_len": sum(group["zoom_window_len_sum"] for group in groups) /
+                           max(1, zoom_count),
+        "zoom_iou_with_gold": sum(group["zoom_iou_sum"] for group in groups) /
+                              max(1, zoom_count),
+        "zoom_by_category": by_category,
+        "peak_mem_mib": (float(torch.cuda.max_memory_allocated() / 1024**2)
+                         if torch.cuda.is_available() else 0.0),
+        "s_per_step": time.perf_counter() - started,
+    }
+    for key in ("reward_mean", "reward_std", "kl_mean", "ratio_mean",
+                "max_abs_log_ratio", "policy_grad_norm", "kl_grad_norm", "grad_norm",
+                "zoom_rate", "zoom_window_len", "zoom_iou_with_gold", "peak_mem_mib",
+                "s_per_step"):
+        if not _finite_number(row[key]):
+            raise RuntimeError(f"non-finite zoom step field {key}")
+    return row
+
+
 def grpo_longrun_step(
     model: Any,
     optimizer: torch.optim.Optimizer,
@@ -972,6 +1261,59 @@ def select_balanced_pool(
     return output
 
 
+def resampled_zoom_pool(
+    metadata: Sequence[Mapping[str, Any]], seed: int, *,
+    pool_size: int = 200,
+    excluded_categories: Sequence[str] = ("lead_lag_with_magnitude",),
+) -> list[int]:
+    """Sample a fresh balanced pool, cycling lengths within each category."""
+    allowed = sorted(REQUIRED_CATEGORIES - set(excluded_categories))
+    if not allowed or pool_size % len(allowed):
+        raise ValueError("zoom pool size must divide evenly across allowed categories")
+    quota = pool_size // len(allowed)
+    rng = random.Random(int(seed))
+    chunks: list[list[int]] = []
+    for category in allowed:
+        by_length: dict[int, list[int]] = {}
+        for row in metadata:
+            if str(row.get("category")) == category:
+                by_length.setdefault(int(row.get("length", 0)), []).append(int(row["index"]))
+        if not by_length:
+            raise ValueError(f"no train prompts for zoom category {category}")
+        lengths = sorted(by_length)
+        for length in lengths:
+            rng.shuffle(by_length[length])
+        cursor = {length: 0 for length in lengths}
+        selected: list[int] = []
+        while len(selected) < quota:
+            progressed = False
+            for length in lengths:
+                position = cursor[length]
+                if position < len(by_length[length]):
+                    selected.append(by_length[length][position])
+                    cursor[length] += 1
+                    progressed = True
+                    if len(selected) == quota:
+                        break
+            if not progressed:
+                raise ValueError(f"insufficient unique prompts for {category}: need {quota}")
+        chunks.append(selected)
+    return [chunks[cat][offset] for offset in range(quota) for cat in range(len(allowed))]
+
+
+def zoom_pool_for_round(
+    metadata: Sequence[Mapping[str, Any]], base_seed: int, round_index: int,
+    *, pool_size: int = 200,
+    excluded_categories: Sequence[str] = ("lead_lag_with_magnitude",),
+) -> list[int]:
+    if round_index < 0:
+        raise ValueError("round_index must be non-negative")
+    return resampled_zoom_pool(
+        metadata, int(base_seed) + int(round_index), pool_size=pool_size,
+        excluded_categories=excluded_categories,
+    )
+
+
 def capture_rng_state() -> dict[str, Any]:
     return {
         "python": random.getstate(),
@@ -1028,9 +1370,9 @@ def _runtime_imports(resolved: Mapping[str, Any]) -> tuple[Any, Any, Any, Any, A
 def _load_policy_and_train(
     resolved: dict[str, Any], checkpoint_path: Path, *, promote_lora: bool = True
 ) -> tuple[Any, Any, list[str], list[str], str]:
-    expected_sha = resolved["rl"]["initial_checkpoint_sha256"]
+    expected_sha = resolved["rl"].get("initial_checkpoint_sha256")
     observed_sha = sha256_file(checkpoint_path)
-    if observed_sha != expected_sha:
+    if expected_sha and observed_sha != expected_sha:
         raise RuntimeError(f"initial checkpoint SHA mismatch: {observed_sha}")
     ExperimentConfig, configure_training_mode, load_checkpoint, load_model, DatasetClass = _runtime_imports(resolved)
     experiment = ExperimentConfig.from_dict({k: v for k, v in resolved.items() if not k.startswith("_")})
@@ -1161,7 +1503,8 @@ def _init_check(args: argparse.Namespace) -> None:
         for row in rows
     )
     report = {
-        "stage": "b_init_equals_va1",
+        "stage": ("z2_init_equals_vz1" if rl.get("contract") == "zoom"
+                  else "b_init_equals_va1"),
         "ok": ok,
         "checkpoint_sha256": sha256_file(Path(args.checkpoint).expanduser()),
         "train_sha256": train_sha,
@@ -1481,7 +1824,7 @@ def _load_pool(path: Path, train_sha: str, rl: Mapping[str, Any]) -> tuple[dict[
 
 
 def _cumulative_from_rows(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    return {
+    result = {
         "steps": len(rows),
         "rollouts": sum(int(row["rollouts"]) for row in rows),
         "parsable": sum(int(row["parsable"]) for row in rows),
@@ -1495,6 +1838,23 @@ def _cumulative_from_rows(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "tokens_answer": sum(int(row.get("tokens_answer", 0)) for row in rows),
         "seconds": sum(float(row.get("s_per_step", 0.0)) for row in rows),
     }
+    if any("zoom_rate" in row for row in rows):
+        result.update({
+            "zoom_count": sum(round(float(row.get("zoom_rate", 0.0)) * int(row["rollouts"]))
+                              for row in rows),
+            "zoom_invalid": sum(int(row.get("zoom_invalid", 0)) for row in rows),
+            "zoom_window_len_weighted_sum": sum(
+                float(row.get("zoom_window_len", 0.0)) *
+                round(float(row.get("zoom_rate", 0.0)) * int(row["rollouts"]))
+                for row in rows
+            ),
+            "zoom_iou_weighted_sum": sum(
+                float(row.get("zoom_iou_with_gold", 0.0)) *
+                round(float(row.get("zoom_rate", 0.0)) * int(row["rollouts"]))
+                for row in rows
+            ),
+        })
+    return result
 
 
 def _check_longrun_windows(rows: Sequence[Mapping[str, Any]]) -> None:
@@ -1703,6 +2063,171 @@ def _train_longrun(args: argparse.Namespace) -> None:
                     )
         status = "DONE" if target == int(rl["steps"]) or memory_mode else "PAUSED"
         summary = _longrun_summary(rows, manifest, status)
+        _atomic_json_dump(run_dir / "summary.json", summary)
+        _json_dump(run_dir / status, summary)
+    except Exception as exc:
+        _json_dump(run_dir / "FAILED", {
+            "status": "FAILED", "error_type": type(exc).__name__, "reason": str(exc),
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+        })
+        raise
+
+
+def _train_zoom(args: argparse.Namespace) -> None:
+    """Resumable 200-step Z2 run with deterministic pool refresh at step 100."""
+    resume_dir = Path(args.resume).expanduser().resolve() if args.resume else None
+    run_dir = resume_dir or Path(args.run_dir).expanduser().resolve()
+    if resume_dir is None:
+        if run_dir.exists():
+            raise FileExistsError(f"run directory already exists: {run_dir}")
+        run_dir.mkdir(parents=True)
+    elif not run_dir.is_dir():
+        raise FileNotFoundError(run_dir)
+    resolved = load_l3_config(args.config)
+    rl = _resolved_rl(resolved)
+    if rl.get("contract") != "zoom":
+        raise ValueError("zoom mode requires rl.contract=zoom")
+    memory_mode = args.mode == "zoom-memory"
+    seed = int(args.seed if args.seed is not None else rl["seed"])
+    model, dataset, optimized, composed, train_sha = _load_policy_and_train(
+        resolved, Path(args.checkpoint).expanduser()
+    )
+    reference = LoraReference(model)
+    trainable = [parameter for parameter in model.parameters() if parameter.requires_grad]
+    optimizer = torch.optim.AdamW(
+        trainable, lr=float(rl["lr"]), weight_decay=float(rl["weight_decay"])
+    )
+    target = 1 if memory_mode else int(args.target_step or rl["steps"])
+    if not 1 <= target <= int(rl["steps"]):
+        raise ValueError("target step is outside the declared zoom budget")
+    steps_path, rollouts_path = run_dir / "steps.jsonl", run_dir / "rollouts.jsonl"
+    metadata = _raw_train_metadata(dataset)
+
+    if resume_dir is not None:
+        if (run_dir / "DONE").exists() or (run_dir / "FAILED").exists():
+            raise RuntimeError("refusing to resume a terminal zoom run")
+        manifest = json.loads((run_dir / "RUN_MANIFEST.json").read_text(encoding="utf-8"))
+        if manifest.get("format") != "l3_zoom_grpo_manifest_v1":
+            raise RuntimeError("resume manifest is not a zoom run")
+        if manifest.get("seed") != seed or manifest.get("resolved_config") != resolved:
+            raise RuntimeError("zoom resume seed/config mismatch")
+        record, payload = latest_valid_checkpoint(run_dir, manifest)
+        position = manifest["checkpoints"].index(record)
+        if position + 1 < len(manifest["checkpoints"]):
+            raise RuntimeError("zoom resume found corrupt newer checkpoint; manual audit required")
+        start_step = int(record["step"])
+        named = dict(model.named_parameters())
+        if set(payload["model_state"]) != set(optimized):
+            raise RuntimeError("zoom resume LoRA tensor-name invariant failed")
+        with torch.no_grad():
+            for name in optimized:
+                named[name].copy_(payload["model_state"][name].to(
+                    named[name].device, dtype=named[name].dtype
+                ))
+        optimizer.load_state_dict(payload["optimizer_state"])
+        restore_rng_state(payload["l3"]["rng_state"])
+        cursor = int(record["pool_cursor"])
+        truncate_jsonl_after_step(steps_path, start_step)
+        truncate_jsonl_after_step(rollouts_path, start_step)
+        rows = _read_jsonl(steps_path)
+        if _cumulative_from_rows(rows) != payload["l3"]["cumulative"]:
+            raise RuntimeError("zoom resume cumulative counters disagree with step log")
+    else:
+        torch.manual_seed(seed)
+        random.seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        pool_rounds = []
+        if memory_mode:
+            pool_rounds.append({
+                "round": 0, "seed": int(rl["pool_seed"]),
+                "indices": [int(i) for i in rl["memory_gate_indices"]],
+            })
+        else:
+            rounds = math.ceil(int(rl["steps"]) / int(rl["resample_every"]))
+            for round_index in range(rounds):
+                indices = zoom_pool_for_round(
+                    metadata, int(rl["pool_seed"]), round_index,
+                    pool_size=int(rl["pool_size"]),
+                    excluded_categories=rl["excluded_categories"],
+                )
+                core = {"round": round_index, "seed": int(rl["pool_seed"]) + round_index,
+                        "indices": indices}
+                pool_rounds.append({**core, "content_sha256": canonical_sha256(core)})
+        manifest = {
+            "format": "l3_zoom_grpo_manifest_v1",
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+            "mode": args.mode, "seed": seed,
+            "initial_checkpoint": str(Path(args.checkpoint).expanduser().resolve()),
+            "initial_checkpoint_sha256": sha256_file(Path(args.checkpoint).expanduser()),
+            "train_sha256": train_sha, "resolved_config": resolved,
+            "excluded_categories": list(rl["excluded_categories"]),
+            "pool_rounds": pool_rounds, "optimized_names": optimized,
+            "composed_slim_names": composed, "checkpoints": [],
+        }
+        _atomic_json_dump(run_dir / "RUN_MANIFEST.json", manifest)
+        steps_path.touch(exist_ok=False)
+        rollouts_path.touch(exist_ok=False)
+        rows, start_step, cursor = [], 0, 0
+        _checkpoint_longrun(run_dir, manifest, model, optimizer, optimized, composed,
+                            resolved, 0, 0, _cumulative_from_rows(rows))
+
+    if target <= start_step:
+        raise ValueError(f"target step {target} is not beyond checkpoint step {start_step}")
+    if (run_dir / "PAUSED").exists():
+        (run_dir / "PAUSED").unlink()
+    try:
+        with steps_path.open("a", encoding="utf-8") as step_log, rollouts_path.open(
+            "a", encoding="utf-8"
+        ) as rollout_log:
+            for step in range(start_step + 1, target + 1):
+                if memory_mode:
+                    indices = [int(i) for i in rl["memory_gate_indices"]]
+                else:
+                    round_index = (step - 1) // int(rl["resample_every"])
+                    offset = ((step - 1) % int(rl["resample_every"])) * int(rl["prompts_per_step"])
+                    pool = manifest["pool_rounds"][round_index]["indices"]
+                    indices = [int(i) for i in pool[offset:offset + int(rl["prompts_per_step"])]]
+                if len(indices) != int(rl["prompts_per_step"]):
+                    raise RuntimeError("zoom pool exhausted before its resample boundary")
+                samples = [_checked_sample(dataset, index, rl) for index in indices]
+                row = grpo_zoom_step(
+                    model, optimizer, reference, dataset, samples, rl, step, rollout_log
+                )
+                expected = int(rl["G"]) * int(rl["prompts_per_step"])
+                if row["rollouts"] != expected:
+                    raise RuntimeError("zoom rollout accounting mismatch")
+                if row["peak_mem_mib"] >= float(rl["peak_limit_mib"]):
+                    raise RuntimeError(f"memory peak {row['peak_mem_mib']:.1f} MiB reached limit")
+                _write_jsonl(step_log, row)
+                rows.append(row)
+                cursor += int(rl["prompts_per_step"])
+                print(
+                    "L3_ZOOM_STEP "
+                    f"step={step} category={'+'.join(row['categories'])} "
+                    f"reward={row['reward_mean']:.6f} informative={row['informative_groups']}/2 "
+                    f"zoom_rate={row['zoom_rate']:.3f} zoom_invalid={row['zoom_invalid']} "
+                    f"kl={row['kl_mean']:.6g} peak_mib={row['peak_mem_mib']:.1f} "
+                    f"s_per_step={row['s_per_step']:.1f}", flush=True,
+                )
+                _check_longrun_windows(rows)
+                if step % int(rl["checkpoint_every"]) == 0 or step == target:
+                    _checkpoint_longrun(
+                        run_dir, manifest, model, optimizer, optimized, composed,
+                        resolved, step, cursor, _cumulative_from_rows(rows),
+                    )
+        status = "DONE" if target == int(rl["steps"]) or memory_mode else "PAUSED"
+        summary = _longrun_summary(rows, manifest, status)
+        cumulative = _cumulative_from_rows(rows)
+        zoom_count = int(cumulative.get("zoom_count", 0))
+        summary.update({
+            "zoom_rate": zoom_count / max(1, int(cumulative["rollouts"])),
+            "zoom_invalid": int(cumulative.get("zoom_invalid", 0)),
+            "zoom_window_len": float(cumulative.get("zoom_window_len_weighted_sum", 0.0)) /
+                               max(1, zoom_count),
+            "zoom_iou_with_gold": float(cumulative.get("zoom_iou_weighted_sum", 0.0)) /
+                                  max(1, zoom_count),
+        })
         _atomic_json_dump(run_dir / "summary.json", summary)
         _json_dump(run_dir / status, summary)
     except Exception as exc:
@@ -1934,7 +2459,10 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--run-dir")
     train.add_argument("--resume")
     train.add_argument(
-        "--mode", choices=("memory-gate", "smoke", "longrun-memory", "longrun"),
+        "--mode", choices=(
+            "memory-gate", "smoke", "longrun-memory", "longrun",
+            "zoom-memory", "zoom",
+        ),
         default="smoke",
     )
     train.add_argument("--pool")
@@ -1959,6 +2487,10 @@ def main() -> int:
         _pool(args)
     elif args.command == "seal-eval":
         _seal_eval(args)
+    elif args.mode in {"zoom", "zoom-memory"}:
+        if not args.run_dir and not args.resume:
+            raise SystemExit("zoom train requires --run-dir or --resume")
+        _train_zoom(args)
     elif args.mode in {"longrun", "longrun-memory"}:
         if not args.run_dir and not args.resume:
             raise SystemExit("longrun train requires --run-dir or --resume")
