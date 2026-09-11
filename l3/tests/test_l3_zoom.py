@@ -102,12 +102,13 @@ def test_prepare_zoom_batch_encodes_window_at_its_own_length():
     class FakeLlm(torch.nn.Module):
         def __init__(self):
             super().__init__()
-            self.weight = torch.nn.Parameter(torch.zeros(1))
+            self.weight = torch.nn.Parameter(torch.zeros(1, dtype=torch.bfloat16))
 
     class FakeModel:
         def __init__(self):
             self.llm_model = FakeLlm()
             self.encoded_shapes = []
+            self.encoded_dtypes = []
 
         def parameters(self):
             return self.llm_model.parameters()
@@ -121,6 +122,7 @@ def test_prepare_zoom_batch_encodes_window_at_its_own_length():
 
         def _encode_and_project(self, values):
             self.encoded_shapes.append(tuple(values.shape))
+            self.encoded_dtypes.append(values.dtype)
             return torch.zeros((values.shape[0] * 256, 2))
 
     model = FakeModel()
@@ -128,6 +130,7 @@ def test_prepare_zoom_batch_encodes_window_at_its_own_length():
     action = ZoomAction("ch0", 1000, 2024, 4096)
     prepared = prepare_zoom_batch(model, s, action, training=False)
     assert model.encoded_shapes == [(1, 4096), (1, 1024)]
+    assert model.encoded_dtypes == [torch.float32, torch.float32]
     assert prepared["_l3_ts_features"].shape == (512, 2)
 
 

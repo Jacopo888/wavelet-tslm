@@ -9,8 +9,8 @@ VA1_CONFIG="$L3/configs/l3_zoom_z0.yaml"
 Z1_CONFIG="$L3/configs/l3_zoom_z1.yaml"
 Z2_CONFIG="$L3/configs/l3_zoom_z2.yaml"
 VA1_CHECKPOINT="$ROOT/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt"
-VA1_TEST_JSONL="${L3_VA1_TEST_JSONL:-$ROOT/integrity/artifacts/va1/output_logs/evalonly_test_epoch_5_end_epoch_0.jsonl}"
-RL_TEST_JSONL="${L3_RL_TEST_JSONL:-$ROOT/integrity/artifacts/l3_longrun_20260910/L3/eval/test800_candidate_step100.jsonl}"
+VA1_TEST_JSONL="${L3_VA1_TEST_JSONL:-$ROOT/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/output_logs/evalonly_test_epoch_5_end_epoch_0.jsonl}"
+RL_TEST_JSONL="${L3_RL_TEST_JSONL:-$ROOT/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/output_logs/evalonly_test_step_000100_composed_l3_L3_test800_epoch_0.jsonl}"
 TRAIN_PARQUET="${L3_TRAIN_PARQUET:-$HOME/timerlm/anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/train.parquet}"
 EXPECTED_VA1_SHA="cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531"
 EXPECTED_TRAIN_SHA="b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
@@ -76,6 +76,10 @@ for required in "$PY" "$L3/zoom.py" "$L3/zoom_sft.py" "$L3/grpo.py" \
   [ -e "$required" ] || { echo "missing required input: $required" >&2; exit 1; }
 done
 [ -x "$PY" ]
+for jsonl in "$VA1_TEST_JSONL" "$RL_TEST_JSONL"; do
+  rows=$(wc -l < "$jsonl")
+  [ "$rows" -eq 800 ] || { echo "expected 800 rows in $jsonl, got $rows" >&2; exit 1; }
+done
 [ "$(sha256sum "$VA1_CHECKPOINT" | awk '{print $1}')" = "$EXPECTED_VA1_SHA" ]
 [ "$(sha256sum "$TRAIN_PARQUET" | awk '{print $1}')" = "$EXPECTED_TRAIN_SHA" ]
 GPU_NAME=$(nvidia-smi -i "$GPU" --query-gpu=name --format=csv,noheader | head -1)

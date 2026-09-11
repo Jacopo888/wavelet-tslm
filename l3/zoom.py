@@ -389,11 +389,15 @@ def prepare_zoom_batch(model: Any, sample: Mapping[str, Any], action: ZoomAction
     prepared = model.prepare_batch([turn2], training=training)
     original = model.prepare_batch([sample], training=False)
     _, values = build_zoom_block(sample, action)
-    dtype = next(model.llm_model.parameters()).dtype
-    zoom_tensor = torch.as_tensor(values, dtype=dtype, device=original["time_series"].device).unsqueeze(0)
+    original_time_series = original["time_series"]
+    zoom_tensor = torch.as_tensor(
+        values,
+        dtype=original_time_series.dtype,
+        device=original_time_series.device,
+    ).unsqueeze(0)
     from l3.grpo import _autocast_for
     with torch.no_grad(), _autocast_for(model):
-        original_features = model._encode_and_project(original["time_series"])
+        original_features = model._encode_and_project(original_time_series)
         zoom_features = model._encode_and_project(zoom_tensor)
     prepared["_l3_ts_features"] = torch.cat((original_features, zoom_features), dim=0).detach()
     tokenizer = getattr(model, "text_tokenizer", None)
