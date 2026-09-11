@@ -1,0 +1,20 @@
+[
+  {
+    "step": 100,
+    "primary": 0.33271581564455116,
+    "sealed_eval": "/root/l3/longrun_20260910/L2/eval/val520_step_000100.json",
+    "stale": 0
+  },
+  {
+    "step": 200,
+    "primary": 0.3237357152814646,
+    "sealed_eval": "/root/l3/longrun_20260910/L2/eval/val520_step_000200.json",
+    "stale": 1
+  },
+  {
+    "step": 300,
+    "primary": 0.32218748517408946,
+    "sealed_eval": "/root/l3/longrun_20260910/L2/eval/val520_step_000300.json",
+    "stale": 2
+  }
+]

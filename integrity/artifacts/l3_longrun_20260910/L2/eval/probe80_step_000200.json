@@ -1,0 +1,22 @@
+{
+  "category_primary": {
+    "classify_with_evidence": 0.1759002185071727,
+    "lead_lag_with_magnitude": 0.0,
+    "localize": 0.1804682756354424,
+    "localize_all_channels": 0.2727272727272727,
+    "measure_magnitude": 0.5568562502102012
+  },
+  "checkpoint": "/root/l3/longrun_20260910/L2/train/checkpoints/step_000200_composed.pt",
+  "checkpoint_sha256_after": "fb6c83be5bb7503294bbd8420e51117fc8e861e262b709abd814205fc11b5175",
+  "checkpoint_sha256_before": "fb6c83be5bb7503294bbd8420e51117fc8e861e262b709abd814205fc11b5175",
+  "eval_errors": 0,
+  "eval_jsonl": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1_valprobe/output_logs/evalonly_val_step_000200_composed_l3_L2_probe80_200_epoch_0.jsonl",
+  "loss": 0.4084747266897466,
+  "manifest_checkpoint_match": true,
+  "num_batches": 80,
+  "primary": 0.29883249464271394,
+  "run_manifest": "/root/l3/longrun_20260910/L2/train/RUN_MANIFEST.json",
+  "run_manifest_sha256": "26e9d7f77e87072eae380bd9df7b2bd0a9343b2249b55a320c0f7c2f41bd9ab8",
+  "samples_evaluated": 80,
+  "split": "val"
+}

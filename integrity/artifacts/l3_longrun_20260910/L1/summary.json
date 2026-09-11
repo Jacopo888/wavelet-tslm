@@ -1,0 +1,18 @@
+{
+  "candidates_evaluated": 138,
+  "composed_tensor_count": 42,
+  "optimized_tensor_count": 32,
+  "per_category": {
+    "classify_with_evidence": 8,
+    "lead_lag_with_magnitude": 8,
+    "localize": 8,
+    "localize_all_channels": 8,
+    "measure_magnitude": 8
+  },
+  "pool": "/root/l3/longrun_20260910/L1/filter/pool.json",
+  "pool_content_sha256": "cf09d4a087d6978eab4d65d9782219a92fce5fdb1725589890d88c40eec319ac",
+  "pool_file_sha256": "890229e31ce9f581f86289d28fbb0478401b9d872f218b193ea5e8c0f8cd6588",
+  "pool_size": 40,
+  "rollouts": 1104,
+  "status": "DONE"
+}

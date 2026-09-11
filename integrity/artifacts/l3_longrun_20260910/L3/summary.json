@@ -1,0 +1,7 @@
+{
+  "status": "DONE",
+  "selected_step": 100,
+  "test_eval": "/root/l3/longrun_20260910/L3/eval/test800.json",
+  "paired_json": "/root/l3/longrun_20260910/L3/paired_test.json",
+  "paired_markdown": "/root/l3/longrun_20260910/L3/paired_test.md"
+}

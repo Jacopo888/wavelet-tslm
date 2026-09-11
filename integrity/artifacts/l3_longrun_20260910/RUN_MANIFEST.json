@@ -1,0 +1,24 @@
+{
+  "created_utc": "2026-09-10T21:23:01.066678+00:00",
+  "format": "l3_node_longrun_manifest_v1",
+  "initial_checkpoint": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt",
+  "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+  "kit_commit_file": "/root/l3/longrun_20260910/KIT_COMMIT.txt",
+  "kit_commit_file_sha256": "56481ef1c9eda4c3b0c32ffb6d3821219da65b4038e5983605e5e46e143e1f58",
+  "pool": {
+    "path": "/root/l3/longrun_20260910/L1/filter/pool.json",
+    "sha256": "890229e31ce9f581f86289d28fbb0478401b9d872f218b193ea5e8c0f8cd6588"
+  },
+  "resolved_config": "/root/l3/longrun_20260910/resolved_config.json",
+  "resolved_config_sha256": "6d8bfd854654d7cf7ba82a969d3b56d1c4c262e754eebcc2bfe7e3f297c44ed6",
+  "seeds": {
+    "main": 20260911,
+    "pool": 20260911,
+    "replicas": [
+      20260912,
+      20260913
+    ]
+  },
+  "train_parquet": "/root/timerlm/anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/train.parquet",
+  "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+}

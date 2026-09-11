@@ -1,0 +1,182 @@
+{
+  "bootstrap": {
+    "ci": 0.95,
+    "resamples": 10000,
+    "seed": 20260911
+  },
+  "coverage": {
+    "candidate": 800,
+    "reference": 800
+  },
+  "format": "l3_paired_eval_v1",
+  "inputs": {
+    "candidate": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/output_logs/evalonly_test_step_000100_composed_l3_L3_test800_epoch_0.jsonl",
+    "reference": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/output_logs/evalonly_test_epoch_5_end_epoch_0.jsonl"
+  },
+  "pairing": "exact ordered (id, category, ground_truth)",
+  "per_category": {
+    "classify_with_evidence": {
+      "candidate": {
+        "ci95": [
+          0.051049605604858384,
+          0.0992867467252535
+        ],
+        "mean": 0.07395592698692582,
+        "n": 200
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          -0.006849722912597908,
+          0.027405689378200884
+        ],
+        "mean": 0.009757852735198717,
+        "n": 200
+      },
+      "n": 200,
+      "reference": {
+        "ci95": [
+          0.04211431138988361,
+          0.08835749249184718
+        ],
+        "mean": 0.0641980742517271,
+        "n": 200
+      }
+    },
+    "lead_lag_with_magnitude": {
+      "candidate": {
+        "ci95": [
+          0.187271728515625,
+          0.357271728515625
+        ],
+        "mean": 0.2687908935546875,
+        "n": 100
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          0.03777801513671875,
+          0.17148162841796874
+        ],
+        "mean": 0.10237640380859375,
+        "n": 100
+      },
+      "n": 100,
+      "reference": {
+        "ci95": [
+          0.09905120849609375,
+          0.24054901123046876
+        ],
+        "mean": 0.16641448974609374,
+        "n": 100
+      }
+    },
+    "localize": {
+      "candidate": {
+        "ci95": [
+          0.18142991069305064,
+          0.2875228739747347
+        ],
+        "mean": 0.2327012472036658,
+        "n": 200
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          -0.029031956627622924,
+          0.01370767978030258
+        ],
+        "mean": -0.008324556958314203,
+        "n": 200
+      },
+      "n": 200,
+      "reference": {
+        "ci95": [
+          0.18903918183691396,
+          0.2957611184490767
+        ],
+        "mean": 0.24102580416198002,
+        "n": 200
+      }
+    },
+    "localize_all_channels": {
+      "candidate": {
+        "ci95": [
+          0.16833333333333333,
+          0.3306666666666667
+        ],
+        "mean": 0.24733333333333335,
+        "n": 100
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          -0.04533333333333333,
+          0.013999999999999999
+        ],
+        "mean": -0.013999999999999999,
+        "n": 100
+      },
+      "n": 100,
+      "reference": {
+        "ci95": [
+          0.18133333333333332,
+          0.3453333333333333
+        ],
+        "mean": 0.2613333333333333,
+        "n": 100
+      }
+    },
+    "measure_magnitude": {
+      "candidate": {
+        "ci95": [
+          0.5359234594560914,
+          0.6290491725559093
+        ],
+        "mean": 0.5828465553301334,
+        "n": 200
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          -0.014402391056081347,
+          0.023356988677116185
+        ],
+        "mean": 0.004528567266868054,
+        "n": 200
+      },
+      "n": 200,
+      "reference": {
+        "ci95": [
+          0.5305659668079605,
+          0.6260456328742465
+        ],
+        "mean": 0.5783179880632653,
+        "n": 200
+      }
+    }
+  },
+  "primary": {
+    "candidate": {
+      "ci95": [
+        0.2604951334938909,
+        0.3141275698485433
+      ],
+      "mean": 0.2868914607411838,
+      "n": 800
+    },
+    "candidate_minus_reference": {
+      "ci95": [
+        0.00029695667947564016,
+        0.02533825782681833
+      ],
+      "mean": 0.01253751623701236,
+      "n": 800
+    },
+    "n": 800,
+    "reference": {
+      "ci95": [
+        0.24869423290722534,
+        0.3010774159318203
+      ],
+      "mean": 0.2743539445041715,
+      "n": 800
+    }
+  },
+  "split": "test"
+}
