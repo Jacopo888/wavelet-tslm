@@ -1,7 +1,6 @@
 # RISULTATI L3 — GRPO multimodale su va1 (punto 5: `va1 SFT` vs `va1 + RL`)
 
-Stato: 11/09/2026, run principale e test conclusi; **repliche L4 (seed 20260912, 20260913) in
-corso** sulla A40, senza accesso al test (aggiornare la §6 a fine catena).
+Stato: 11/09/2026, run principale e test conclusi; repliche L4 fermate (§6).
 Artefatti: `integrity/artifacts/l3_longrun_20260910/` (commit `a802658`); smoke in
 `integrity/artifacts/l3_smoke_20260910/`. Protocollo e regole dichiarate prima della run:
 `l3/PROTOCOL-L3.md`; verdetto sullo smoke: `l3/review/CODEX-SMOKE-VERDICT.md`.
@@ -101,10 +100,12 @@ Cosa si è imparato di utile:
   pieno solo con direzione e lag corretti anche quando la risposta è "independent" (o metrica
   di direzione separata), altrimenti qualunque RL ripete questo risultato.
 
-## 6. Repliche (in corso)
+## 6. Repliche (fermate per ordine di Jacopo, 11/09 16:50Z)
 
-Seed 20260912 e 20260913, stesso pool, stesse regole, senza test. Da riportare: val520 ai
-milestone e passo selezionato per ciascun seed (dispersione fra seed).
+Le due repliche (seed 20260912, 20260913) sono state interrotte durante la prima, dopo 17
+passi (`L4/STOPPED_BY_ORDER.txt`): il braccio senza zoom è solo il controllo e la
+dispersione fra seed non cambia la lettura. Nessun test sulle repliche. GPU liberata per il
+punto 4 (`l3/review/brief_l4_zoom_codex.md`).
 
 ## 7. Budget e deviazioni
 
