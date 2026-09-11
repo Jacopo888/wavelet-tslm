@@ -144,11 +144,20 @@ import json,sys
 from pathlib import Path
 p=Path(sys.argv[1]); z=json.load(open(p/"val520_policy.json",encoding="utf-8")); b=json.load(open(sys.argv[2],encoding="utf-8"))
 assert z["samples_evaluated"]==520 and z["primary"]>=0.3105
+empty_rate=z["empty_final"]/z["samples_evaluated"]
+if empty_rate>0.02:
+    reason=f"Z1 empty_final gate failed: {z['empty_final']}/{z['samples_evaluated']} ({empty_rate:.2%}) > 2%"
+    json.dump({"status":"FAILED","reason":reason,"empty_final":z["empty_final"],
+               "samples_evaluated":z["samples_evaluated"]},
+              open(p/"summary.json","w",encoding="utf-8"),indent=2)
+    open(p/"summary.json","a",encoding="utf-8").write("\n")
+    raise RuntimeError(reason)
 for c in ("localize","localize_all_channels"):
     assert z["per_category"][c]["primary"] >= b["per_category"][c]["primary"]
 train=json.load(open(p/"train"/"summary.json",encoding="utf-8")); assert train["steps"]==4488
 out={"status":"DONE","checkpoint":sys.argv[3],"checkpoint_sha256":sys.argv[4],
-     "primary":z["primary"],"zoom_rate":z["zoom_rate"],"zoom_invalid":z["zoom_invalid"]}
+     "primary":z["primary"],"zoom_rate":z["zoom_rate"],"zoom_invalid":z["zoom_invalid"],
+     "empty_final":z["empty_final"],"empty_final_rate":empty_rate}
 json.dump(out,open(p/"summary.json","w",encoding="utf-8"),indent=2); open(p/"summary.json","a").write("\n")
 PY
 finish_phase

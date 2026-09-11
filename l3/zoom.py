@@ -157,6 +157,15 @@ def zoom_header(action: ZoomAction) -> str:
     )
 
 
+def silent_zoom_header(action: ZoomAction) -> str:
+    """Channel-style header used by the va1-only silent Z0 controls."""
+    return (
+        f"The following is channel {action.channel}_zoom_{action.start}_{action.end} "
+        f"(samples [{action.start}, {action.end}) of {action.length} "
+        f"of channel {action.channel}):"
+    )
+
+
 def with_action_instruction(sample: Mapping[str, Any]) -> dict[str, Any]:
     result = dict(sample)
     post = str(sample.get("post_prompt", "")).rstrip()
@@ -186,6 +195,17 @@ def make_zoom_prompt(sample: Mapping[str, Any], action: ZoomAction) -> Any:
         from src.prompt.text_time_series_prompt import TextTimeSeriesPrompt
     header, values = build_zoom_block(sample, action)
     return TextTimeSeriesPrompt(header, values)
+
+
+def build_silent_zoom_sample(sample: Mapping[str, Any], action: ZoomAction) -> dict[str, Any]:
+    """Add a channel-style zoom block without changing the original va1 text."""
+    result = dict(sample)
+    _, values = build_zoom_block(sample, action)
+    result["time_series"] = list(sample["time_series"]) + [values]
+    result["time_series_text"] = (
+        list(sample["time_series_text"]) + [silent_zoom_header(action)]
+    )
+    return result
 
 
 def build_turn2_sample(sample: Mapping[str, Any], action: ZoomAction,
@@ -381,16 +401,16 @@ def _model_inputs(model: Any, sample: Mapping[str, Any]) -> dict[str, torch.Tens
     return {key: value for key, value in values.items() if key != "labels"}
 
 
-def prepare_zoom_batch(model: Any, sample: Mapping[str, Any], action: ZoomAction,
-                       *, training: bool, answer: str | None = None) -> dict[str, torch.Tensor]:
+def _prepare_separate_zoom_batch(model: Any, sample: Mapping[str, Any], action: ZoomAction,
+                                 zoom_sample: Mapping[str, Any], *,
+                                 training: bool) -> dict[str, torch.Tensor]:
     """Prepare text jointly but encode originals/window at their own lengths.
 
     ChatTS ``prepare_batch`` pads all blocks to the longest channel.  Calling the
     encoder twice here is what makes the zoom a true full-resolution reread rather
     than a short prefix followed by zeros up to L.
     """
-    turn2 = build_turn2_sample(sample, action, answer=answer)
-    prepared = model.prepare_batch([turn2], training=training)
+    prepared = model.prepare_batch([zoom_sample], training=training)
     original = model.prepare_batch([sample], training=False)
     _, values = build_zoom_block(sample, action)
     original_time_series = original["time_series"]
@@ -415,6 +435,24 @@ def prepare_zoom_batch(model: Any, sample: Mapping[str, Any], action: ZoomAction
     if not training:
         prepared.pop("labels", None)
     return prepared
+
+
+def prepare_zoom_batch(model: Any, sample: Mapping[str, Any], action: ZoomAction,
+                       *, training: bool, answer: str | None = None) -> dict[str, torch.Tensor]:
+    """Prepare the learned two-turn zoom format with separately encoded features."""
+    turn2 = build_turn2_sample(sample, action, answer=answer)
+    return _prepare_separate_zoom_batch(
+        model, sample, action, turn2, training=training
+    )
+
+
+def prepare_silent_zoom_batch(model: Any, sample: Mapping[str, Any],
+                              action: ZoomAction) -> dict[str, torch.Tensor]:
+    """Prepare the eval-only va1 Z0 format without any post-question text."""
+    silent = build_silent_zoom_sample(sample, action)
+    return _prepare_separate_zoom_batch(
+        model, sample, action, silent, training=False
+    )
 
 
 def zoom_training_loss(model: Any, prepared: Mapping[str, torch.Tensor]) -> torch.Tensor:
@@ -534,7 +572,7 @@ def evaluate_zoom(args: argparse.Namespace) -> None:
     counts: dict[str, int] = {}
     metric_sums: dict[str, dict[str, float]] = {}
     zoom_lengths: dict[str, list[int]] = {}
-    zoomed = invalid = 0
+    zoomed = invalid = empty_final = 0
     iou_sum = 0.0
     with jsonl.open("x", encoding="utf-8") as handle:
         for index in range(limit):
@@ -546,11 +584,22 @@ def evaluate_zoom(args: argparse.Namespace) -> None:
                 ids = _generate(model, prompt, sample=False, max_new_tokens=args.max_answer_tokens)
                 text = model.tokenizer.batch_decode(ids, skip_special_tokens=True)[0].strip()
                 episode = ZoomEpisode(text, ids, prompt)
-            else:
-                forced = None
+            elif mode in {"oracle", "heuristic"}:
                 if mode == "oracle":
                     forced = oracle_zoom(sample) or heuristic_zoom(sample)
-                elif mode == "heuristic":
+                else:
+                    forced = heuristic_zoom(sample)
+                prompt = prepare_silent_zoom_batch(model, sample, forced)
+                model.eval()
+                ids = _generate(model, prompt, sample=False,
+                                max_new_tokens=args.max_answer_tokens)
+                text = model.tokenizer.batch_decode(ids, skip_special_tokens=True)[0].strip()
+                episode = ZoomEpisode(text, ids, prompt, action_text=forced.text(), action=forced)
+            else:
+                forced = None
+                if mode == "oracle_text":
+                    forced = oracle_zoom(sample) or heuristic_zoom(sample)
+                elif mode == "heuristic_text":
                     forced = heuristic_zoom(sample)
                 episode = run_zoom_episode(
                     model, sample, sample_generation=False,
@@ -559,6 +608,8 @@ def evaluate_zoom(args: argparse.Namespace) -> None:
                     forced_action=forced,
                 )
             result = dataset.evaluate_answer(episode.final_text, sample)
+            is_empty_final = not episode.final_text.strip()
+            empty_final += int(is_empty_final)
             category = str(sample["category"])
             primary = float(result[dataset.primary_metric])
             counts[category] = counts.get(category, 0) + 1
@@ -581,6 +632,7 @@ def evaluate_zoom(args: argparse.Namespace) -> None:
                     "end": episode.action.end, "window_len": episode.action.window_len,
                     "iou_with_gold": zoom_iou_with_gold(sample, episode.action),
                 }, "zoom_invalid": episode.zoom_invalid,
+                "empty_final": is_empty_final,
             })
     total_primary = sum(sums.values()) / max(1, limit)
     summary = {
@@ -595,6 +647,7 @@ def evaluate_zoom(args: argparse.Namespace) -> None:
                                 if zoom_lengths.get(cat) else 0.0}
                          for cat in sorted(counts)},
         "zoom_rate": zoomed / max(1, limit), "zoom_invalid": invalid,
+        "empty_final": empty_final,
         "zoom_window_len": (sum(map(sum, zoom_lengths.values())) /
                             max(1, sum(map(len, zoom_lengths.values())))),
         "zoom_iou_with_gold": iou_sum / max(1, zoomed),
@@ -612,7 +665,11 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--config", required=True)
     evaluate.add_argument("--checkpoint", required=True)
     evaluate.add_argument("--split", choices=("val", "test"), required=True)
-    evaluate.add_argument("--mode", choices=("no_zoom", "oracle", "heuristic", "policy"), required=True)
+    evaluate.add_argument(
+        "--mode",
+        choices=("no_zoom", "oracle", "heuristic", "oracle_text", "heuristic_text", "policy"),
+        required=True,
+    )
     evaluate.add_argument("--out-json", required=True)
     evaluate.add_argument("--out-jsonl", required=True)
     evaluate.add_argument("--max-samples", type=int)

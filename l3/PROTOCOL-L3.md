@@ -298,9 +298,50 @@ Questa sezione definisce il confronto a quattro bracci va1, va1+RL,
 va1+zoom (`vz1`) e va1+zoom+RL. Lo zoom non cambia l'architettura: è un blocco
 percettivo aggiuntivo elaborato dallo stesso encoder e proiettore congelati.
 
+### Diagnosi Z0 e fix2 del formato silenzioso
+
+La run `/root/l3/zoom_20260911b` del kit `00e873e` è stata fermata dopo il
+probe80: `no_zoom` ha ottenuto 0,346, mentre `oracle` e `heuristic` hanno entrambi
+ottenuto 0,0107 con 80/80 risposte finali vuote (primo token generato
+`<|im_end|>`). Il diagnostico `l3/tools/diag_zoom_empty.py`, eseguito greedy su
+val[0] e val[1], ha isolato il seguente comportamento:
+
+| caso | prompt | esito |
+|---|---|---|
+| A | prompt va1 originale | risposta corretta come sempre |
+| B | turno 2 del kit: blocco zoom con feature separate, istruzione azione, `Assistant action:` e `Now output…` | EOS immediato |
+| C | come B via `model.generate` con finestra zero-padded di `prepare_batch` | EOS immediato |
+| D | prompt originale con istruzione azione, `Assistant action:` e `Now output…`, senza blocco | EOS immediato |
+| E | prompt originale con la sola frase `Optional action: …` del turno 1 | EOS immediato |
+| F | come B senza attention mask | EOS immediato |
+
+La causa è quindi il testo aggiunto dopo la domanda, non la finestra né il suo
+percorso di feature: va1, addestrato in LoRA SFT, risponde soltanto quando la
+domanda termina nel formato originale (per esempio `… (Here L = 16384.)`). La
+prova non conferma né smentisce l'utilità delle feature zoom separate; Z1 resta
+necessario per apprendere il formato a due turni.
+
+Z0 definisce pertanto `oracle` e `heuristic` come modalità silenziose eval-only
+su va1. Il post-prompt resta byte-per-byte quello originale: non vengono aggiunti
+istruzione d'azione, action history o richiesta finale. La finestra è aggiunta
+come un ulteriore blocco a piena risoluzione, con feature codificate separatamente
+e intestazione:
+
+```
+The following is channel <name>_zoom_<s>_<e> (samples [s, e) of L of channel <name>):
+```
+
+Le coordinate della risposta restano assolute. In `localize` il blocco deriva
+dall'unico canale originale; in `localize_all_channels` il nome del canale
+originale è incorporato nel nome del blocco zoom. Il gate/flag Z0 confronta solo
+queste due modalità silenziose con `no_zoom`. Le precedenti modalità forzate con
+testo restano disponibili come `oracle_text` e `heuristic_text`, ma Z0 non le
+esegue perché il loro collasso a EOS è già accertato.
+
 ### Decisioni di disegno
 
-Il testo aggiunto, identico in SFT, RL ed eval, è:
+Nel formato a due turni appreso da Z1 e usato da Z2 e dalle eval della policy,
+il testo aggiunto è:
 
 ```
 Optional action: before answering, you may output exactly zoom:{"channel":"<name>","start":s,"end":e}. Use one listed channel and absolute sample coordinates [start,end). Otherwise output the final answer now.
@@ -308,8 +349,8 @@ Optional action: before answering, you may output exactly zoom:{"channel":"<name
 
 L'azione deve occupare l'intero output del primo turno e avere esattamente le
 chiavi `channel`, `start`, `end`; valori booleani, coordinate non intere, chiavi
-extra e canali non elencati sono invalidi. Il blocco inserito dall'ambiente ha
-sempre l'intestazione:
+extra e canali non elencati sono invalidi. In questo formato a due turni il
+blocco inserito dall'ambiente ha l'intestazione:
 
 ```
 Zoom on channel <name>, samples [s, e) of L:
@@ -380,9 +421,10 @@ rispetto a `vz1`.
 
 ### Fasi e accesso ai dati
 
-Z0 esegue no-zoom, oracle e heuristic su probe80 e val520. Z1 addestra una sola
+Z0 esegue no-zoom, oracle e heuristic silenziosi su probe80 e val520. Z1 addestra una sola
 epoca completa e richiede coverage esatta per categoria; il suo gate usa val520
-con zoom scelto dalla policy. Z2 usa G8, P2, 200 step, checkpoint ogni 25 e val520
+con zoom scelto dalla policy e richiede `empty_final` non superiore al 2% (al più
+10 risposte vuote su 520). Z2 usa G8, P2, 200 step, checkpoint ogni 25 e val520
 agli step 50/100/150/200; seleziona il massimo primary (pareggio entro 0.002: primo)
 e si ferma dopo due validation senza miglioramento di almeno 0.005. Z3 è l'unica
 fase autorizzata a usare `--split test` e confronta entrambi i bracci zoom con i

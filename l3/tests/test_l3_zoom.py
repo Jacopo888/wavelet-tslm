@@ -17,6 +17,8 @@ from l3.zoom import (
     ACTION_INSTRUCTION,
     MIN_ZOOM_SAMPLES,
     ZoomAction,
+    build_parser,
+    build_silent_zoom_sample,
     build_turn2_sample,
     build_zoom_block,
     choose_supervised_action,
@@ -25,6 +27,7 @@ from l3.zoom import (
     make_zoom_prompt,
     oracle_zoom,
     parse_zoom_decision,
+    prepare_silent_zoom_batch,
     prepare_zoom_batch,
     supervised_segments,
     two_segment_token_mask,
@@ -96,6 +99,93 @@ def test_zoom_block_keeps_absolute_header_and_exact_raw_slice():
     assert ACTION_INSTRUCTION in second["post_prompt"]
     assert "Assistant action: zoom:" in second["post_prompt"]
     assert second["post_prompt"].endswith("Now output the final answer in absolute coordinates.")
+
+
+def test_silent_zoom_only_adds_channel_style_block_and_one_placeholder_group():
+    class FakeLlm(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.weight = torch.nn.Parameter(torch.zeros(1, dtype=torch.bfloat16))
+
+    class FakeTokenizer:
+        def __call__(self, text, add_special_tokens=False):
+            assert text == "<ts_pad>"
+            return {"input_ids": [7]}
+
+    class FakeModel:
+        TS_PAD_TOKEN = "<ts_pad>"
+
+        def __init__(self):
+            self.llm_model = FakeLlm()
+            self.text_tokenizer = FakeTokenizer()
+            self.seen = []
+            self.encoded_shapes = []
+
+        def parameters(self):
+            return self.llm_model.parameters()
+
+        def prepare_batch(self, batch, training=False):
+            item = batch[0]
+            self.seen.append(item)
+            channels = item["time_series"]
+            width = max(map(len, channels))
+            # One stand-in placeholder per time-series block is enough to test
+            # that textual assembly and separately encoded feature groups agree.
+            input_ids = torch.tensor([[7] * len(channels)], dtype=torch.long)
+            return {
+                "time_series": torch.zeros((len(channels), width)),
+                "input_ids": input_ids,
+                "attention_mask": torch.ones_like(input_ids),
+                "labels": None,
+            }
+
+        def _encode_and_project(self, values):
+            self.encoded_shapes.append(tuple(values.shape))
+            return torch.zeros((values.shape[0], 2))
+
+    s = sample(channels=2)
+    action = ZoomAction("ch1", 1000, 2024, 4096)
+    silent = build_silent_zoom_sample(s, action)
+    assert silent["pre_prompt"] == s["pre_prompt"]
+    assert silent["post_prompt"] == s["post_prompt"]
+    assert silent["answer"] == s["answer"]
+    assert silent["time_series_text"][:-1] == s["time_series_text"]
+    assert silent["time_series_text"][-1] == (
+        "The following is channel ch1_zoom_1000_2024 "
+        "(samples [1000, 2024) of 4096 of channel ch1):"
+    )
+    assert len(silent["time_series"]) == len(s["time_series"]) + 1
+    assert len(silent["time_series_text"]) == s["n_channels"] + 1
+    assert ACTION_INSTRUCTION not in silent["post_prompt"]
+    assert "Assistant action:" not in silent["post_prompt"]
+    assert "Now output" not in silent["post_prompt"]
+
+    model = FakeModel()
+    prepared = prepare_silent_zoom_batch(model, s, action)
+    assert int((prepared["input_ids"] == 7).sum()) == s["n_channels"] + 1
+    assert model.encoded_shapes == [(2, 4096), (1, 1024)]
+
+
+def test_text_modes_are_available_but_not_used_by_z0_driver():
+    parser = build_parser()
+    common = [
+        "eval", "--config", "c", "--checkpoint", "k", "--split", "val",
+        "--out-json", "o", "--out-jsonl", "l",
+    ]
+    assert parser.parse_args(common + ["--mode", "oracle_text"]).mode == "oracle_text"
+    assert parser.parse_args(common + ["--mode", "heuristic_text"]).mode == "heuristic_text"
+    driver = (ROOT / "l3" / "node_l3_zoom.sh").read_text(encoding="utf-8")
+    z0 = driver[driver.index("# CPU gate is part of Z0"):driver.index("# Z1:")]
+    assert "for mode in no_zoom oracle heuristic; do" in z0
+    assert "oracle_text" not in z0 and "heuristic_text" not in z0
+
+
+def test_z1_driver_rejects_more_than_two_percent_empty_finals_with_reason():
+    driver = (ROOT / "l3" / "node_l3_zoom.sh").read_text(encoding="utf-8")
+    z1 = driver[driver.index("# Z1:"):driver.index("# Z2:")]
+    assert 'empty_rate=z["empty_final"]/z["samples_evaluated"]' in z1
+    assert "if empty_rate>0.02:" in z1
+    assert "Z1 empty_final gate failed" in z1
 
 
 def test_prepare_zoom_batch_encodes_window_at_its_own_length():
