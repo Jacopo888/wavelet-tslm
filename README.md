@@ -20,6 +20,8 @@ Cartella di lavoro dedicata (isolata dalla vecchia proposta ADMIT, ora in `../ad
 
 ## Stato modelli
 
+- **Livello 3, punto 5 (11/09): `va1 + GRPO` vs `va1`** — test 800 una lettura: 0,2869 vs 0,2744, Δ appaiato +0,0125 CI[+0,0003, +0,0253], **interamente da lead_lag** (+0,102: la policy risponde "independent" 76/100 vs 43, direzione corretta 29 vs 30); localize −0,008 e all_channels −0,014 (ns). RL single-turn su reward ufficiale non migliora la localizzazione e sfrutta il default dello scorer. Dettagli e lettura: `l3/RISULTATI-L3.md`; artefatti `integrity/artifacts/l3_longrun_20260910/`. Repliche (2 seed, senza test) in corso.
+
 - **Variante v3 (residuo su v1, ablazione 1, 08/09)**: test 800 primary **0,2832** vs va1 0,2744 (appaiato +0,009, ns). `context_scale` è rimasto a zero per 5 epoche: la run del commit `1b0f9fa` è una **replica di va1**, non una misura del contesto. Il deadlock è ora rotto nei config con `context_scale_init: 0.1` e gruppo ricorrente a lr `1e-3` (il percorso v1 resta a `1e-4`); ablazione 1 da ripetere. Dettagli in `v3-recurrent/RISULTATI-V3TIED.md` e `v3-recurrent/review/CODEX-REPORT.md` §12.
 - **Pilot v3 context (09/09)**: l'harness valuta ora, sullo stesso checkpoint e sulle stesse
   righe di validation, contesto on/off/roll sui probe80, full-val on/off e confronti appaiati
