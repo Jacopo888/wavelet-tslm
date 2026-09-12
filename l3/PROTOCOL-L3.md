@@ -572,6 +572,22 @@ Sotto-ipotesi registrata: il delta sulle righe in cui la finestra **contiene**
 l'evento deve superare quello sulle righe in cui lo manca. È il controllo che lega
 il beneficio percettivo al puntamento, non un secondo criterio di pass/fail.
 
+### Fase 2-bis — scala della finestra (descrittiva, nessun pass/fail)
+
+Aggiunta prima del run GPU dopo la fase 1, che ha mostrato il contenimento crollare
+con la lunghezza della serie. Nello stesso passaggio, sulle stesse righe e con lo
+stesso centro scelto dalla policy, si valuta anche il contenuto vero in finestre
+×2 e ×4, con header veritiero sulle nuove coordinate. Il crop viene sempre
+codificato in 256 token, quindi allargare aumenta il contenimento ma riduce la
+risoluzione: questa scala misura quale dei due effetti domina, e separa «finestra
+mal puntata» da «finestra troppo stretta».
+
+Si riportano media, delta appaiato contro l'ampiezza scelta dalla policy con CI95, e
+lo stesso delta ristretto alle righe in cui la finestra base **mancava** l'evento.
+Nessuna soglia: e' una misura descrittiva che serve a scegliere fra selettore,
+scala e doppio zoom. Il pass/fail della fase 2 resta il solo criterio dichiarato e
+usa le tre condizioni a pari ampiezza.
+
 ### Esecuzione
 
 `l3/node_l3_selectors.sh` esegue test CPU, geometria e gate del contenuto, con

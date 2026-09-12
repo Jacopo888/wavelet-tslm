@@ -52,20 +52,34 @@ def _wavelet_pyramid_class() -> Any:
     return WaveletPyramid
 
 
-def wavelet_scores(sample: Mapping[str, Any], buckets: int) -> tuple[np.ndarray, np.ndarray]:
+def channel_details(sample: Mapping[str, Any]) -> list[dict[int, np.ndarray]]:
+    """Dettagli Haar per canale, calcolati una volta sola per riga.
+
+    La piramide non dipende dal numero di intervalli: calcolarla una volta per riga
+    evita di rifarla per ogni budget confrontato (la fase e' quella che aveva fatto
+    cadere il nodo).
+    """
+    WaveletPyramid = _wavelet_pyramid_class()
+    return [WaveletPyramid(np.asarray(raw, dtype=np.float64)).details
+            for raw in sample["time_series"]]
+
+
+def wavelet_scores(sample: Mapping[str, Any], buckets: int,
+                   details: Sequence[Mapping[int, np.ndarray]] | None = None,
+                   ) -> tuple[np.ndarray, np.ndarray]:
     """Energia Haar normalizzata per livello, aggregata in `buckets` intervalli.
 
     Ritorna (punteggi [n_canali, buckets], bordi). Stessa aritmetica di
     `l3.zoom.heuristic_zoom`, con il numero di intervalli parametrizzato.
     """
-    WaveletPyramid = _wavelet_pyramid_class()
     length = series_length(sample)
     bucket_count = min(max(1, buckets), length)
     edges = np.linspace(0, length, bucket_count + 1, dtype=int)
+    if details is None:
+        details = channel_details(sample)
     out = np.zeros((len(sample["time_series"]), bucket_count), dtype=np.float64)
-    for channel_index, raw in enumerate(sample["time_series"]):
-        pyramid = WaveletPyramid(np.asarray(raw, dtype=np.float64))
-        for level, detail in pyramid.details.items():
+    for channel_index, channel in enumerate(details):
+        for level, detail in channel.items():
             energy = np.square(np.asarray(detail, dtype=np.float64))
             positive = energy[energy > 0]
             scale = float(np.median(positive)) if positive.size else 1.0
@@ -78,14 +92,16 @@ def wavelet_scores(sample: Mapping[str, Any], buckets: int) -> tuple[np.ndarray,
 
 
 def wavelet_zoom_at_width(sample: Mapping[str, Any], width: int,
-                          buckets: int | None = None) -> ZoomAction:
+                          buckets: int | None = None,
+                          details: Sequence[Mapping[int, np.ndarray]] | None = None,
+                          ) -> ZoomAction:
     """Euristica Haar con ampiezza imposta; la griglia segue il budget richiesto."""
     length = series_length(sample)
     names = channel_names(sample)
     target = min(length, max(MIN_ZOOM_SAMPLES, int(width)))
     if buckets is None:
         buckets = max(8, math.ceil(length / max(1, target)))
-    scores, edges = wavelet_scores(sample, buckets)
+    scores, edges = wavelet_scores(sample, buckets, details)
     best: tuple[float, int, int] | None = None
     for channel_index in range(scores.shape[0]):
         bucket = int(np.argmax(scores[channel_index]))
@@ -256,11 +272,13 @@ def run(args: argparse.Namespace) -> int:
             policy_action = ZoomAction(str(zoom["channel"]), int(zoom["start"]),
                                        int(zoom["end"]), length)
             width = policy_action.window_len
-            wavelet_action = wavelet_zoom_at_width(sample, width)
+            details = channel_details(sample)
+            wavelet_action = wavelet_zoom_at_width(sample, width, details=details)
+            native = heuristic_zoom(sample)
             conditions = {
                 "policy": geometry(sample, policy_action),
                 "wavelet_matched": geometry(sample, wavelet_action),
-                "wavelet_native": geometry(sample, heuristic_zoom(sample)),
+                "wavelet_native": geometry(sample, native),
                 "oracle_matched": geometry(sample, oracle_at_width(sample, width)),
             }
             for factor in WIDE_FACTORS:
@@ -270,9 +288,9 @@ def run(args: argparse.Namespace) -> int:
                     sample, recenter(wavelet_action, width * factor, length))
             # Auto-verifica: alle impostazioni native il selettore parametrizzato deve
             # coincidere esattamente con `l3.zoom.heuristic_zoom` (64 intervalli, L/8).
-            native = heuristic_zoom(sample)
             mirrored = wavelet_zoom_at_width(
-                sample, max(MIN_ZOOM_SAMPLES, math.ceil(length / 8)), buckets=64)
+                sample, max(MIN_ZOOM_SAMPLES, math.ceil(length / 8)), buckets=64,
+                details=details)
             if (native.channel, native.start, native.end) != (
                     mirrored.channel, mirrored.start, mirrored.end):
                 raise RuntimeError(f"selector mirror mismatch on {sample_id}")

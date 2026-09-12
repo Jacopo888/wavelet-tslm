@@ -162,3 +162,34 @@ def test_selfwindow_gate_fails_closed_when_the_effect_is_absent():
     assert out["gate_passed"] is False
     assert out["checks"] == {"effect_at_least_threshold": False,
                              "ci95_excludes_zero": False}
+
+
+def test_width_ladder_is_paired_and_stratified_on_the_base_misses():
+    from l3.tools.gate_selfwindow_content import report
+
+    rows = []
+    for index in range(10):
+        contained = index < 6
+        for condition, value in (("self_true", 0.3 if contained else 0.0),
+                                 ("self_swap", 0.05), ("self_zero", 0.05),
+                                 ("self_wide_x2", 0.3 if contained else 0.2),
+                                 ("self_wide_x4", 0.1)):
+            rows.append({
+                "id": f"row{index}", "condition": condition, "primary": value,
+                "category": "localize", "band": 16384,
+                "geometry": {"state": "contained" if contained
+                             else ("contained" if condition == "self_wide_x2" else "outside")},
+            })
+    out = report(rows, seed=1, resamples=200, min_delta=0.03,
+                 config_path=Path("c.yaml"), checkpoint=Path("k.pt"),
+                 policy_rows=Path("p.jsonl"))
+    ladder = out["width_ladder"]
+    assert set(ladder) == {"self_wide_x2", "self_wide_x4"}
+    assert ladder["self_wide_x2"]["n"] == 10
+    assert ladder["self_wide_x2"]["contained_rate"] == pytest.approx(1.0)
+    assert ladder["self_wide_x2"]["delta_vs_self_true"]["mean"] == pytest.approx(0.08)
+    misses = ladder["self_wide_x2"]["on_base_misses"]
+    assert misses["n"] == 4 and misses["base_mean"] == pytest.approx(0.0)
+    assert misses["delta"]["mean"] == pytest.approx(0.2)
+    assert ladder["self_wide_x4"]["delta_vs_self_true"]["mean"] == pytest.approx(-0.08)
+    assert out["gate_passed"] is True

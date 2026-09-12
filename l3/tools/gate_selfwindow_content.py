@@ -26,7 +26,7 @@ import numpy as np
 
 from l3.grpo import _atomic_json_dump, _write_jsonl, load_l3_config
 from l3.paired_eval_l3 import bootstrap_mean
-from l3.tools.compare_selectors import geometry
+from l3.tools.compare_selectors import geometry, recenter
 from l3.tools.diag_crop_content import (
     _encode_original,
     crop_header_fingerprints,
@@ -42,6 +42,11 @@ from l3.zoom import (
 )
 
 CONDITIONS = ("self_true", "self_swap", "self_zero")
+# Scala della finestra: stesso centro scelto dalla policy, ampiezza moltiplicata,
+# header veritiero sulle nuove coordinate. Serve a separare due spiegazioni del
+# limite residuo: finestra mal puntata oppure finestra troppo stretta.
+LADDER_FACTORS = (2, 4)
+LADDER_CONDITIONS = tuple(f"self_wide_x{factor}" for factor in LADDER_FACTORS)
 
 
 def paired_section(rows: Sequence[Mapping[str, Any]], seed: int, resamples: int,
@@ -90,6 +95,34 @@ def report(rows: Sequence[Mapping[str, Any]], *, seed: int, resamples: int,
         ids = [r["id"] for r in true_rows if r["band"] == band]
         sections[f"band:{band}"] = paired_section(rows, seed + 40 + ordinal, resamples, ids)
 
+    ladder: dict[str, Any] = {}
+    base = {r["id"]: float(r["primary"]) for r in true_rows}
+    for ordinal, condition in enumerate(LADDER_CONDITIONS):
+        wide = {r["id"]: float(r["primary"]) for r in rows if r["condition"] == condition}
+        if not wide:
+            continue
+        shared = sorted(set(base) & set(wide))
+        differences = [wide[i] - base[i] for i in shared]
+        missed_ids = [i for i in shared if i in set(missed)]
+        entry: dict[str, Any] = {
+            "n": len(shared),
+            "mean": statistics.fmean([wide[i] for i in shared]),
+            "delta_vs_self_true": bootstrap_mean(
+                differences, seed=seed + 70 + ordinal, resamples=resamples),
+            "contained_rate": statistics.fmean(
+                [1.0 if r["geometry"]["state"] == "contained" else 0.0
+                 for r in rows if r["condition"] == condition]),
+        }
+        if missed_ids:
+            entry["on_base_misses"] = {
+                "n": len(missed_ids),
+                "mean": statistics.fmean([wide[i] for i in missed_ids]),
+                "base_mean": statistics.fmean([base[i] for i in missed_ids]),
+                "delta": bootstrap_mean([wide[i] - base[i] for i in missed_ids],
+                                        seed=seed + 80 + ordinal, resamples=resamples),
+            }
+        ladder[condition] = entry
+
     delta = overall["true_minus_best_control"]
     checks = {
         "effect_at_least_threshold": delta["mean"] >= min_delta,
@@ -104,7 +137,8 @@ def report(rows: Sequence[Mapping[str, Any]], *, seed: int, resamples: int,
         sub["contained_exceeds_not_contained"] = (
             sub["contained_delta"] > sub["not_contained_delta"])
     counts = Counter(str(r["condition"]) for r in rows)
-    if len(set(counts.values())) != 1:
+    expected = set(CONDITIONS) | {c for c in LADDER_CONDITIONS if c in counts}
+    if set(counts) != expected or len(set(counts.values())) != 1:
         raise ValueError(f"condition coverage mismatch: {dict(counts)}")
     states = Counter(str(r["geometry"]["state"]) for r in true_rows)
     return {
@@ -116,6 +150,7 @@ def report(rows: Sequence[Mapping[str, Any]], *, seed: int, resamples: int,
                       "bootstrap_resamples": resamples, "seed": seed},
         "registered_subhypothesis": sub,
         "overall": overall,
+        "width_ladder": ladder,
         "sections": sections,
         "window_states": dict(states),
         "condition_counts": dict(counts),
@@ -191,8 +226,19 @@ def evaluate(args: argparse.Namespace) -> int:
                     "self_zero": run_crop(model, sample, action, zero_values,
                                           original_features, args.max_tokens),
                 }
-                for condition in CONDITIONS:
+                ladder_actions = {}
+                for factor in LADDER_FACTORS:
+                    wide = recenter(action, action.window_len * factor, length)
+                    if wide.window_len <= action.window_len:
+                        continue
+                    _, wide_values = build_zoom_block(sample, wide)
+                    name = f"self_wide_x{factor}"
+                    ladder_actions[name] = wide
+                    predictions[name] = run_crop(model, sample, wide, wide_values,
+                                                 original_features, args.max_tokens)
+                for condition in sorted(predictions):
                     prediction = predictions[condition]
+                    used = ladder_actions.get(condition, action)
                     result = dataset.evaluate_answer(prediction, sample)
                     primary = float(result[dataset.primary_metric])
                     if not math.isfinite(primary):
@@ -205,9 +251,11 @@ def evaluate(args: argparse.Namespace) -> int:
                         "condition": condition, "prediction": prediction,
                         "primary": primary,
                         "policy_primary": float(policy_row["primary"]),
-                        "zoom": {"channel": action.channel, "start": action.start,
-                                 "end": action.end, "window_len": action.window_len},
-                        "geometry": geo, "header_sha256": header_sha,
+                        "zoom": {"channel": used.channel, "start": used.start,
+                                 "end": used.end, "window_len": used.window_len},
+                        "geometry": geometry(sample, used) if used is not action else geo,
+                        "header_sha256": (header_sha if condition in CONDITIONS
+                                          else next(iter(crop_header_fingerprints(used).values()))),
                         "replacement_start": (replacement_start
                                               if condition == "self_swap" else None),
                     }
@@ -217,7 +265,8 @@ def evaluate(args: argparse.Namespace) -> int:
                 print(f"SELFWINDOW {ordinal + 1}/{len(acted)}", flush=True)
 
         for sample_id in {row["id"] for row in written}:
-            group = [row for row in written if row["id"] == sample_id]
+            group = [row for row in written
+                     if row["id"] == sample_id and row["condition"] in CONDITIONS]
             if len(group) != len(CONDITIONS) or len({r["header_sha256"] for r in group}) != 1:
                 raise RuntimeError(f"header identity failed for {sample_id}")
         summary = report(written, seed=int(args.seed), resamples=int(args.bootstrap),
@@ -230,6 +279,12 @@ def evaluate(args: argparse.Namespace) -> int:
               f"{delta['ci95'][1]:+.6f}] n={summary['overall']['n']}")
         print(f"contenute: {summary['registered_subhypothesis']['contained_delta']}")
         print(f"non contenute: {summary['registered_subhypothesis']['not_contained_delta']}")
+        for name, entry in summary.get("width_ladder", {}).items():
+            print(f"{name}: media={entry['mean']:.4f} "
+                  f"delta_vs_base={entry['delta_vs_self_true']['mean']:+.4f} "
+                  f"CI=[{entry['delta_vs_self_true']['ci95'][0]:+.4f}; "
+                  f"{entry['delta_vs_self_true']['ci95'][1]:+.4f}] "
+                  f"contenuto={100.0 * entry['contained_rate']:.1f}%")
         if not summary["gate_passed"]:
             raise RuntimeError("self-window content criterion failed")
         _atomic_json_dump(out / "DONE", summary)

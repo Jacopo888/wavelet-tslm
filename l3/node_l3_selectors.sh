@@ -67,8 +67,16 @@ finish_phase() {
     "$CURRENT_PHASE" "$(( $(date +%s) - START_EPOCH ))" | tee -a "$CURRENT_DIR/phase.log"
 }
 
-export PYTHONPATH="$ROOT"
+export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
 cd "$ROOT"
+# Stesso ambiente esatto della catena Z1-bis: il checkpoint contiene solo i tensori
+# allenabili (TSLM_SAVE_TRAINABLE_ONLY) e dtype, attenzione e revisione devono
+# coincidere, altrimenti la misura non e' confrontabile con il gate percettivo.
+unset PYTORCH_CUDA_ALLOC_CONF WORLD_SIZE RANK LOCAL_RANK MASTER_ADDR MASTER_PORT
+export TSLM_TORCH_DTYPE=bfloat16 TSLM_AMP=1 TSLM_AMP_DTYPE=bfloat16
+export TSLM_ATTN_IMPL=sdpa TSLM_SAVE_TRAINABLE_ONLY=1 TSLM_GRAD_CKPT=1
+export TSLM_QWEN_REVISION="851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+export HF_HUB_DISABLE_PROGRESS_BARS=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1
 
 # ---- preflight -------------------------------------------------------------
 start_phase preflight
@@ -109,7 +117,7 @@ finish_phase
 
 # ---- contenuto sulle finestre autonome (GPU) -------------------------------
 start_phase selfwindow
-CUDA_VISIBLE_DEVICES="$GPU" TSLM_GRAD_CKPT=1 "$PY" "$L3/tools/gate_selfwindow_content.py" \
+CUDA_VISIBLE_DEVICES="$GPU" "$PY" "$L3/tools/gate_selfwindow_content.py" \
   --config "$CONFIG" --checkpoint "$CHECKPOINT" --policy-rows "$POLICY_ROWS" \
   --out-dir "$CURRENT_DIR/content" --min-delta "$MIN_DELTA" --seed "$SEED" \
   2>&1 | tee "$CURRENT_DIR/selfwindow.log"
