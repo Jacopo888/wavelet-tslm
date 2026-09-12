@@ -16,6 +16,8 @@ EXPECTED_VA1_SHA="cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf25
 EXPECTED_TRAIN_SHA="b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
 GPU="${L3_GPU:-0}"
 RUN_ROOT="${L3_Z1BIS_RUN_ROOT:-$HOME/l3/z1bis_$(date -u +%Y%m%dT%H%M%SZ)}"
+TRACE_TIMEOUT_SECONDS="${L3_Z1BIS_TRACE_TIMEOUT_SECONDS:-900}"
+TRACE_PEAK_LIMIT_MIB="${L3_Z1BIS_TRACE_PEAK_LIMIT_MIB:-4096}"
 
 # This is deliberately not inferred from git state. Claude's reviewed-diff handoff
 # must explicitly set the interlock before any GPU work can start.
@@ -30,7 +32,7 @@ if [ "${1:-}" != "--worker" ] && [ -z "${TMUX:-}" ]; then
   mkdir -p "$RUN_ROOT"
   SESSION="l3-z1bis-$(date -u +%Y%m%dT%H%M%SZ)"
   tmux new-session -d -s "$SESSION" \
-    "env L3_Z1BIS_DIFF_REVIEWED=CLAUDE_APPROVED L3_Z1BIS_RUN_ROOT='$RUN_ROOT' L3_GPU='$GPU' L3_ROOT='$ROOT' L3_PYTHON='$PY' L3_VA1_CHECKPOINT='$VA1_CHECKPOINT' L3_TRAIN_PARQUET='$TRAIN_PARQUET' L3_PREVIOUS_ZOOM_ROOT='$PREVIOUS_ROOT' L3_REFERENCE_GATE_ROWS='$REFERENCE_GATE_ROWS' L3_VA1_VAL_JSONL='$VA1_VAL_JSONL' L3_PREVIOUS_VZ1_VAL_JSONL='$PREVIOUS_VZ1_VAL_JSONL' bash '$L3/node_l3_z1bis.sh' --worker >'$RUN_ROOT/worker.log' 2>&1"
+    "env L3_Z1BIS_DIFF_REVIEWED=CLAUDE_APPROVED L3_Z1BIS_RUN_ROOT='$RUN_ROOT' L3_GPU='$GPU' L3_ROOT='$ROOT' L3_PYTHON='$PY' L3_VA1_CHECKPOINT='$VA1_CHECKPOINT' L3_TRAIN_PARQUET='$TRAIN_PARQUET' L3_PREVIOUS_ZOOM_ROOT='$PREVIOUS_ROOT' L3_REFERENCE_GATE_ROWS='$REFERENCE_GATE_ROWS' L3_VA1_VAL_JSONL='$VA1_VAL_JSONL' L3_PREVIOUS_VZ1_VAL_JSONL='$PREVIOUS_VZ1_VAL_JSONL' L3_Z1BIS_TRACE_TIMEOUT_SECONDS='$TRACE_TIMEOUT_SECONDS' L3_Z1BIS_TRACE_PEAK_LIMIT_MIB='$TRACE_PEAK_LIMIT_MIB' bash '$L3/node_l3_z1bis.sh' --worker >'$RUN_ROOT/worker.log' 2>&1"
   echo "L3_Z1BIS_DETACHED session=$SESSION run_root=$RUN_ROOT log=$RUN_ROOT/worker.log"
   exit 0
 fi
@@ -77,6 +79,53 @@ PY
 logged() { "$@" 2>&1 | tee -a "$CURRENT_DIR/phase.log"; }
 require_ok() { [ -f "$RUN_ROOT/$1/OK" ] || { echo "missing $1/OK" >&2; return 1; }; }
 
+run_trace_planner_guarded() {
+  local started now rss_kib state rc
+  [ -r /proc/self/status ] || {
+    echo "trace planner RSS guard requires readable /proc" >&2
+    return 125
+  }
+  env CUDA_VISIBLE_DEVICES="" "$PY" l3/zoom_traces.py \
+    --config "$CONFIG" --out-dir "$CURRENT_DIR/plan" &
+  local trace_pid=$!
+  started=$(date +%s)
+  while [ -r "/proc/$trace_pid/stat" ]; do
+    state=$(awk '{print $3}' "/proc/$trace_pid/stat")
+    [ "$state" != "Z" ] || break
+    now=$(date +%s)
+    if [ "$((now - started))" -ge "$TRACE_TIMEOUT_SECONDS" ]; then
+      echo "trace planner exceeded timeout: ${TRACE_TIMEOUT_SECONDS}s" >&2
+      kill -TERM "$trace_pid" 2>/dev/null || true
+      wait "$trace_pid" 2>/dev/null || true
+      return 124
+    fi
+    rss_kib=$(awk '/^VmRSS:/ {print $2}' "/proc/$trace_pid/status")
+    if [ -z "$rss_kib" ]; then
+      state=$(awk '{print $3}' "/proc/$trace_pid/stat" 2>/dev/null || true)
+      if [ -z "$state" ] || [ "$state" = "Z" ]; then
+        break
+      fi
+      echo "cannot read trace planner RSS from /proc/$trace_pid/status" >&2
+      kill -TERM "$trace_pid" 2>/dev/null || true
+      wait "$trace_pid" 2>/dev/null || true
+      return 125
+    fi
+    if [ "$rss_kib" -gt "$((TRACE_PEAK_LIMIT_MIB * 1024))" ]; then
+      echo "trace planner exceeded RSS limit: ${rss_kib} KiB > ${TRACE_PEAK_LIMIT_MIB} MiB" >&2
+      kill -TERM "$trace_pid" 2>/dev/null || true
+      wait "$trace_pid" 2>/dev/null || true
+      return 137
+    fi
+    sleep 1
+  done
+  if wait "$trace_pid"; then
+    return 0
+  else
+    rc=$?
+    return "$rc"
+  fi
+}
+
 for required in "$PY" "$CONFIG" "$L3/zoom.py" "$L3/zoom_sft.py" \
   "$L3/zoom_traces.py" "$L3/tools/diag_crop_content.py" \
   "$L3/tools/gate_z1bis_operational.py" "$VA1_CHECKPOINT" "$TRAIN_PARQUET" \
@@ -84,6 +133,10 @@ for required in "$PY" "$CONFIG" "$L3/zoom.py" "$L3/zoom_sft.py" \
   [ -e "$required" ] || { echo "missing required input: $required" >&2; exit 1; }
 done
 [ -x "$PY" ]
+case "$TRACE_TIMEOUT_SECONDS:$TRACE_PEAK_LIMIT_MIB" in
+  *[!0-9:]*|:*|*:) echo "trace guards must be positive integer values" >&2; exit 1 ;;
+esac
+[ "$TRACE_TIMEOUT_SECONDS" -gt 0 ] && [ "$TRACE_PEAK_LIMIT_MIB" -gt 0 ]
 [ "$(sha256sum "$VA1_CHECKPOINT" | awk '{print $1}')" = "$EXPECTED_VA1_SHA" ]
 [ "$(sha256sum "$TRAIN_PARQUET" | awk '{print $1}')" = "$EXPECTED_TRAIN_SHA" ]
 [ "$(wc -l < "$VA1_VAL_JSONL")" -eq 520 ]
@@ -123,11 +176,14 @@ finish_phase
 
 require_ok preflight
 start_phase traces
-logged env CUDA_VISIBLE_DEVICES="" "$PY" l3/zoom_traces.py \
-  --config "$CONFIG" --out-dir "$CURRENT_DIR/plan"
-"$PY" - "$CURRENT_DIR/plan/summary.json" "$CURRENT_DIR/summary.json" <<'PY'
+logged run_trace_planner_guarded
+"$PY" - "$CURRENT_DIR/plan/summary.json" "$CURRENT_DIR/summary.json" \
+  "$TRACE_TIMEOUT_SECONDS" "$TRACE_PEAK_LIMIT_MIB" <<'PY'
 import json,sys
 d=json.load(open(sys.argv[1],encoding="utf-8")); assert d["status"]=="DONE" and d["pseudo_recovery_count"]==0
+elapsed=d.get("planner_elapsed_seconds"); peak=d.get("planner_peak_rss_mib")
+assert isinstance(elapsed,(int,float)) and elapsed <= int(sys.argv[3]),elapsed
+assert isinstance(peak,(int,float)) and peak <= int(sys.argv[4]),peak
 json.dump(d,open(sys.argv[2],"w",encoding="utf-8"),indent=2); open(sys.argv[2],"a").write("\n")
 PY
 finish_phase

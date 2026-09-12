@@ -12,9 +12,11 @@ import math
 from pathlib import Path
 import random
 from statistics import fmean, pstdev
+import sys
+import time
 from typing import Any, Mapping, Sequence
 
-from l3.grpo import _atomic_json_dump, _runtime_imports, load_l3_config, sha256_file
+from l3.grpo import REPO_ROOT, _atomic_json_dump, load_l3_config, sha256_file
 from l3.zoom import ZoomAction, channel_names, gold_events, series_length
 
 
@@ -25,6 +27,9 @@ ZOOM_CATEGORIES = {
 }
 DIRECT_CATEGORIES = {"measure_magnitude", "lead_lag_with_magnitude"}
 ALL_CATEGORIES = ZOOM_CATEGORIES | DIRECT_CATEGORIES
+TRAIN_TRACE_COLUMNS = (
+    "id", "category", "length", "n_channels", "channel_names", "answer",
+)
 
 
 @dataclass(frozen=True)
@@ -417,7 +422,7 @@ def validate_trace_plan(
 
 def write_trace_plan(
     out_dir: Path, samples: Sequence[Mapping[str, Any]], config: Mapping[str, Any], seed: int,
-    *, train_sha256: str,
+    *, train_sha256: str, planner_started_at: float | None = None,
 ) -> dict[str, Any]:
     if out_dir.exists():
         raise FileExistsError(f"trace output directory already exists: {out_dir}")
@@ -435,6 +440,9 @@ def write_trace_plan(
             "traces_sha256": sha256_file(rows_path),
             **validated,
         }
+        if planner_started_at is not None:
+            summary["planner_elapsed_seconds"] = time.perf_counter() - planner_started_at
+            summary["planner_peak_rss_mib"] = _peak_rss_mib()
         _atomic_json_dump(out_dir / "summary.json", summary)
         _atomic_json_dump(out_dir / "DONE", summary)
         return summary
@@ -458,20 +466,80 @@ def load_trace_plan(path: Path) -> list[Trace]:
     return traces
 
 
+def _train_parquet_path(config: Mapping[str, Any]) -> Path:
+    dataset = config.get("dataset", {})
+    kwargs = dataset.get("extra_kwargs", {}) if isinstance(dataset, Mapping) else {}
+    train_dir = kwargs.get("train_dir") if isinstance(kwargs, Mapping) else None
+    if not isinstance(train_dir, str) or not train_dir:
+        raise ValueError("dataset.extra_kwargs.train_dir must name the train parquet directory")
+    path = Path(train_dir).expanduser()
+    if not path.is_absolute():
+        # Match AnomalyXLDataset._resolve_repo_path both in the node checkout and
+        # in this repository's ignored local upstream checkout.
+        tslm_root = REPO_ROOT / "timerlm" / "sft" / "tslm"
+        if not tslm_root.is_dir():
+            tslm_root = REPO_ROOT
+        path = tslm_root.parents[1] / path
+    return path / "train.parquet"
+
+
 def _load_train_samples(config: Mapping[str, Any]) -> tuple[list[Mapping[str, Any]], str]:
-    ExperimentConfig, _, _, _, DatasetClass = _runtime_imports(config)
-    experiment = ExperimentConfig.from_dict({k: v for k, v in config.items() if not k.startswith("_")})
-    kwargs = dict(experiment.dataset.extra_kwargs)
-    kwargs["EOS_TOKEN"] = ""
-    dataset = DatasetClass(split="train", **kwargs)
+    """Load only planner metadata; never materialize ``channel_values``."""
+    try:
+        import pyarrow.parquet as pq
+    except ImportError as exc:
+        raise RuntimeError("pyarrow is required to load trace-planner metadata") from exc
+
+    train_path = _train_parquet_path(config)
+    if not train_path.is_file():
+        raise FileNotFoundError(f"missing train parquet: {train_path}")
+    parquet = pq.ParquetFile(train_path)
+    available = set(parquet.schema_arrow.names)
+    missing = [column for column in TRAIN_TRACE_COLUMNS if column not in available]
+    if missing:
+        raise ValueError(f"train parquet missing required column: {missing[0]}")
+
+    table = pq.read_table(train_path, columns=list(TRAIN_TRACE_COLUMNS))
     expected = int(config["rl"]["expected_train_rows"])
-    if len(dataset) != expected:
-        raise RuntimeError(f"expected {expected} train rows, found {len(dataset)}")
-    train_path = Path(dataset.train_dir) / "train.parquet"
+    if table.num_rows != expected:
+        raise RuntimeError(f"expected {expected} train rows, found {table.num_rows}")
     observed = sha256_file(train_path)
     if observed != config["rl"]["train_sha256"]:
         raise RuntimeError(f"train parquet SHA mismatch: {observed}")
-    return [compact_trace_sample(dataset[index]) for index in range(len(dataset))], observed
+
+    samples: list[Mapping[str, Any]] = []
+    for index, row in enumerate(table.to_pylist()):
+        category = str(row["category"])
+        if category not in ALL_CATEGORIES:
+            raise ValueError(f"unexpected category at index {index}: {category}")
+        length = int(row["length"])
+        names = [str(name) for name in (row["channel_names"] or [])]
+        n_channels = int(row["n_channels"])
+        if n_channels != len(names):
+            raise ValueError(
+                f"n_channels/channel_names mismatch at index {index}: "
+                f"{n_channels} != {len(names)}"
+            )
+        compact = compact_trace_sample({
+            "id": row["id"], "category": category, "length": length,
+            "channel_names": names,
+            "time_series": [range(length) for _ in names],
+            "answer": row["answer"],
+        })
+        if series_length(compact) != length:
+            raise ValueError(f"series_length/length mismatch at index {index}")
+        samples.append(compact)
+    return samples, observed
+
+
+def _peak_rss_mib() -> float | None:
+    """Return process peak RSS from getrusage (KiB on Linux, bytes on macOS)."""
+    try:
+        import resource
+    except ImportError:  # pragma: no cover - resource is unavailable on Windows
+        return None
+    peak = float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+    return peak / (1024.0 ** 2 if sys.platform == "darwin" else 1024.0)
 
 
 def main() -> int:
@@ -481,12 +549,20 @@ def main() -> int:
     args = parser.parse_args()
     config = load_l3_config(args.config)
     sft = _trace_config(config)
+    phase_started = time.perf_counter()
     samples, train_sha = _load_train_samples(config)
     summary = write_trace_plan(
         args.out_dir.expanduser().resolve(), samples, config,
         int(sft.get("seed", config.get("seed", 42))), train_sha256=train_sha,
+        planner_started_at=phase_started,
     )
-    print(f"L3_Z1BIS_TRACES_OK rows={summary['rows']} out={args.out_dir}")
+    peak = summary["planner_peak_rss_mib"]
+    peak_text = "unavailable" if peak is None else f"{peak:.1f}"
+    print(
+        f"L3_Z1BIS_TRACES_OK rows={summary['rows']} "
+        f"elapsed_s={summary['planner_elapsed_seconds']:.3f} "
+        f"peak_rss_mib={peak_text} out={args.out_dir}"
+    )
     return 0
 
 

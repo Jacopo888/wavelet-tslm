@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 from pathlib import Path
 import random
@@ -16,6 +17,7 @@ from l3.tools.gate_z1bis_operational import behavioral_metrics
 from l3.zoom import ZoomAction
 from l3.zoom_traces import (
     Trace,
+    _load_train_samples,
     build_trace_plan,
     sample_containing_action,
     validate_trace_plan,
@@ -23,6 +25,36 @@ from l3.zoom_traces import (
 
 
 CONFIG_PATH = ROOT / "l3" / "configs" / "l3_zoom_z1bis.yaml"
+
+
+def _parquet_row(index, category, sentinel):
+    if category == "localize":
+        payload = {"_L": 16, "present": False}
+    elif category == "classify_with_evidence":
+        payload = {"_L": 16, "kind": "No anomaly"}
+    elif category == "localize_all_channels":
+        payload = {"_L": 16, "anomalies": []}
+    elif category == "measure_magnitude":
+        payload = {"_L": 16, "magnitude_sigma": 2.0}
+    else:
+        payload = {"_L": 16, "direction": "independent", "lag_samples": 0}
+    return {
+        "id": f"row-{index}", "category": category, "length": 16,
+        "n_channels": 1, "channel_names": ["ch0"],
+        "channel_values": [[float(sentinel)] * 16],
+        "answer": f"{category}:" + json.dumps(payload),
+    }
+
+
+def _planner_test_config(train_dir, train_sha, rows):
+    config = deepcopy(load_l3_config(CONFIG_PATH))
+    config["dataset"]["extra_kwargs"]["train_dir"] = str(train_dir)
+    config["rl"]["expected_train_rows"] = rows
+    config["rl"]["train_sha256"] = train_sha
+    config["zoom_sft"]["quota_tolerance"] = 0.0
+    for rule in config["zoom_sft"]["categories"].values():
+        rule["replay_fraction"] = 0.0
+    return config
 
 
 def _sample(index, category, *, positive=True, length=16384):
@@ -48,6 +80,57 @@ def _sample(index, category, *, positive=True, length=16384):
         "channel_names": names, "time_series": [range(length) for _ in names],
         "answer": f"{category}:" + json.dumps(payload),
     }
+
+
+def test_train_loader_projects_metadata_and_ignores_channel_values(tmp_path, monkeypatch):
+    pa = pytest.importorskip("pyarrow")
+    pq = pytest.importorskip("pyarrow.parquet")
+    from l3.grpo import sha256_file
+    from l3.zoom_traces import TRAIN_TRACE_COLUMNS
+
+    categories = sorted(load_l3_config(CONFIG_PATH)["zoom_sft"]["categories"])
+    plans = []
+    real_read_table = pq.read_table
+    projected_columns = []
+
+    def checked_read_table(*args, **kwargs):
+        projected_columns.append(kwargs.get("columns"))
+        return real_read_table(*args, **kwargs)
+
+    monkeypatch.setattr(pq, "read_table", checked_read_table)
+    for variant, sentinel in enumerate((123.0, -987.0)):
+        train_dir = tmp_path / f"variant-{variant}"
+        train_dir.mkdir()
+        train_path = train_dir / "train.parquet"
+        rows = [_parquet_row(index, category, sentinel)
+                for index, category in enumerate(categories)]
+        pq.write_table(pa.Table.from_pylist(rows), train_path)
+        config = _planner_test_config(train_dir, sha256_file(train_path), len(rows))
+        samples, observed_sha = _load_train_samples(config)
+        assert observed_sha == config["rl"]["train_sha256"]
+        assert all(
+            isinstance(channel, range) and len(channel) == sample["length"]
+            for sample in samples for channel in sample["time_series"]
+        )
+        plans.append(build_trace_plan(samples, config, 20260912))
+
+    assert projected_columns == [list(TRAIN_TRACE_COLUMNS), list(TRAIN_TRACE_COLUMNS)]
+    assert "channel_values" not in TRAIN_TRACE_COLUMNS
+    assert plans[0] == plans[1]
+
+
+def test_train_loader_fails_closed_on_missing_required_column(tmp_path):
+    pa = pytest.importorskip("pyarrow")
+    pq = pytest.importorskip("pyarrow.parquet")
+    from l3.grpo import sha256_file
+
+    train_path = tmp_path / "train.parquet"
+    row = _parquet_row(0, "localize", 1.0)
+    del row["answer"]
+    pq.write_table(pa.Table.from_pylist([row]), train_path)
+    config = _planner_test_config(tmp_path, sha256_file(train_path), 1)
+    with pytest.raises(ValueError, match=r"missing required column: answer"):
+        _load_train_samples(config)
 
 
 def test_uniform_containing_start_has_variable_internal_position():
@@ -136,3 +219,7 @@ def test_config_and_launcher_freeze_the_predesign_and_review_interlock():
     assert driver.index("start_phase perceptual_gate") < driver.index("start_phase operational_gate")
     forbidden_test_split = "--split" + " test"
     assert "--mode policy" in driver and forbidden_test_split not in driver
+    assert 'TRACE_TIMEOUT_SECONDS="${L3_Z1BIS_TRACE_TIMEOUT_SECONDS:-900}"' in driver
+    assert 'TRACE_PEAK_LIMIT_MIB="${L3_Z1BIS_TRACE_PEAK_LIMIT_MIB:-4096}"' in driver
+    assert "run_trace_planner_guarded" in driver
+    assert 'CUDA_VISIBLE_DEVICES=""' in driver
