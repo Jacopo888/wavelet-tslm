@@ -1,0 +1,49 @@
+# W-GRPO: affinamento della scelta della finestra a partire da vz1bis.
+# Ramo 1 della catena notturna. Step 0 resta fra i candidati.
+base_config: ../../kaggle/patch/wavelet_precise_va1.yaml
+
+training:
+  eval_max_new_tokens: 500
+
+rl:
+  contract: zoom
+  prompt_split: train
+  expected_train_rows: 4488
+  train_sha256: b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d
+  initial_checkpoint_sha256: 924110a5a344dc802c8eee646320f0c7035572c69e1125c714a3db737e8fd23f
+  G: 8
+  prompts_per_step: 2
+  temperature: 0.7
+  top_p: 0.95
+  do_sample: true
+  lr: 1.0e-5
+  weight_decay: 0.0
+  clip_eps: 0.2
+  kl_coef: 0.01
+  advantage_eps: 1.0e-8
+  format_penalty: 0.0
+  max_grad_norm: 1.0
+  trainable: lora
+  steps: 150
+  checkpoint_every: 25
+  seed: 20260913
+  peak_limit_mib: 22528
+  action_max_new_tokens: 500
+  pool_seed: 20260913
+  pool_size: 200
+  pool_per_category: 50
+  resample_every: 100
+  excluded_categories: [lead_lag_with_magnitude]
+  init_prompt_indices: [46, 348, 617, 3484, 4030]
+  memory_gate_indices: [3804, 3930]
+  train_prompt_expectations:
+    "3804": {id: ec313c0ed31f8e1c, category: localize_all_channels, length: 131072, n_channels: 16}
+    "3930": {id: 2e0a358df6184934, category: localize_all_channels, length: 131072, n_channels: 16}
+  monitor:
+    full_val_steps: [50, 100, 150, 200]
+    tie_tolerance: 0.002
+    minimum_improvement: 0.005
+    stale_full_validations: 2
+    parsability_floor: 0.95
+    informative_group_floor: 0.50
+    window_groups: 50
