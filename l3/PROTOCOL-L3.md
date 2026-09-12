@@ -434,3 +434,89 @@ Ogni fase richiede il marker `OK` della precedente, usa una directory nuova e
 scrive `summary.json`, log e marker terminale `OK` oppure `FAILED`. Il worker deve
 essere lanciato in tmux con redirezione esplicita su file: il self-detach senza
 redirezione perde l'output operativo.
+
+## Z1-bis — pilot SFT a una sola azione (congelato il 12/09/2026)
+
+Z1-bis risponde soltanto alla domanda se il contenuto di una finestra utile porta
+un vantaggio quando il centro dell'header non è più una scorciatoia. Riparte dal
+checkpoint va1 con SHA-256 `cd7238…bf2531`; encoder wavelet e proiettore restano
+congelati e sono ottimizzati soltanto i 32 tensori LoRA. Non modifica architettura,
+RoPE, v2, v3 o `kaggle/patch/`. È ammessa al massimo una azione; la risposta usa
+sempre coordinate assolute.
+
+### Tracce precomputate e quote
+
+Prima di caricare l'optimizer, `l3/zoom_traces.py` produce un manifest train-only
+ordinato di 4488 righe, sigillato con SHA-256 e consumato senza ricampionamento da
+`zoom_sft.py`. Ogni categoria contiene esattamente il 15% (arrotondato al numero
+intero più vicino, tolleranza dichiarata ±2 punti percentuali) di replay del prompt
+va1 originale. Le righe restanti seguono regole deterministiche:
+
+- `measure_magnitude`, `lead_lag_with_magnitude` e le label senza anomalia hanno
+  una sola risposta diretta nel nuovo prompt con azione opzionale;
+- `localize`, `classify_with_evidence` con anomalia e
+  `localize_all_channels` non vuoto hanno azione e risposta in due segmenti;
+- non esistono finestre euristiche, crop vuoti con risposta gold o fallback da un
+  crop insufficiente a una risposta globale. Ogni crop supervisionato deve
+  contenere per intero l'evento gold prescelto, altrimenti la fase fallisce.
+
+Per ogni categoria zoom, le ampiezze 1024/2048/4096 hanno pesi rispettivi
+0,34/0,33/0,33 e quote osservate entro ±2 punti. Scelti evento e ampiezza, lo start
+è uniforme su tutti gli interi in-bounds che contengono l'evento completo. Nel
+multicanale l'evento determina anche il canale, senza applicare offset ad altri
+canali. La posizione registrata è il centro gold normalizzato nella finestra.
+
+Il manifest riporta conteggi per sorgente e categoria, conteggi delle ampiezze e,
+per categoria e banda L16k/L32k/L64k/L128k, istogramma a dieci bin, media,
+deviazione standard e quota centrata. “Centrata” significa entro 0,01 dal centro
+normalizzato. Ogni strato deve avere media in `[0,35; 0,65]`, deviazione standard
+almeno 0,15 e quota centrata non superiore al 15%. Qualsiasi violazione chiude la
+run prima del training. L'SFT è una sola epoca, batch 1, LR `1e-4`, weight decay
+`0,01`, warmup `0,03`, seed `20260912`.
+
+### Gate percettivo a pesi fissi
+
+Il gate usa gli stessi 208 ID positivi e lo stesso ordine del gate precedente,
+sigillati dall'hash `34ccb284…bebe4a`: 80 localize, 80 classify e 48 all-channels.
+Per ogni ID costruisce una finestra non centrata contenente il gold e valuta lo
+stesso checkpoint in quattro condizioni:
+
+1. crop reale fuori centro;
+2. valori di un'altra finestra event-free dello stesso canale e ampiezza;
+3. valori zero;
+4. nessun crop, primo turno nel nuovo formato opzionale (ramo diretto).
+
+Le condizioni 1–3 condividono esattamente azione, header, coordinate, placeholder
+e numero di token; il relativo fingerprint è verificato per ID. Cambia soltanto il
+tensore della finestra aggiunta. Il gate usa bootstrap appaiato 10.000, seed
+`20260912`. Fra swap e zero si sceglie come controllo quello con primary medio più
+alto; passa soltanto se `true − best_control >= +0,05` e il limite inferiore della
+CI95 è maggiore di zero. Si riportano anche i medesimi confronti per ciascuna delle
+tre categorie, senza imporre una soglia separata per categoria. Il canale e la
+regione restano oracle: il gate misura il contributo aggiuntivo del contenuto dato
+un crop utile, non una policy autonoma.
+
+### Gate operativo val520
+
+Solo dopo il gate percettivo, la policy greedy è valutata sull'intera validation
+520 nel formato con azione opzionale. I JSONL va1 senza zoom e vz1 precedente
+devono avere le stesse identità ordinate; entrambi sono riportati con bootstrap
+appaiato 10.000. Il pass/fail usa va1: delta primary minimo 0,00 in aggregato,
+classify, localize e all-channels; è ammessa una regressione massima di 0,02 in
+measure-magnitude e lead-lag. Il precedente vz1 è solo un riferimento descrittivo.
+
+Sono inoltre fissati prima della run: azioni valide non meno del 20% e non più del
+60% degli episodi, azioni invalide al massimo 2%, risposte finali vuote al massimo
+2%, falsi negativi sui positivi al massimo 15% e falsi positivi sui negativi al
+massimo 15%. Il summary riporta anche ramo diretto e azione per categoria,
+positivi risolti direttamente, azioni sui negativi ed errori non parsabili. Non si
+usa la soglia storica 0,301 sul sottoinsieme positivo.
+
+### Esecuzione e perimetro
+
+`l3/node_l3_z1bis.sh` esegue nell'ordine test CPU, tracce, SFT, gate percettivo e
+gate operativo; ogni fase richiede il marker `OK` precedente. Il launcher rifiuta
+di partire finché la revisione del diff non imposta esplicitamente
+`L3_Z1BIS_DIFF_REVIEWED=CLAUDE_APPROVED`, si stacca in tmux e redirige tutto in
+`worker.log`. Non accede al test800 e non avvia due zoom, GRPO, risposte relative,
+nuove architetture o parametri percettivi allenabili.

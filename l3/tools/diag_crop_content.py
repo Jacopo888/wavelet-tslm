@@ -1,252 +1,353 @@
-"""Gate a pesi fissi (Codex, 12/09 punto 7.1): il guadagno dell'oracle viene dal CONTENUTO
-della finestra o dalle sue COORDINATE?
+#!/usr/bin/env python3
+"""Fail-closed Z1-bis perceptual gate on the fixed 208 positive validation IDs.
 
-Stesso checkpoint vz1, stesso formato a due turni, stesso header, stessa azione, stesso numero
-di token percettivi; cambia SOLO il tensore della finestra iniettato nell'encoder.
-
-Condizioni:
-  true       finestra gold stretta, contenuto vero              (riferimento)
-  swap       header IDENTICO a `true`, contenuto preso da un'altra finestra dello stesso
-             canale, stessa lunghezza, priva di eventi gold     (test del contenuto)
-  zero       header IDENTICO a `true`, contenuto azzerato       (controllo fuori distribuzione)
-  offcenter  header VERO di una finestra che contiene il gold in posizione interna casuale
-             (10-90%), stessa lunghezza                         (il modello legge la posizione?)
-
-Sottoinsieme stratificato fissato PRIMA dell'esperimento (seed 20260912), niente prime-80.
-Uso: diag_crop_content.py <out_dir> [n_per_stratum]
+The three crop conditions use the same checkpoint, sample, action text, truthful
+header, and token layout.  Only the values encoded for the added crop differ.
 """
+
+from __future__ import annotations
+
+import argparse
+from collections import Counter, defaultdict
+import hashlib
 import json
-import random
-import sys
+import math
 from pathlib import Path
+import random
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 import torch
 
-sys.path.insert(0, ".")
-from l3.zoom import (ZoomAction, _generate, _load_eval_runtime, build_turn2_sample,
-                     channel_names, clamp_zoom_window, gold_events, series_length)
-from l3.grpo import _autocast_for
-
-OUT = Path(sys.argv[1] if len(sys.argv) > 1 else "/root/l3/zoom_20260911c/Z1/gate")
-N_PER = int(sys.argv[2]) if len(sys.argv) > 2 else 40
-SEED = 20260912
-CFG = "l3/configs/l3_zoom_z1.yaml"
-CKPT = "/root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt"
-MARGIN = 0.25
-
-model, dataset, _ = _load_eval_runtime(CFG, CKPT, "val")
-model.eval()
-OUT.mkdir(parents=True, exist_ok=True)
-
-
-def payload(text):
-    text = text or ""
-    i = text.find("{")
-    if i < 0:
-        return {}
-    depth, instr, esc = 0, False, False
-    for j, ch in enumerate(text[i:], i):
-        if instr:
-            if esc:
-                esc = False
-            elif ch == "\\":
-                esc = True
-            elif ch == '"':
-                instr = False
-        elif ch == '"':
-            instr = True
-        elif ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                try:
-                    return json.loads(text[i:j + 1])
-                except Exception:
-                    return {}
-    return {}
+from l3.grpo import _atomic_json_dump, _autocast_for, _write_jsonl, load_l3_config
+from l3.paired_eval_l3 import bootstrap_mean
+from l3.zoom import (
+    _generate,
+    _load_eval_runtime,
+    _model_inputs,
+    build_turn2_sample,
+    build_zoom_block,
+    channel_names,
+    gold_events,
+    parse_zoom_decision,
+    series_length,
+    with_action_instruction,
+    zoom_header,
+)
+from l3.zoom_traces import random_gold_action
 
 
-def stratify():
-    """Fixed stratified subset: category x (positive/negative) x length band."""
-    rows = []
-    for index in range(len(dataset)):
-        sample = dataset[index]
-        gold = gold_events(sample)
-        category = str(sample["category"])
-        length = int(sample.get("length", 0))
-        band = "short" if length <= 32768 else "long"
-        rows.append((index, category, bool(gold), band))
-    rng = random.Random(SEED)
-    strata = {}
-    for index, category, positive, band in rows:
-        if category == "lead_lag_with_magnitude":
-            continue  # escluso dal ramo zoom (decisione operativa, vedi review §6)
-        strata.setdefault((category, positive, band), []).append(index)
-    chosen = []
-    for key in sorted(strata):
-        pool = sorted(strata[key])
-        rng.shuffle(pool)
-        take = N_PER if key[1] else max(6, N_PER // 3)
-        chosen.extend(pool[:min(take, len(pool))])
-    return sorted(set(chosen))
+CONDITIONS = (
+    "offcenter_true",
+    "offcenter_swap",
+    "offcenter_zero",
+    "direct_new_format",
+)
 
 
-def oracle_narrow(sample):
-    events = gold_events(sample)
-    if not events:
-        return None
+def crop_header_fingerprints(action: Any) -> dict[str, str]:
+    """Fingerprint the complete textual coordinate disclosure for crop controls."""
+    digest = hashlib.sha256(
+        (action.text() + "\n" + zoom_header(action)).encode("utf-8")
+    ).hexdigest()
+    return {condition: digest for condition in CONDITIONS[:3]}
+
+
+def _json_lines(path: Path) -> list[dict[str, Any]]:
+    with path.open(encoding="utf-8") as handle:
+        rows = [json.loads(line) for line in handle if line.strip()]
+    if not rows:
+        raise ValueError(f"empty JSONL: {path}")
+    return rows
+
+
+def fixed_reference_rows(path: Path, gate: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows = [row for row in _json_lines(path) if row.get("condition") == "true"]
+    expected = int(gate["expected_ids"])
+    if len(rows) != expected or len({str(row.get("id", "")) for row in rows}) != expected:
+        raise ValueError(f"reference gate must contain {expected} unique true-condition IDs")
+    ids = [str(row["id"]) for row in rows]
+    digest = hashlib.sha256(json.dumps(ids, separators=(",", ":")).encode("utf-8")).hexdigest()
+    if digest != gate["expected_id_order_sha256"]:
+        raise ValueError(f"reference ID/order SHA mismatch: {digest}")
+    counts = Counter(str(row["category"]) for row in rows)
+    expected_counts = {str(key): int(value) for key, value in gate["expected_categories"].items()}
+    if dict(counts) != expected_counts:
+        raise ValueError(f"reference category coverage mismatch: {dict(counts)}")
+    return rows
+
+
+def _overlaps(start: int, end: int, event: Mapping[str, Any]) -> bool:
+    return min(end, int(event["end"])) > max(start, int(event["start"]))
+
+
+def replacement_values(
+    sample: Mapping[str, Any], action: Any, rng: random.Random,
+) -> tuple[np.ndarray, int]:
+    """Choose another same-channel, same-width window containing no gold event."""
     names = channel_names(sample)
-    event = min(events, key=lambda e: (-(e["end"] - e["start"]),
-                                       names.index(str(e["channel"])), e["start"]))
-    width = max(1, int(event["end"]) - int(event["start"]))
-    extra = int(np.ceil(width * MARGIN))
-    window = clamp_zoom_window(int(event["start"]) - extra, int(event["end"]) + extra,
-                              series_length(sample))
-    if window is None:
-        return None
-    return ZoomAction(str(event["channel"]), *window, series_length(sample)), event
+    values = np.asarray(sample["time_series"][names.index(action.channel)], dtype=np.float32)
+    width = action.window_len
+    events = [event for event in gold_events(sample) if str(event["channel"]) == action.channel]
+    maximum = values.size - width
+    if maximum < 0:
+        raise ValueError("replacement width exceeds channel length")
+    candidates = {0, maximum}
+    candidates.update(rng.randint(0, maximum) for _ in range(min(512, maximum + 1)))
+    clean = [start for start in candidates
+             if start != action.start
+             and all(not _overlaps(start, start + width, event) for event in events)]
+    if not clean:
+        # Deterministic complete fallback search is diagnostic selection, not a
+        # pseudo-recovery training trajectory.  It still fails if none exists.
+        clean = [start for start in range(maximum + 1)
+                 if start != action.start
+                 and all(not _overlaps(start, start + width, event) for event in events)]
+    if not clean:
+        raise ValueError("no event-free replacement window exists")
+    start = max(clean, key=lambda candidate: (abs(candidate - action.start), -candidate))
+    return values[start:start + width].copy(), start
 
 
-def offcenter_action(sample, event, width, rng):
-    """Truthful header: window of the same width containing the gold at 10-90% inside."""
-    length = series_length(sample)
-    gold_lo, gold_hi = int(event["start"]), int(event["end"])
-    gold_w = max(1, gold_hi - gold_lo)
-    frac = rng.uniform(0.10, 0.90)
-    start = int(round(gold_lo - frac * (width - gold_w)))
-    window = clamp_zoom_window(start, start + width, length)
-    if window is None:
-        return None
-    return ZoomAction(str(event["channel"]), *window, length)
+def _encode_original(model: Any, sample: Mapping[str, Any]) -> torch.Tensor:
+    original = model.prepare_batch([sample], training=False)
+    series = original["time_series"]
+    with torch.no_grad(), _autocast_for(model):
+        return model._encode_and_project(series).detach()
 
 
-def swap_values(sample, action, rng):
-    """Values from another window of the same channel, same length, gold-free."""
-    names = channel_names(sample)
-    channel = np.asarray(sample["time_series"][names.index(action.channel)], dtype=np.float32)
-    length, width = channel.size, action.window_len
-    bad = [(int(e["start"]), int(e["end"])) for e in gold_events(sample)
-           if str(e["channel"]) == action.channel]
-    candidates = []
-    for start in range(0, max(1, length - width), max(1, width // 2)):
-        end = start + width
-        if end > length:
-            break
-        if all(min(end, b_hi) - max(start, b_lo) <= 0 for b_lo, b_hi in bad):
-            centre = (start + end) / 2
-            candidates.append((abs(centre - (action.start + action.end) / 2), start))
-    if not candidates:
-        return None
-    candidates.sort(reverse=True)
-    start = candidates[0][1]
-    return channel[start:start + width].copy(), start
-
-
-def run(sample, action, values):
-    """Identical text/tokens; only the injected zoom features differ."""
+def run_crop(
+    model: Any, sample: Mapping[str, Any], action: Any, values: np.ndarray,
+    original_features: torch.Tensor, max_tokens: int,
+) -> str:
     turn2 = build_turn2_sample(sample, action)
     prepared = model.prepare_batch([turn2], training=False)
     prepared.pop("labels", None)
-    original = model.prepare_batch([sample], training=False)
-    series = original["time_series"]
-    tensor = torch.as_tensor(np.asarray(values, dtype=np.float32), dtype=series.dtype,
-                             device=series.device).unsqueeze(0)
+    tensor = torch.as_tensor(
+        np.asarray(values, dtype=np.float32), dtype=torch.float32,
+        device=original_features.device,
+    ).unsqueeze(0)
     with torch.no_grad(), _autocast_for(model):
-        features = torch.cat((model._encode_and_project(series),
-                              model._encode_and_project(tensor)), dim=0).detach()
-    prepared["_l3_ts_features"] = features
-    ids = _generate(model, prepared, sample=False, max_new_tokens=500)
+        crop_features = model._encode_and_project(tensor).detach()
+    prepared["_l3_ts_features"] = torch.cat((original_features, crop_features), dim=0)
+    tokenizer = getattr(model, "text_tokenizer", None)
+    if tokenizer is not None:
+        pad_id = tokenizer(model.TS_PAD_TOKEN, add_special_tokens=False)["input_ids"][0]
+        placeholders = int((prepared["input_ids"] == pad_id).sum().item())
+        if placeholders != int(prepared["_l3_ts_features"].shape[0]):
+            raise RuntimeError("perceptual feature/placeholder mismatch")
+    ids = _generate(model, prepared, sample=False, max_new_tokens=max_tokens)
     return model.tokenizer.batch_decode(ids, skip_special_tokens=True)[0].strip()
 
 
-def iou(a, b):
-    inter = max(0, min(a[1], b[1]) - max(a[0], b[0]))
-    union = (a[1] - a[0]) + (b[1] - b[0]) - inter
-    return inter / union if union > 0 else 0.0
+def run_direct(model: Any, sample: Mapping[str, Any], max_tokens: int) -> tuple[str, str]:
+    prompt = _model_inputs(model, with_action_instruction(sample))
+    ids = _generate(model, prompt, sample=False, max_new_tokens=max_tokens)
+    text = model.tokenizer.batch_decode(ids, skip_special_tokens=True)[0].strip()
+    decision = parse_zoom_decision(text, channel_names(sample), series_length(sample))
+    return text, decision.kind
 
 
-def pred_interval(text):
-    p = payload(text)
-    if isinstance(p.get("start"), int) and isinstance(p.get("end"), int) and p["start"] < p["end"]:
-        return int(p["start"]), int(p["end"])
-    return None
-
-
-indices = stratify()
-print(f"GATE subset n={len(indices)} seed={SEED}", flush=True)
-conditions = ("true", "swap", "zero", "offcenter")
-acc = {c: {} for c in conditions}
-rng = random.Random(SEED)
-with (OUT / "rows.jsonl").open("w", encoding="utf-8") as handle:
-    for count, index in enumerate(indices, 1):
-        sample = dataset[index]
-        category = str(sample["category"])
-        built = oracle_narrow(sample)
-        gold = gold_events(sample)
-        if built is None:
-            continue
-        action, event = built
-        variants = {"true": (action, None), "zero": (action, np.zeros(action.window_len, np.float32))}
-        swapped = swap_values(sample, action, rng)
-        if swapped is not None:
-            variants["swap"] = (action, swapped[0])
-        off = offcenter_action(sample, event, action.window_len, rng)
-        if off is not None:
-            variants["offcenter"] = (off, None)
-        for name, (act, values) in variants.items():
-            if values is None:
-                index_channel = channel_names(sample).index(act.channel)
-                channel = np.asarray(sample["time_series"][index_channel], dtype=np.float32)
-                values = channel[act.start:act.end].copy()
-            text = run(sample, act, values)
-            result = dataset.evaluate_answer(text, sample)
-            primary = float(result[dataset.primary_metric])
-            bucket = acc[name].setdefault(category, {"n": 0, "primary": 0.0, "iou": 0.0,
-                                                     "iou_n": 0, "empty": 0})
-            bucket["n"] += 1
-            bucket["primary"] += primary
-            bucket["empty"] += int(not text)
-            pi = pred_interval(text)
-            if pi and gold:
-                bucket["iou"] += max(iou(pi, (int(g["start"]), int(g["end"])))
-                                     for g in gold if str(g["channel"]) == act.channel) \
-                    if any(str(g["channel"]) == act.channel for g in gold) else 0.0
-                bucket["iou_n"] += 1
-            handle.write(json.dumps({
-                "index": index, "id": str(sample.get("id", "")), "category": category,
-                "condition": name, "zoom": {"channel": act.channel, "start": act.start,
-                                            "end": act.end, "width": act.window_len},
-                "prediction": text, "primary": primary,
-                "ground_truth": dataset.get_ground_truth(sample),
-            }, sort_keys=True) + "\n")
-            handle.flush()
-        if count % 20 == 0:
-            print(f"GATE {count}/{len(indices)} " + " ".join(
-                f"{c}={sum(v['primary'] for v in acc[c].values())/max(1,sum(v['n'] for v in acc[c].values())):.3f}"
-                for c in conditions), flush=True)
-
-summary = {"subset_size": len(indices), "seed": SEED, "checkpoint": CKPT,
-           "margin": MARGIN, "conditions": {}}
-for name in conditions:
-    per_category = {}
-    for category, v in sorted(acc[name].items()):
-        per_category[category] = {
-            "n": v["n"], "primary": v["primary"] / max(1, v["n"]),
-            "iou_mean": v["iou"] / max(1, v["iou_n"]), "iou_n": v["iou_n"],
-            "empty": v["empty"],
-        }
-    total_n = sum(v["n"] for v in acc[name].values())
-    summary["conditions"][name] = {
-        "n": total_n,
-        "primary": sum(v["primary"] for v in acc[name].values()) / max(1, total_n),
-        "per_category": per_category,
+def _paired_section(
+    rows: Sequence[Mapping[str, Any]], category: str | None, seed: int, resamples: int,
+) -> dict[str, Any]:
+    selected = [row for row in rows if category is None or row["category"] == category]
+    by_condition = {
+        condition: [float(row["primary"]) for row in selected if row["condition"] == condition]
+        for condition in CONDITIONS
     }
-(OUT / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n",
-                                  encoding="utf-8")
-print("GATE_DONE")
-for name in conditions:
-    c = summary["conditions"][name]
-    print(name, "n", c["n"], "primary", round(c["primary"], 4),
-          {k: (round(v["primary"], 3), round(v["iou_mean"], 3)) for k, v in c["per_category"].items()})
+    counts = {condition: len(values) for condition, values in by_condition.items()}
+    if len(set(counts.values())) != 1 or not next(iter(counts.values()), 0):
+        raise ValueError(f"unpaired perceptual rows: {counts}")
+    controls = ("offcenter_swap", "offcenter_zero")
+    control = max(controls, key=lambda name: sum(by_condition[name]) / len(by_condition[name]))
+    true = by_condition["offcenter_true"]
+    differences = [a - b for a, b in zip(true, by_condition[control])]
+    return {
+        "n": len(true),
+        "condition_means": {
+            name: sum(values) / len(values) for name, values in by_condition.items()
+        },
+        "best_control": control,
+        "true_minus_best_control": bootstrap_mean(
+            differences, seed=seed, resamples=resamples,
+        ),
+    }
+
+
+def perceptual_report(
+    rows: Sequence[Mapping[str, Any]], gate: Mapping[str, Any], *, config_path: Path,
+    checkpoint: Path, reference_rows: Path,
+) -> dict[str, Any]:
+    seed = int(gate["seed"])
+    resamples = int(gate["bootstrap_resamples"])
+    overall = _paired_section(rows, None, seed, resamples)
+    categories = {
+        category: _paired_section(rows, category, seed + ordinal + 1, resamples)
+        for ordinal, category in enumerate(sorted(gate["expected_categories"]))
+    }
+    delta = overall["true_minus_best_control"]
+    threshold = float(gate["min_true_minus_best_control"])
+    checks = {
+        "effect_at_least_threshold": delta["mean"] >= threshold,
+        "ci95_excludes_zero": delta["ci95"][0] > 0.0,
+    }
+    if not bool(gate.get("require_ci_low_above_zero", True)):
+        checks["ci95_excludes_zero"] = True
+    condition_counts = Counter(str(row["condition"]) for row in rows)
+    expected = int(gate["expected_ids"])
+    if condition_counts != Counter({condition: expected for condition in CONDITIONS}):
+        raise ValueError(f"perceptual condition coverage mismatch: {dict(condition_counts)}")
+    direct_decisions = Counter(
+        str(row["direct_decision"]) for row in rows
+        if row["condition"] == "direct_new_format"
+    )
+    return {
+        "status": "DONE" if all(checks.values()) else "FAILED",
+        "format": "l3_z1bis_perceptual_gate_v1",
+        "gate_passed": all(checks.values()), "checks": checks,
+        "criterion": {
+            "min_true_minus_best_control": threshold,
+            "bootstrap_resamples": resamples, "seed": seed,
+        },
+        "overall": overall, "per_category": categories,
+        "condition_counts": dict(condition_counts),
+        "header_identity_verified_ids": expected,
+        "direct_decisions": dict(direct_decisions),
+        "inputs": {
+            "config": str(config_path.resolve()), "checkpoint": str(checkpoint.resolve()),
+            "reference_rows": str(reference_rows.resolve()),
+        },
+    }
+
+
+def evaluate(args: argparse.Namespace) -> int:
+    out = args.out_dir.expanduser().resolve()
+    if out.exists():
+        raise FileExistsError(f"perceptual-gate output already exists: {out}")
+    out.mkdir(parents=True)
+    try:
+        config_path = args.config.expanduser().resolve()
+        checkpoint = args.checkpoint.expanduser().resolve()
+        reference_path = args.reference_rows.expanduser().resolve()
+        config = load_l3_config(config_path)
+        sft = config["zoom_sft"]
+        gate = config["perceptual_gate"]
+        references = fixed_reference_rows(reference_path, gate)
+        model, dataset, _ = _load_eval_runtime(str(config_path), str(checkpoint), "val")
+        model.eval()
+        by_id: dict[str, int] = {}
+        for index in range(len(dataset)):
+            sample_id = str(dataset[index].get("id", ""))
+            if sample_id in by_id:
+                raise ValueError(f"duplicate validation ID: {sample_id}")
+            by_id[sample_id] = index
+        missing = [str(row["id"]) for row in references if str(row["id"]) not in by_id]
+        if missing:
+            raise ValueError(f"fixed perceptual IDs missing from validation: {missing[:3]}")
+
+        written: list[dict[str, Any]] = []
+        rows_path = out / "rows.jsonl"
+        with rows_path.open("x", encoding="utf-8") as handle:
+            for ordinal, reference in enumerate(references):
+                sample = dataset[by_id[str(reference["id"])]]
+                if str(sample["category"]) != str(reference["category"]):
+                    raise ValueError("fixed-ID category drift")
+                if (reference.get("ground_truth") is not None
+                        and str(reference["ground_truth"]) != str(dataset.get_ground_truth(sample))):
+                    raise ValueError("fixed-ID ground-truth drift")
+                if not gold_events(sample):
+                    raise ValueError("perceptual gate contains a non-positive row")
+                rng = random.Random(int(gate["seed"]) + ordinal * 104729)
+                action, event, position = random_gold_action(sample, sft, rng)
+                radius = float(sft["position"]["centered_radius"])
+                if abs(position - 0.5) <= radius:
+                    # The gate is explicitly off-centre. Draw uniformly again from
+                    # the valid starts until outside the declared centred band.
+                    for _ in range(1000):
+                        action, event, position = random_gold_action(sample, sft, rng)
+                        if abs(position - 0.5) > radius:
+                            break
+                    else:
+                        raise ValueError("could not construct an off-centre crop")
+                header_hashes = crop_header_fingerprints(action)
+                if len(set(header_hashes.values())) != 1:
+                    raise RuntimeError("crop headers are not identical")
+                header_sha = header_hashes["offcenter_true"]
+                _, true_values = build_zoom_block(sample, action)
+                swap_values, replacement_start = replacement_values(sample, action, rng)
+                zero_values = np.zeros(action.window_len, dtype=np.float32)
+                original_features = _encode_original(model, sample)
+                predictions = {
+                    "offcenter_true": run_crop(
+                        model, sample, action, true_values, original_features, args.max_tokens,
+                    ),
+                    "offcenter_swap": run_crop(
+                        model, sample, action, swap_values, original_features, args.max_tokens,
+                    ),
+                    "offcenter_zero": run_crop(
+                        model, sample, action, zero_values, original_features, args.max_tokens,
+                    ),
+                }
+                direct_text, direct_kind = run_direct(model, sample, args.max_tokens)
+                predictions["direct_new_format"] = direct_text
+                for condition in CONDITIONS:
+                    prediction = predictions[condition]
+                    result = dataset.evaluate_answer(prediction, sample)
+                    primary = float(result[dataset.primary_metric])
+                    if not math.isfinite(primary):
+                        raise ValueError("non-finite perceptual score")
+                    row = {
+                        "index": by_id[str(reference["id"])], "id": str(reference["id"]),
+                        "category": str(sample["category"]),
+                        "ground_truth": dataset.get_ground_truth(sample),
+                        "condition": condition, "prediction": prediction, "primary": primary,
+                        "zoom": None if condition == "direct_new_format" else {
+                            "channel": action.channel, "start": action.start, "end": action.end,
+                            "window_len": action.window_len, "gold_position": position,
+                            "gold_start": int(event["start"]), "gold_end": int(event["end"]),
+                        },
+                        "header_sha256": None if condition == "direct_new_format" else header_sha,
+                        "replacement_start": replacement_start if condition == "offcenter_swap" else None,
+                        "direct_decision": direct_kind if condition == "direct_new_format" else None,
+                    }
+                    _write_jsonl(handle, row)
+                    written.append(row)
+                del original_features
+                print(f"Z1BIS_PERCEPTUAL {ordinal + 1}/{len(references)}", flush=True)
+        for sample_id in {row["id"] for row in written}:
+            crop_rows = [row for row in written
+                         if row["id"] == sample_id and row["condition"] != "direct_new_format"]
+            if len(crop_rows) != 3 or len({row["header_sha256"] for row in crop_rows}) != 1:
+                raise RuntimeError(f"header identity failed for {sample_id}")
+        report = perceptual_report(
+            written, gate, config_path=config_path, checkpoint=checkpoint,
+            reference_rows=reference_path,
+        )
+        _atomic_json_dump(out / "summary.json", report)
+        if not report["gate_passed"]:
+            raise RuntimeError("Z1-bis perceptual criterion failed")
+        _atomic_json_dump(out / "DONE", report)
+        print(f"L3_Z1BIS_PERCEPTUAL_OK delta={report['overall']['true_minus_best_control']['mean']:+.6f}")
+        return 0
+    except Exception as exc:
+        failed = out / "FAILED"
+        if not failed.exists():
+            _atomic_json_dump(failed, {
+                "status": "FAILED", "error_type": type(exc).__name__, "reason": str(exc),
+            })
+        raise
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--checkpoint", required=True, type=Path)
+    parser.add_argument("--reference-rows", required=True, type=Path)
+    parser.add_argument("--out-dir", required=True, type=Path)
+    parser.add_argument("--max-tokens", type=int, default=500)
+    return parser
+
+
+if __name__ == "__main__":
+    raise SystemExit(evaluate(build_parser().parse_args()))
