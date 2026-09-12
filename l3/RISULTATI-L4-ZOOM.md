@@ -11,12 +11,12 @@ corrette e segnalate come tali.
 
 ## 1. Formulazione sostenuta oggi
 
-> Il guadagno del crop oracle misurato l'11/09 **non viene dal contenuto della finestra**: con
-> lo stesso header, azzerare o sostituire il crop non cambia il punteggio, e spostare il gold
-> fuori dal centro della finestra lo fa crollare sotto il valore senza zoom. Il modello addestrato
-> in Z1 ha imparato la scorciatoia «rispondi al centro delle coordinate che ti vengono date».
-> Resta aperta la domanda se una rilettura a piena risoluzione porti informazione utile quando la
-> scorciatoia è resa impossibile.
+> Nel checkpoint `vz1` e su questo gate, il crop corretto **non mostra un beneficio medio
+> rilevabile** rispetto a contenuti sostituiti o azzerati; la prestazione dipende fortemente
+> dalla relazione fra header e posizione del gold. Il modello addestrato in Z1 sfrutta la
+> scorciatoia «rispondi al centro delle coordinate che ti vengono date», che era la soluzione
+> ottimale delle tracce insegnate. Resta aperta la domanda se una rilettura a piena risoluzione
+> porti informazione utile quando quella scorciatoia è resa impossibile.
 
 Non è sostenuto: che lo zoom migliori la percezione, che esista una soglia percettiva misurata,
 che il modello sia al livello dell'agente TimeRLM.
@@ -50,22 +50,50 @@ gate). Strumento: `l3/tools/diag_crop_content.py`; artefatti `integrity/artifact
 | **azzerato** | tutti zeri | identico al vero | 0,4820 | −0,0028 (sd 0,177) |
 | **fuori centro** | crop reale, gold in posizione interna casuale | vero | **0,1226** | **+0,3566** (sd 0,336) |
 
-**Conclusione: il modello non legge il contenuto del blocco zoom.** Azzerare completamente la
-finestra non cambia il punteggio (0,482 contro 0,479); sostituirne il contenuto con un'altra
-regione priva di anomalie non lo cambia (0,473). Quello che il modello usa è il **centro
-dichiarato nell'header**: appena il gold non è al centro della finestra, il punteggio crolla a
-0,123, cioè **sotto lo 0,301 che lo stesso modello ottiene senza alcuno zoom**.
+**Conclusione sostenuta** (formulazione di Codex, follow-up §1): *nel checkpoint `vz1` e su
+questo gate, il crop corretto non mostra un beneficio medio rilevabile rispetto a contenuti
+sostituiti o azzerati; la prestazione dipende fortemente dalla relazione fra header e posizione
+del gold.* Bootstrap appaiato 10k: vero − sostituito +0,0063 CI95 [−0,0154; +0,0298];
+vero − azzerato −0,0028 [−0,0269; +0,0216]; vero centrato − vero fuori centro +0,3566
+[+0,3111; +0,4029].
+
+Non è sostenuto «il modello non legge il contenuto»: sostituendo il crop cambiano 170 predizioni
+su 208 e azzerandolo 178 (il punteggio cambia in 116 e 128 casi). Il contenuto influenza il
+comportamento, ma **il beneficio netto misurato è vicino a zero**, e nessuna soglia di equivalenza
+era stata fissata prima.
+
+**Baseline appaiata corretta** (mio errore, segnalato da Codex §2: 0,123 e 0,301 erano popolazioni
+diverse, 208 positivi contro 520 righe intere). Sugli **stessi 208 ID**, strumento
+`l3/tools/subset_baseline.py`:
+
+| serie, stessi 208 ID | tutti | localize | classify | all_channels |
+|---|---:|---:|---:|---:|
+| `va1` senza zoom | 0,0612 | 0,0694 | 0,0673 | 0,0375 |
+| `vz1` senza zoom | **0,0264** | 0,0188 | 0,0306 | 0,0319 |
+| `vz1`, finestra scelta dalla policy | 0,0134 | 0,0110 | 0,0156 | 0,0139 |
+| gate, crop vero fuori centro | 0,1226 | 0,1086 | 0,0902 | 0,2000 |
+| gate, crop vero centrato | 0,4792 | 0,5417 | 0,4050 | 0,4986 |
+
+Quindi il confronto giusto è: fuori centro − `vz1` senza zoom = **+0,0963** CI95
+[+0,0610; +0,1316]. Non dimostra un beneficio del contenuto (l'oracle fornisce ancora canale e
+regione, informazione privilegiata), ma **smentisce la mia affermazione che fuori centro fosse
+peggio del non zoomare**. Da notare anche: `vz1` senza zoom − `va1` senza zoom = −0,0349
+[−0,0599; −0,0108] su questi positivi, cioè l'SFT ha davvero peggiorato il ramo senza crop.
 
 Quindi lo 0,5244 della riga «oracle stretto» **non è una misura della percezione**: è la fuga di
 informazione dalle coordinate dell'oracle, esattamente il rischio segnalato da Codex. Anche il
 tetto «0,633 su localize» va letto così. Per la proposta non resta alcuna evidenza che la
 rilettura a piena risoluzione porti informazione utile: resta una domanda aperta.
 
-Corollario architetturale utile: i token del blocco zoom portano posizioni **relative alla
-finestra** (l'encoder normalizza dentro il blocco), quindi l'unico modo che il modello ha per
-rispondere in coordinate assolute è l'header. Con il gold sempre centrato nelle tracce di Z1, la
-scorciatoia «rispondi al centro di ciò che ti è stato detto» è la soluzione ottimale del compito
-insegnato, e il modello l'ha imparata.
+Origine della scorciatoia: nel blocco zoom le posizioni temporali dei token sono normalizzate
+sulla lunghezza del blocco (la normalizzazione MAD riguarda invece i valori), quindi l'header
+fornisce l'origine temporale necessaria alla registrazione. **Non serve però cambiare
+architettura né togliere le coordinate** (Codex follow-up §3): la conversione
+`t_assoluto = start_crop + u_relativo × ampiezza` è disponibile con un header veritiero. La fuga
+nasce dalla correlazione artificiale «centro del crop = centro gold» introdotta dalle tracce di
+Z1, non dalla presenza delle coordinate. Rimuovere quella correlazione conserva encoder, header
+e formato delle risposte assolute; la risposta in coordinate locali resta un'ablazione
+successiva, utile a separare lettura del segnale e aritmetica.
 
 ## 3. Tre correzioni alla prima lettura (Codex §3, §4, §5)
 

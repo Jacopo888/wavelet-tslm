@@ -1,0 +1,90 @@
+{
+  "scope": "Descriptive post-hoc bootstrap; no equivalence margin or multiple-testing correction.",
+  "input_sha256": {
+    "integrity\\artifacts\\l3_zoom_20260911\\Z1\\gate\\rows.jsonl": "bafd84454d97102af310b1a60339699ecdb028af1f992159b5bb9cc0e8e37112",
+    "integrity\\artifacts\\l3_zoom_20260911\\Z0\\val520_no_zoom.jsonl": "518f085556136a4f030b6ae92baa9a98d44d69669f85e44d4628522058cc5b55"
+  },
+  "comparisons": {
+    "true_minus_swap": {
+      "n": 208,
+      "delta": 0.006315215831291545,
+      "ci95": [
+        -0.015391998482012816,
+        0.030175927478383106
+      ],
+      "changed_prediction": 170,
+      "changed_primary": 116
+    },
+    "true_minus_zero": {
+      "n": 208,
+      "delta": -0.0028341864975107048,
+      "ci95": [
+        -0.02642814896896003,
+        0.021552239507997246
+      ],
+      "changed_prediction": 178,
+      "changed_primary": 128
+    },
+    "true_minus_offcenter": {
+      "n": 208,
+      "delta": 0.3565538226290434,
+      "ci95": [
+        0.31113821284637083,
+        0.4029428438444785
+      ],
+      "changed_prediction": 196,
+      "changed_primary": 159
+    }
+  },
+  "aligned_va1": {
+    "ALL": {
+      "va1": 0.061245147351317225,
+      "vz1_offcenter": 0.12263166932471091,
+      "vz1_offcenter_minus_va1": {
+        "n": 208,
+        "delta": 0.06138652197339367,
+        "ci95": [
+          0.02370163648559557,
+          0.09958157057780337
+        ]
+      }
+    },
+    "localize": {
+      "va1": 0.06940866360655386,
+      "vz1_offcenter": 0.1086221522956627,
+      "vz1_offcenter_minus_va1": {
+        "n": 80,
+        "delta": 0.03921348868910886,
+        "ci95": [
+          -0.018594179639297832,
+          0.09888180898459624
+        ]
+      }
+    },
+    "classify_with_evidence": {
+      "va1": 0.06732871950687094,
+      "vz1_offcenter": 0.09022018794858563,
+      "vz1_offcenter_minus_va1": {
+        "n": 80,
+        "delta": 0.022891468441714684,
+        "ci95": [
+          -0.02661020403268038,
+          0.07341507582397108
+        ]
+      }
+    },
+    "localize_all_channels": {
+      "va1": 0.0375,
+      "vz1_offcenter": 0.19999999999999998,
+      "vz1_offcenter_minus_va1": {
+        "n": 48,
+        "delta": 0.1625,
+        "ci95": [
+          0.07289930555555556,
+          0.2590277777777778
+        ]
+      }
+    }
+  },
+  "limitation": "va1 is a different checkpoint. This does not replace the missing same-subset vz1 no-zoom control; oracle offcenter still uses gold information."
+}
