@@ -22,7 +22,7 @@ contengono l'evento intero), **il contenuto del crop diventa necessario**.
 | **fuori centro, crop vero** | reale | **0,1994** |
 | fuori centro, crop sostituito | altra finestra senza eventi | 0,0645 |
 | fuori centro, crop azzerato | zeri | 0,0626 |
-| risposta diretta, formato nuovo | nessun crop | 0,0000 |
+| risposta diretta, formato nuovo | nessun crop | 0,0000 (vedi nota) |
 
 Δ appaiato crop vero − miglior controllo = **+0,1349**, CI95 bootstrap 10k
 **[+0,0954; +0,1748]**. Soglia dichiarata prima: ≥ +0,05 con CI che esclude lo zero. **Superata.**
@@ -36,6 +36,13 @@ Per categoria (vero | miglior controllo | Δ, CI95):
 | localize_all_channels | 48 | 0,2042 | 0,0722 | **+0,1319** | [+0,0410; +0,2306] |
 
 Identità degli header verificata su tutti i 208 ID; 186 episodi su 208 hanno usato l'azione.
+
+**Nota sulla quarta riga** (correzione di Codex, 13/09): lo 0,0000 della risposta diretta
+*non* è un riferimento «senza zoom». In quella condizione il modello riceve il formato con
+azione opzionale e in 186 casi su 208 emette un'azione invece della risposta finale, quindi
+lo zero misura la rotta scelta, non un'incapacità di rispondere senza crop. Il riferimento
+senza zoom appaiato sugli stessi ID resta `va1` 0,0612 e `vz1` 0,0264
+(`l3/tools/subset_baseline.py`), non questa riga.
 
 ### Gate operativo — policy autonoma, validation intera 520
 
@@ -73,6 +80,35 @@ privilegiata — nel gate percettivo canale e regione vengono ancora dall'oracle
 mostra che la policy autonoma **migliora** rispetto ai due riferimenti, ma il guadagno su localize
 contro va1 (+0,016) ha un intervallo che attraversa lo zero: il puntamento autonomo resta il
 limite. IoU media fra finestra scelta e anomalia 0,051 su finestre da ~2.000 campioni.
+
+### Dove guarda la policy (misura del 13/09, dal JSONL del gate operativo)
+
+L'IoU 0,051 non dice che il puntamento sia casuale: una finestra da 2.000 campioni che
+contiene per intero un evento da 34 non puo' avere IoU alta. La metrica corretta e' il
+**contenimento**, misurato con `l3/tools/analyze_policy_windows.py` sulle 240 righe in cui
+la policy ha agito (235 con gold):
+
+| categoria | n con gold | evento contenuto | canale corretto |
+|---|---:|---:|---:|
+| classify_with_evidence | 110 | 57 (52 %) | - |
+| localize | 84 | 55 (65 %) | - |
+| localize_all_channels | 41 | 18 (44 %) | 40/41 (98 %) |
+| **totale** | **235** | **130 (55 %)** | **40/41** |
+
+Quando l'evento e' contenuto la posizione interna e' centrata (media 0,506, mediana 0,520):
+la policy non sbaglia il centramento, sbaglia la *scala*. Due misure lo mostrano:
+
+- `primary` condizionato: **0,2126** quando l'evento e' contenuto, **0,0219** quando non lo e'.
+  Tutto il divario residuo su localize e multicanale vive nel 45 % di finestre che mancano l'evento.
+- il contenimento crolla con la lunghezza, mentre l'ampiezza scelta resta ferma attorno a 2.000
+  campioni: 80 % a L=16.384 (ampiezza/L 9,8 %), 67 % a 32.768, 50 % a 65.536, **32 % a 131.072**
+  (ampiezza/L 1,7 %); il `primary` segue esattamente (0,200 / 0,164 / 0,095 / 0,068).
+- fra i 104 mancati, il 59 % cade entro **mezza** ampiezza dal bordo e il 70 % entro una: sono
+  quasi-centri, non tentativi ciechi. Solo l'11 % e' oltre dieci ampiezze, e sono serie lunghe.
+
+La causa e' nel disegno delle tracce Z1-bis: le ampiezze {1024, 2048, 4096} sono state estratte
+indipendentemente da L, quindi su una serie da 131.072 campioni insegnano a coprire meno del 2 %
+della serie. Non e' un difetto del selettore appreso: e' il budget.
 
 Nessun risultato sul test 800: la catena non lo tocca, come da protocollo.
 

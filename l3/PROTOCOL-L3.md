@@ -520,3 +520,62 @@ di partire finché la revisione del diff non imposta esplicitamente
 `L3_Z1BIS_DIFF_REVIEWED=CLAUDE_APPROVED`, si stacca in tmux e redirige tutto in
 `worker.log`. Non accede al test800 e non avvia due zoom, GRPO, risposte relative,
 nuove architetture o parametri percettivi allenabili.
+
+## Selettori della finestra (13/09/2026) — misure a pesi congelati
+
+Deciso dopo Z1-bis su indicazione di Codex: prima di qualunque nuovo training si
+misura *dove* guarda la policy e se il contenuto delle sue finestre serve. Nessun
+gradiente, nessun secondo zoom, nessun accesso al test800. Checkpoint unico
+`vz1bis_epoch_1_end.pt`, sha `924110a5…`, verificato in preflight.
+
+### Perché l'IoU non è il criterio
+
+L'IoU fra una finestra di circa 2.000 campioni e un evento di decine di campioni è
+bassa per costruzione anche quando la finestra contiene interamente l'evento. La
+metrica di puntamento dichiarata è quindi il **contenimento**: l'evento gold cade
+per intero dentro la finestra e sul canale scelto. Si riportano inoltre canale
+corretto, posizione interna dell'evento e, per i mancati, la distanza dal bordo in
+unità di ampiezza.
+
+### Fase 1 — geometria dei selettori (solo CPU)
+
+Sulle righe in cui la policy ha agito (240 su 520 della validation), a parità di
+budget: finestra della policy, selettore wavelet Haar deterministico alla
+**stessa ampiezza** con griglia `L/ampiezza`, selettore wavelet al suo budget
+nativo `max(1024, L/8)`, riallargamenti ×2/×4/×8 attorno allo stesso centro e
+oracle alla stessa ampiezza come limite superiore. Il selettore parametrizzato
+deve coincidere esattamente con `l3.zoom.heuristic_zoom` alle impostazioni native
+su ogni riga, altrimenti la fase fallisce chiusa. La fase gira con
+`CUDA_VISIBLE_DEVICES=""`, con timeout 3.600 s e picco RSS massimo 6.144 MiB
+dichiarati nel driver: è la stessa fase che aveva fatto cadere il nodo.
+
+Lettura del risultato dichiarata prima: il selettore wavelet è una strada solo se
+il suo contenimento supera quello della policy di almeno 10 punti a parità di
+ampiezza. Altrimenti il problema non è il selettore ma il budget, e la strada è la
+scala della finestra.
+
+### Fase 2 — contenuto sulle finestre autonome (GPU)
+
+Ripete il controllo del gate percettivo **sulle azioni che la policy ha emesso da
+sé**, congelate: stesso checkpoint, stessa azione, stesso header, stesso numero di
+token; cambia solo il contenuto del crop fra vero, sostituito con una finestra
+dello stesso canale e ampiezza priva di eventi, e azzerato. Solo righe positive.
+Identità degli header verificata riga per riga.
+
+Criterio dichiarato prima: delta appaiato fra contenuto vero e miglior controllo
+**≥ +0,03 con CI95 bootstrap 10.000 che esclude lo zero**, seed 20260913. La
+soglia è più bassa di quella del gate percettivo (+0,05) perché le finestre
+autonome contengono l'evento in una frazione dei casi, e dove non lo contengono il
+contenuto non può aiutare.
+
+Sotto-ipotesi registrata: il delta sulle righe in cui la finestra **contiene**
+l'evento deve superare quello sulle righe in cui lo manca. È il controllo che lega
+il beneficio percettivo al puntamento, non un secondo criterio di pass/fail.
+
+### Esecuzione
+
+`l3/node_l3_selectors.sh` esegue test CPU, geometria e gate del contenuto, con
+marker `OK` per fase, tmux e redirezione su `worker.log`, e rifiuta di partire
+finché la revisione del diff non imposta `L3_SELECTORS_DIFF_REVIEWED=CLAUDE_APPROVED`.
+GRPO sulla scelta della finestra e doppio zoom restano fuori perimetro: si decidono
+su queste misure.
