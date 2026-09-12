@@ -1,0 +1,35 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+GATE subset n=282 seed=20260912
+GATE 60/282 true=0.471 swap=0.478 zero=0.492 offcenter=0.098
+GATE 80/282 true=0.477 swap=0.492 zero=0.496 offcenter=0.102
+GATE 100/282 true=0.465 swap=0.477 zero=0.472 offcenter=0.098
+GATE 120/282 true=0.490 swap=0.503 zero=0.494 offcenter=0.124
+GATE 140/282 true=0.481 swap=0.492 zero=0.485 offcenter=0.111
+GATE 160/282 true=0.478 swap=0.491 zero=0.483 offcenter=0.108
+GATE 180/282 true=0.485 swap=0.499 zero=0.495 offcenter=0.103
+GATE 200/282 true=0.474 swap=0.468 zero=0.472 offcenter=0.101
+GATE 260/282 true=0.467 swap=0.460 zero=0.467 offcenter=0.108
+GATE 280/282 true=0.479 swap=0.473 zero=0.482 offcenter=0.122
+GATE_DONE
+true n 208 primary 0.4792 {'classify_with_evidence': (0.405, 0.543), 'localize': (0.542, 0.563), 'localize_all_channels': (0.499, 0.0)}
+swap n 208 primary 0.4729 {'classify_with_evidence': (0.375, 0.55), 'localize': (0.562, 0.576), 'localize_all_channels': (0.488, 0.0)}
+zero n 208 primary 0.482 {'classify_with_evidence': (0.388, 0.55), 'localize': (0.554, 0.583), 'localize_all_channels': (0.519, 0.0)}
+offcenter n 208 primary 0.1226 {'classify_with_evidence': (0.09, 0.145), 'localize': (0.109, 0.113), 'localize_all_channels': (0.2, 0.0)}

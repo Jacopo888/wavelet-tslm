@@ -1,0 +1,116 @@
+{
+  "checkpoint": "/root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt",
+  "conditions": {
+    "offcenter": {
+      "n": 208,
+      "per_category": {
+        "classify_with_evidence": {
+          "empty": 0,
+          "iou_mean": 0.14541743088963216,
+          "iou_n": 80,
+          "n": 80,
+          "primary": 0.09022018794858562
+        },
+        "localize": {
+          "empty": 0,
+          "iou_mean": 0.11285418420328594,
+          "iou_n": 77,
+          "n": 80,
+          "primary": 0.10862215229566272
+        },
+        "localize_all_channels": {
+          "empty": 0,
+          "iou_mean": 0.0,
+          "iou_n": 0,
+          "n": 48,
+          "primary": 0.19999999999999998
+        }
+      },
+      "primary": 0.1226316693247109
+    },
+    "swap": {
+      "n": 208,
+      "per_category": {
+        "classify_with_evidence": {
+          "empty": 0,
+          "iou_mean": 0.5496710375150221,
+          "iou_n": 80,
+          "n": 80,
+          "primary": 0.37492407816640894
+        },
+        "localize": {
+          "empty": 0,
+          "iou_mean": 0.5760225364977719,
+          "iou_n": 78,
+          "n": 80,
+          "primary": 0.5616219730853276
+        },
+        "localize_all_channels": {
+          "empty": 0,
+          "iou_mean": 0.0,
+          "iou_n": 0,
+          "n": 48,
+          "primary": 0.48819444444444454
+        }
+      },
+      "primary": 0.4728702761224628
+    },
+    "true": {
+      "n": 208,
+      "per_category": {
+        "classify_with_evidence": {
+          "empty": 0,
+          "iou_mean": 0.5431060650793763,
+          "iou_n": 80,
+          "n": 80,
+          "primary": 0.4049806629089702
+        },
+        "localize": {
+          "empty": 0,
+          "iou_mean": 0.5628415059783108,
+          "iou_n": 77,
+          "n": 80,
+          "primary": 0.5417349495041242
+        },
+        "localize_all_channels": {
+          "empty": 0,
+          "iou_mean": 0.0,
+          "iou_n": 0,
+          "n": 48,
+          "primary": 0.49861111111111117
+        }
+      },
+      "primary": 0.4791854919537543
+    },
+    "zero": {
+      "n": 208,
+      "per_category": {
+        "classify_with_evidence": {
+          "empty": 0,
+          "iou_mean": 0.5497300048309077,
+          "iou_n": 80,
+          "n": 80,
+          "primary": 0.3879481103452532
+        },
+        "localize": {
+          "empty": 0,
+          "iou_mean": 0.5832137406610901,
+          "iou_n": 76,
+          "n": 80,
+          "primary": 0.5540530536280356
+        },
+        "localize_all_channels": {
+          "empty": 0,
+          "iou_mean": 0.0,
+          "iou_n": 0,
+          "n": 48,
+          "primary": 0.5187500000000002
+        }
+      },
+      "primary": 0.4820196784512649
+    }
+  },
+  "margin": 0.25,
+  "seed": 20260912,
+  "subset_size": 282
+}

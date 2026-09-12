@@ -11,12 +11,15 @@ corrette e segnalate come tali.
 
 ## 1. Formulazione sostenuta oggi
 
-> Il crop guidato da un oracle migliora molto i risultati rispetto alla lettura globale;
-> restano da isolare il contributo del contenuto percettivo e la capacità di selezionare
-> autonomamente una finestra utile.
+> Il guadagno del crop oracle misurato l'11/09 **non viene dal contenuto della finestra**: con
+> lo stesso header, azzerare o sostituire il crop non cambia il punteggio, e spostare il gold
+> fuori dal centro della finestra lo fa crollare sotto il valore senza zoom. Il modello addestrato
+> in Z1 ha imparato la scorciatoia «rispondi al centro delle coordinate che ti vengono date».
+> Resta aperta la domanda se una rilettura a piena risoluzione porti informazione utile quando la
+> scorciatoia è resa impossibile.
 
-Non è sostenuto: che il guadagno venga dimostrabilmente dai coefficienti della finestra, che
-esista una soglia percettiva misurata, che il modello sia al livello dell'agente TimeRLM.
+Non è sostenuto: che lo zoom migliori la percezione, che esista una soglia percettiva misurata,
+che il modello sia al livello dell'agente TimeRLM.
 
 ## 2. Numeri misurati (validation 520, greedy, stesso checkpoint `vz1` salvo l'ultima riga)
 
@@ -31,6 +34,38 @@ esista una soglia percettiva misurata, che il modello sia al livello dell'agente
 Ampiezze: «~1024 campioni» vale sulle righe **con** intervallo gold; la modalità oracle ripiega
 sull'euristica sulle altre, quindi la media su tutti i 520 è 4.500,7 campioni (oracle stretto) e
 6.901 (oracle largo). Le condizioni vanno sempre riportate per strato, non in aggregato.
+
+## 2-bis. GATE A PESI FISSI (12/09, esito): il guadagno viene dalle COORDINATE, non dal contenuto
+
+Condizioni a header, coordinate, formato e numero di token **identici per costruzione**; cambia
+solo il tensore iniettato nell'encoder. Sottoinsieme stratificato fissato prima dell'esperimento
+(seed 20260912): 208 righe **con intervallo gold** (80 localize, 80 classify, 48 all_channels;
+measure_magnitude, lead_lag e i negativi non hanno un gold utilizzabile e restano fuori da questo
+gate). Strumento: `l3/tools/diag_crop_content.py`; artefatti `integrity/artifacts/l3_zoom_20260911/Z1/gate/`.
+
+| condizione | contenuto della finestra | header | primary | Δ appaiato vs vero |
+|---|---|---|---:|---:|
+| **vero** | crop reale, gold centrato | vero | 0,4792 | — |
+| **sostituito** | altra finestra dello stesso canale, senza eventi | identico al vero | 0,4729 | +0,0063 (sd 0,168) |
+| **azzerato** | tutti zeri | identico al vero | 0,4820 | −0,0028 (sd 0,177) |
+| **fuori centro** | crop reale, gold in posizione interna casuale | vero | **0,1226** | **+0,3566** (sd 0,336) |
+
+**Conclusione: il modello non legge il contenuto del blocco zoom.** Azzerare completamente la
+finestra non cambia il punteggio (0,482 contro 0,479); sostituirne il contenuto con un'altra
+regione priva di anomalie non lo cambia (0,473). Quello che il modello usa è il **centro
+dichiarato nell'header**: appena il gold non è al centro della finestra, il punteggio crolla a
+0,123, cioè **sotto lo 0,301 che lo stesso modello ottiene senza alcuno zoom**.
+
+Quindi lo 0,5244 della riga «oracle stretto» **non è una misura della percezione**: è la fuga di
+informazione dalle coordinate dell'oracle, esattamente il rischio segnalato da Codex. Anche il
+tetto «0,633 su localize» va letto così. Per la proposta non resta alcuna evidenza che la
+rilettura a piena risoluzione porti informazione utile: resta una domanda aperta.
+
+Corollario architetturale utile: i token del blocco zoom portano posizioni **relative alla
+finestra** (l'encoder normalizza dentro il blocco), quindi l'unico modo che il modello ha per
+rispondere in coordinate assolute è l'header. Con il gold sempre centrato nelle tracce di Z1, la
+scorciatoia «rispondi al centro di ciò che ti è stato detto» è la soluzione ottimale del compito
+insegnato, e il modello l'ha imparata.
 
 ## 3. Tre correzioni alla prima lettura (Codex §3, §4, §5)
 
