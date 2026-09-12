@@ -1,5 +1,8 @@
 """Would 'zoom on your own first guess' land on the anomaly?
 
+NOTE (12/09): channel-aware coverage after the Codex review; the first version ignored the
+channel in the multichannel category and overstated its coverage (68.8% instead of 62.5%).
+
 CPU-only, on the node: reads va1's val520 predictions (Z0 no_zoom JSONL) and the policy
 windows chosen by vz1, then measures, per category, how often a window built around va1's
 own predicted interval contains the gold anomaly.
@@ -41,6 +44,15 @@ def payload(text):
                 except Exception:
                     return {}
     return {}
+
+
+def gold_channels(row):
+    """Channel of each gold interval, aligned with gold_intervals(row)."""
+    p = payload(row["ground_truth"])
+    if row["category"] == "localize_all_channels":
+        return [str(a["channel"]) for a in p.get("anomalies", [])
+                if isinstance(a, dict) and isinstance(a.get("start"), int)]
+    return ["ch_00"] * len(gold_intervals(row))
 
 
 def gold_intervals(row):
@@ -112,7 +124,9 @@ for row in va1:
     if z:
         win = (int(z["start"]), int(z["end"]))
         s["policy_w"] += win[1] - win[0]
-        if any(covers(win, g) for g in golds):
+        # Channel-aware (fix 12/09, Codex review): a window only covers events of ITS channel.
+        same = [g for g, ch in zip(golds, gold_channels(row)) if ch == str(z["channel"])]
+        if any(covers(win, g) for g in same):
             s["policy_cov"] += 1
 
 print(f"{'category':26} {'n':>4} {'pred%':>6} {'self3%':>7} {'self6%':>7} {'policy%':>8} "

@@ -1,87 +1,127 @@
-# RISULTATI L4 (punto 4) — lo zoom funziona, la scelta della finestra no
+# RISULTATI Livello 3, punto 4 (zoom) — stato al 12/09/2026
 
-Stato: 12/09/2026. Z0 e Z1 eseguite; **Z1 fermata dal suo gate** (fail-closed) e catena
-interrotta prima di Z2/Z3. Artefatti: `integrity/artifacts/l3_zoom_20260911/`.
-Protocollo: `l3/PROTOCOL-L3.md` §punto 4. Kit: `7350c92` (run `/root/l3/zoom_20260911c`).
+Stato: Z0 e Z1 eseguite; **Z1 fermata dal suo gate** (fail-closed), Z2/Z3 mai eseguite.
+Artefatti: `integrity/artifacts/l3_zoom_20260911/`. Protocollo: `l3/PROTOCOL-L3.md` §punto 4.
+Kit `7350c92`, run `/root/l3/zoom_20260911c`.
 
-## 1. Il risultato principale
+**Revisione indipendente di Codex (12/09): `l3/review/CODEX-REVIEW-ZOOM-20260912.md`, ricalcoli
+in `l3/review/AUDIT-ZOOM-20260912.json`.** Questo documento è stato riscritto dopo quella
+revisione: la prima versione (commit `8a79d48`) conteneva tre affermazioni troppo forti, qui
+corrette e segnalate come tali.
 
-Tutte le righe sono lo **stesso modello** `vz1` (va1 + un'epoca di SFT sul formato a due
-turni, solo LoRA, encoder e proiettore congelati) valutato sulla **validation intera 520**
-con decodifica greedy; l'ultima riga è il riferimento SFT `va1`.
+## 1. Formulazione sostenuta oggi
 
-| finestra di zoom | ampiezza media | primary | localize | all_channels | classify | MMag | lead_lag |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| nessuna | — | 0,3011 | 0,220 | 0,327 | 0,043 | 0,559 | 0,348 |
-| scelta dalla policy | 6.150-10.100 | 0,2869 | 0,205 | 0,315 | 0,034 | 0,561 | 0,297 |
-| **gold, larga** | 6.901 | 0,3234 | 0,289 | 0,400 | 0,091 | 0,550 | 0,255 |
-| **gold, stretta (±25 %)** | ~1.024 | **0,5244** | **0,633** | **0,666** | **0,454** | 0,550 | 0,255 |
-| `va1` (riferimento) | — | 0,3105 | 0,244 | 0,358 | 0,090 | 0,578 | 0,238 |
+> Il crop guidato da un oracle migliora molto i risultati rispetto alla lettura globale;
+> restano da isolare il contributo del contenuto percettivo e la capacità di selezionare
+> autonomamente una finestra utile.
 
-Letture, tutte misurate e non inferite:
+Non è sostenuto: che il guadagno venga dimostrabilmente dai coefficienti della finestra, che
+esista una soglia percettiva misurata, che il modello sia al livello dell'agente TimeRLM.
 
-1. **Il percettore wavelet legge davvero la rilettura a piena risoluzione.** Con una finestra
-   giusta e stretta la localizzazione passa da 0,220 a **0,633** e il multicanale da 0,327 a
-   **0,666**. Per riferimento, l'agente multi-turno di TimeRLM (Qwen3.5 + REPL, codice numpy)
-   fa 0,656 su localize e 0,551 su all_channels: **un solo passaggio percettivo con una
-   finestra giusta arriva al livello dell'agente**.
-2. **Conta la risoluzione, non il contenimento.** Centrata sul gold ma larga 6.901 campioni la
-   stessa finestra dà solo 0,289 su localize (+0,07 sul niente), contro 0,633 a 1.024
-   campioni. Il blocco percettivo ha 256 token: a 1.024 campioni sono ~4 campioni per token,
-   a 6.900 ne sono ~27 e un'anomalia di ~100 campioni occupa 4 token, invisibile. La
-   **risoluzione utile del percettore è ~4 campioni per token**.
-3. **L'SFT non ha degradato il modello**: `vz1` senza zoom fa 0,3011 contro 0,3105 di va1.
-4. **La policy sbaglia l'ampiezza, non il bersaglio.** Le finestre che chiede contengono
-   l'anomalia nel 69-72 % dei casi (`integrity/artifacts/l3_zoom_20260911`, analisi
-   `analyze_self_window.py`), ma sono 6-10 volte troppo larghe: 0,2869, sotto il gate.
-5. **Difetto misurato nelle tracce di Z1**: `heuristic_rate` reale 0,61 contro 0,30 previsto.
-   `choose_supervised_action` ripiega sulla finestra euristica (larga, `max(1024, L/8)`) ogni
-   volta che il gold non contiene un intervallo: measure_magnitude (1.121 righe), lead_lag
-   (551) e i casi senza anomalia. Il modello ha quindi imparato soprattutto finestre larghe.
-6. **Lo zoom mono-canale non serve a lead_lag** (0,255 contro 0,348 senza zoom): la domanda
-   confronta due canali e una finestra su uno dei due toglie contesto. Da escludere anche
-   nell'SFT, non solo nel pool RL.
+## 2. Numeri misurati (validation 520, greedy, stesso checkpoint `vz1` salvo l'ultima riga)
 
-## 2. Z0 (controlli su va1, senza addestramento)
+| condizione | primary | localize | all_channels | classify | lead_lag |
+|---|---:|---:|---:|---:|---:|
+| `va1` (riferimento L1) | 0,3105 | 0,2438 | 0,3583 | 0,0902 | 0,2381 |
+| `vz1` senza zoom (prompt va1 originale) | 0,3011 | 0,2200 | 0,3269 | 0,0431 | 0,3475 |
+| `vz1`, finestra scelta dalla policy | 0,2869 | 0,2050 | 0,3148 | 0,0337 | 0,2972 |
+| `vz1`, oracle **largo** (target 6144 sui casi con gold) | 0,3234 | 0,2890 | 0,4000 | 0,0911 | 0,2547 |
+| `vz1`, oracle **stretto** (gold ±25 %) | **0,5244** | **0,6333** | **0,6657** | **0,4539** | 0,2547 |
 
-val520: senza zoom **0,3105** (identico a va1 a quattro cifre: il percorso di eval del kit è
-validato), oracle silenzioso 0,268, euristica silenziosa 0,263. Su un modello che non ha mai
-visto un blocco in più il blocco peggiora, come atteso; `flag_z1_required` alzato.
+Ampiezze: «~1024 campioni» vale sulle righe **con** intervallo gold; la modalità oracle ripiega
+sull'euristica sulle altre, quindi la media su tutti i 520 è 4.500,7 campioni (oracle stretto) e
+6.901 (oracle largo). Le condizioni vanno sempre riportate per strato, non in aggregato.
 
-Diagnosi preliminare (`l3/tools/diag_zoom_empty.py`): va1 emette EOS immediato appena si
-aggiunge una riga di testo dopo la domanda, anche solo la frase che descrive l'azione e senza
-alcun blocco. Il formato a due turni va quindi insegnato (Z1), non si può valutare a freddo.
+## 3. Tre correzioni alla prima lettura (Codex §3, §4, §5)
 
-## 3. Z1 (SFT del formato a due turni)
+**(a) L'oracle comunica quasi esattamente il centro dell'anomalia.** L'intestazione del blocco
+mostra canale, start ed end, e il centro coincide col centro gold entro mezzo campione in 98/102
+positivi localize e 108/110 classify. Un controllo puramente geometrico *post-hoc* (predire un
+intervallo fisso centrato nell'header, senza leggere il segnale) ottiene IoU 0,597 con ampiezza
+128, contro 0,555 della risposta vera di `vz1` con lo stesso crop. Non prova che il modello
+ignori i coefficienti, ma **impedisce di attribuire loro il guadagno**: serve il confronto fra
+crop vero e crop sostituito a header, coordinate e numero di token identici (gate in corso).
 
-4.488 passi in 9,8 h, loss media 0,3096, copertura completa per categoria, picco 12.020 MiB,
-checkpoint `vz1_epoch_1_end.pt` (sha256 `79571951…4dd2`). Alla valutazione con zoom scelto
-dalla policy: zoom_rate 1,0 (zooma sempre), 0 azioni invalide, **0 risposte vuote** (il
-formato è stato appreso), primary 0,2869 < 0,3105 → **gate FALLITO**, catena fermata.
+**(b) Il bersaglio NON è risolto: la copertura del 70 % è dovuta all'ampiezza.** Restringendo a
+1024 campioni le finestre attuali conservandone il centro, la copertura crolla:
 
-## 4. Conseguenze per il disegno (proposta)
+| categoria (soli positivi) | n | copertura attuale (canale incluso) | a 1024 | a 2048 |
+|---|---:|---:|---:|---:|
+| localize | 102 | 70,6 % | **16,7 %** | 33,3 % |
+| classify | 110 | 71,8 % | **27,3 %** | 43,6 % |
+| all_channels | 48 | 62,5 % | **6,25 %** | 14,6 % |
 
-Il tetto misurato (0,524 complessivo, 0,633 su localize) dice che vale la pena rifare Z1 con
-tracce corrette, non abbandonare. Modifiche necessarie, tutte nelle tracce e nel budget di
-azioni, nessuna nell'architettura:
+Errore mediano di centro: 1.778 campioni su localize, 1.550 su classify, 4.373 su all_channels.
+Il mio script `analyze_self_window.py` ignorava il canale nel multicanale (riportava 68,8 %
+invece di 62,5 %): corretto in questo commit. Quindi **va imparato anche il centraggio**, non
+solo l'ampiezza.
 
-- finestre **strette** (target ~1.024-2.048 campioni, cioè ~4-8 campioni per token) ogni volta
-  che il gold ha un intervallo, con jitter sul centro e non sull'ampiezza;
-- **insegnare a non zoomare** dove lo zoom non serve: measure_magnitude, lead_lag e i casi
-  senza anomalia rispondono direttamente;
-- **due zoom per episodio** (grossolano poi fine): la finestra larga della policy contiene
-  l'anomalia nel 70 % dei casi, una finestra stretta sulla prima risposta di va1 solo nel
-  37-48 %; un primo zoom larga-ma-contenente seguito da uno stretto dentro di essa è il
-  percorso che unisce i due numeri;
-- una quota di tracce (~20 %) con finestra **fuori bersaglio** e risposta comunque corretta,
-  per insegnare il recupero quando la finestra manca l'anomalia.
+**(c) Affermazioni ritirate.**
+- «Risoluzione utile ≈ 4 campioni per token»: `L/256` è un **rapporto di compressione medio**,
+  non il supporto temporale dei token. L'encoder produce medie grossolane (128 blocchi) più
+  dettagli top-k a scale diverse, e fra le due condizioni cambiano insieme crop, MAD locale,
+  bande selezionate e posizioni. Servirebbe uno sweep controllato di ampiezza.
+- «L'SFT non ha degradato il modello»: senza zoom `vz1` perde metà dello score classify
+  (0,043 contro 0,090) e scende su localize, all_channels e magnitudo; sale su lead_lag, che
+  maschera il resto nell'aggregato. Delta appaiati policy contro va1: classify −0,0566
+  CI95 descrittivo [−0,0999; −0,0136], all_channels −0,0435 [−0,0908; −0,0046] (bootstrap
+  post-hoc, senza correzione per confronti multipli).
+- «Al livello di TimeRLM»: confronto non valido, oracle su validation contro agente autonomo sul
+  test. Inoltre 0,656/0,551 sono di **TimeRLM-text GPT-5.5 depth-1**; per **Qwen3.5-4B RL** la
+  tabella riporta 0,538 su localize e 0,244 su all_channels.
 
-Poi Z2 (GRPO) ottimizza la scelta della finestra con la reward ufficiale, e Z3 chiude il
-confronto a quattro bracci sul test in una sola lettura.
+## 4. Z0 e Z1: cosa è successo
 
-Budget stimato del rifacimento: Z1-bis ~12 h, Z2 ~15 h, Z3 ~1,5 h ≈ 30 h A40 (~26 $).
+**Z0** (controlli su va1, senza addestramento). val520: senza zoom **0,3105**, identico a va1 a
+quattro cifre, quindi il percorso di eval del kit è validato; oracle silenzioso 0,268, euristica
+silenziosa 0,263. Diagnosi preliminare (`l3/tools/diag_zoom_empty.py`): va1 emette EOS immediato
+appena si aggiunge una riga di testo dopo la domanda, anche solo la frase che descrive l'azione e
+senza alcun blocco. Il formato va insegnato, non si valuta a freddo.
 
-## 5. Costi già spesi (punto 4)
+**Z1** (SFT del formato a due turni, solo LoRA, encoder e proiettore congelati). 4.488 episodi,
+8.976 segmenti, 9,8 h, loss media 0,3096, copertura completa per categoria, picco 12.020 MiB,
+checkpoint `vz1_epoch_1_end.pt` (sha256 `79571951…4dd2`). Alla valutazione: azioni sempre valide,
+zoom_rate 1,0, **0 risposte vuote** (l'interfaccia è stata appresa), primary 0,2869 < 0,3105 →
+gate FALLITO.
 
-Z0 1,1 h; Z1 9,8 h + 0,5 h di eval; diagnosi 1,4 h; due lanci falliti (import, EOS) ~1 h.
-Totale ≈ 14 h A40 ≈ 12 $.
+Difetti misurati nelle tracce, tutti da correggere prima di un nuovo training:
+1. `heuristic_rate` reale 0,61 contro 0,30 previsto: `choose_supervised_action` ripiega sulla
+   finestra euristica larga ogni volta che il gold non contiene un intervallo (measure_magnitude,
+   lead_lag, casi senza anomalia).
+2. **Nessuna traccia insegna la risposta diretta**: il contratto forza un'azione su ogni esempio.
+3. Il jitter varia il **margine** simmetricamente, non il centro: dopo l'espansione al minimo di
+   1024 il gold resta quasi sempre centrato. È una scorciatoia presente anche nel training.
+4. Il calo su lead_lag con crop mono-canale non dimostra che lo zoom togliga contesto (i canali
+   originali restano nel prompt): è interferenza o cambio di comportamento. Escluderlo dal ramo
+   zoom resta una scelta operativa, non una conclusione.
+
+## 5. Continuazione (piano di Codex, adottato)
+
+1. **Gate a pesi fissi sul `vz1` esistente** (in corso, `l3/tools/diag_crop_content.py`):
+   sottoinsieme stratificato fissato prima dell'esperimento (seed 20260912, 282 righe, categorie
+   × positivi/negativi × banda di lunghezza, lead_lag escluso), quattro condizioni a header,
+   coordinate, formato e numero di token identici: crop vero, **crop sostituito** (contenuto di
+   un'altra finestra dello stesso canale, priva di eventi), crop azzerato, crop vero con gold in
+   **posizione interna casuale**. Metriche: primary, IoU sui positivi, risposte vuote.
+2. **Pilot Z1-bis con una sola azione opzionale**, ripartendo da va1: finestre strette, jitter
+   vero del centro, ramo di risposta diretta, quota di replay del formato originale, percentuali
+   esplicite per categoria e nessun fallback silenzioso; misurare il ramo diretto **nel nuovo
+   formato** (l'attuale eval senza zoom usa il vecchio prompt e non lo certifica).
+3. **Due zoom solo se il pilot dimostra** che la prima rilettura migliora la proposta fine; nel
+   multicanale la seconda azione deve poter cambiare canale, e il recupero deve poter uscire
+   dalla finestra sbagliata.
+4. **GRPO solo con un comportamento utile da affinare**, con step 0 = checkpoint SFT fra i
+   selezionabili, criterio di selezione centrato su localize/all_channels e vincoli di non
+   regressione, non sul solo aggregato che lead_lag può gonfiare.
+5. **Test finale** a quattro bracci più il confronto diretto zoom-SFT contro zoom-RL e il
+   controllo dello stesso checkpoint con e senza informazione del crop; riportare costo, token e
+   azioni. Le letture del test di va1 e del controllo RL sono già storiche.
+
+Le ~30 h stimate in chat non sono un budget validato: il kit attuale supporta **una sola** azione
+per episodio; due zoom richiedono storico delle osservazioni, maschere dei log-prob e checkpoint
+del formato nuovi, quindi memoria e tempo da rimisurare.
+
+## 6. Costi
+
+Z0 1,1 h; Z1 9,8 h + 0,5 h di eval; diagnosi 1,4 h; gate in corso ~1 h; due lanci falliti
+(import mancante, EOS) ~1 h. Totale punto 4 ≈ 15 h A40 ≈ 13 $.
