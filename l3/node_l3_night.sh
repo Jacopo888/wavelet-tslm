@@ -116,7 +116,7 @@ done
   echo "va1 checkpoint SHA mismatch" >&2; exit 1; }
 git -C "$ROOT" rev-parse HEAD > "$RUN_ROOT/KIT_COMMIT.txt" 2>/dev/null || echo unknown > "$RUN_ROOT/KIT_COMMIT.txt"
 CUDA_VISIBLE_DEVICES="" "$PY" -m pytest "$L3/tests/test_l3_selectors.py" \
-  "$L3/tests/test_l3_w1.py" -q 2>&1 | tee "$CURRENT_DIR/pytest.log"
+  "$L3/tests/test_l3_w1.py" "$L3/tests/test_l3_decision.py" -q 2>&1 | tee "$CURRENT_DIR/pytest.log"
 finish_phase
 
 # ---- attesa del gate del contenuto (fase A, in corso su GPU) ---------------
