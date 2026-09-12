@@ -1,0 +1,104 @@
+{
+  "checks": {
+    "ci95_excludes_zero": true,
+    "effect_at_least_threshold": true
+  },
+  "condition_counts": {
+    "direct_new_format": 208,
+    "offcenter_swap": 208,
+    "offcenter_true": 208,
+    "offcenter_zero": 208
+  },
+  "criterion": {
+    "bootstrap_resamples": 10000,
+    "min_true_minus_best_control": 0.05,
+    "seed": 20260912
+  },
+  "direct_decisions": {
+    "action": 186,
+    "final": 22
+  },
+  "format": "l3_z1bis_perceptual_gate_v1",
+  "gate_passed": true,
+  "header_identity_verified_ids": 208,
+  "inputs": {
+    "checkpoint": "/root/l3/z1bis_20260912/sft/train/vz1bis_epoch_1_end.pt",
+    "config": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_z1bis.yaml",
+    "reference_rows": "/root/l3/zoom_20260911c/Z1/gate/rows.jsonl"
+  },
+  "overall": {
+    "best_control": "offcenter_swap",
+    "condition_means": {
+      "direct_new_format": 0.0,
+      "offcenter_swap": 0.06451403871259968,
+      "offcenter_true": 0.19938329353916062,
+      "offcenter_zero": 0.06263949796834674
+    },
+    "n": 208,
+    "true_minus_best_control": {
+      "ci95": [
+        0.09544977335628181,
+        0.17479132138609024
+      ],
+      "mean": 0.13486925482656092,
+      "n": 208
+    }
+  },
+  "per_category": {
+    "classify_with_evidence": {
+      "best_control": "offcenter_zero",
+      "condition_means": {
+        "direct_new_format": 0.0,
+        "offcenter_swap": 0.07727645411347259,
+        "offcenter_true": 0.1825523007302523,
+        "offcenter_zero": 0.07767694978168602
+      },
+      "n": 80,
+      "true_minus_best_control": {
+        "ci95": [
+          0.050148073567381345,
+          0.1647458994428059
+        ],
+        "mean": 0.10487535094856629,
+        "n": 80
+      }
+    },
+    "localize": {
+      "best_control": "offcenter_zero",
+      "condition_means": {
+        "direct_new_format": 0.0,
+        "offcenter_swap": 0.04712671320595326,
+        "offcenter_true": 0.2133442624715653,
+        "offcenter_zero": 0.048935744936015504
+      },
+      "n": 80,
+      "true_minus_best_control": {
+        "ci95": [
+          0.10109655837499736,
+          0.22849921443873283
+        ],
+        "mean": 0.1644085175355498,
+        "n": 80
+      }
+    },
+    "localize_all_channels": {
+      "best_control": "offcenter_swap",
+      "condition_means": {
+        "direct_new_format": 0.0,
+        "offcenter_swap": 0.07222222222222223,
+        "offcenter_true": 0.2041666666666667,
+        "offcenter_zero": 0.06041666666666667
+      },
+      "n": 48,
+      "true_minus_best_control": {
+        "ci95": [
+          0.04097222222222222,
+          0.23055555555555554
+        ],
+        "mean": 0.13194444444444445,
+        "n": 48
+      }
+    }
+  },
+  "status": "DONE"
+}

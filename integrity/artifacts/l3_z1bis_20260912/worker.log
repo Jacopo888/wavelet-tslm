@@ -1,0 +1,455 @@
+L3_Z1BIS_STATUS phase=preflight elapsed_s=6
+.............................................                            [100%]
+45 passed in 3.30s
+L3_Z1BIS_STATUS phase=traces elapsed_s=11
+L3_Z1BIS_TRACES_OK rows=4488 elapsed_s=5.984 peak_rss_mib=504.4 out=/root/l3/z1bis_20260912/traces/plan
+L3_Z1BIS_STATUS phase=sft elapsed_s=19
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_Z1_STEP step=25/4488 category=lead_lag_with_magnitude source=direct grad=1.18198
+L3_Z1_STEP step=50/4488 category=localize source=direct grad=8.66561
+L3_Z1_STEP step=75/4488 category=measure_magnitude source=direct grad=0.341855
+L3_Z1_STEP step=100/4488 category=localize source=zoom grad=4.16684
+L3_Z1_STEP step=125/4488 category=localize source=direct grad=0.680665
+L3_Z1_STEP step=150/4488 category=measure_magnitude source=direct grad=2.00558
+L3_Z1_STEP step=175/4488 category=measure_magnitude source=direct grad=0.793424
+L3_Z1_STEP step=200/4488 category=localize source=zoom grad=1.55769
+L3_Z1_STEP step=225/4488 category=localize source=zoom grad=3.56156
+L3_Z1_STEP step=250/4488 category=classify_with_evidence source=zoom grad=1.41033
+L3_Z1_STEP step=275/4488 category=lead_lag_with_magnitude source=replay grad=0.266693
+L3_Z1_STEP step=300/4488 category=classify_with_evidence source=zoom grad=1.28393
+L3_Z1_STEP step=325/4488 category=localize_all_channels source=zoom grad=0.733812
+L3_Z1_STEP step=350/4488 category=measure_magnitude source=direct grad=0.442384
+L3_Z1_STEP step=375/4488 category=measure_magnitude source=direct grad=0.420226
+L3_Z1_STEP step=400/4488 category=classify_with_evidence source=zoom grad=0.472086
+L3_Z1_STEP step=425/4488 category=classify_with_evidence source=zoom grad=0.688334
+L3_Z1_STEP step=450/4488 category=lead_lag_with_magnitude source=direct grad=0.443885
+L3_Z1_STEP step=475/4488 category=measure_magnitude source=direct grad=1.28546
+L3_Z1_STEP step=500/4488 category=localize source=direct grad=1.73732
+L3_Z1_STEP step=525/4488 category=localize source=replay grad=1.7078
+L3_Z1_STEP step=550/4488 category=localize_all_channels source=zoom grad=0.523832
+L3_Z1_STEP step=575/4488 category=measure_magnitude source=direct grad=0.336755
+L3_Z1_STEP step=600/4488 category=localize source=zoom grad=0.808535
+L3_Z1_STEP step=625/4488 category=localize_all_channels source=zoom grad=0.741778
+L3_Z1_STEP step=650/4488 category=classify_with_evidence source=zoom grad=1.22213
+L3_Z1_STEP step=675/4488 category=localize_all_channels source=direct grad=1.13323
+L3_Z1_STEP step=700/4488 category=localize source=zoom grad=0.627275
+L3_Z1_STEP step=725/4488 category=measure_magnitude source=direct grad=0.802225
+L3_Z1_STEP step=750/4488 category=measure_magnitude source=direct grad=0.250063
+L3_Z1_STEP step=775/4488 category=localize_all_channels source=direct grad=0.0761757
+L3_Z1_STEP step=800/4488 category=classify_with_evidence source=zoom grad=1.41825
+L3_Z1_STEP step=825/4488 category=classify_with_evidence source=zoom grad=1.1423
+L3_Z1_STEP step=850/4488 category=classify_with_evidence source=zoom grad=0.77322
+L3_Z1_STEP step=875/4488 category=classify_with_evidence source=zoom grad=1.06114
+L3_Z1_STEP step=900/4488 category=classify_with_evidence source=zoom grad=1.24054
+L3_Z1_STEP step=925/4488 category=classify_with_evidence source=zoom grad=3.20792
+L3_Z1_STEP step=950/4488 category=lead_lag_with_magnitude source=replay grad=0.283725
+L3_Z1_STEP step=975/4488 category=classify_with_evidence source=zoom grad=0.732415
+L3_Z1_STEP step=1000/4488 category=classify_with_evidence source=zoom grad=1.29928
+L3_Z1_STEP step=1025/4488 category=measure_magnitude source=direct grad=0.205149
+L3_Z1_STEP step=1050/4488 category=localize source=replay grad=1.01365
+L3_Z1_STEP step=1075/4488 category=lead_lag_with_magnitude source=direct grad=0.394835
+L3_Z1_STEP step=1100/4488 category=localize_all_channels source=zoom grad=0.775615
+L3_Z1_STEP step=1125/4488 category=lead_lag_with_magnitude source=direct grad=0.20261
+L3_Z1_STEP step=1150/4488 category=measure_magnitude source=direct grad=0.52001
+L3_Z1_STEP step=1175/4488 category=measure_magnitude source=replay grad=0.718406
+L3_Z1_STEP step=1200/4488 category=lead_lag_with_magnitude source=direct grad=0.620525
+L3_Z1_STEP step=1225/4488 category=measure_magnitude source=direct grad=0.243531
+L3_Z1_STEP step=1250/4488 category=lead_lag_with_magnitude source=direct grad=0.352697
+L3_Z1_STEP step=1275/4488 category=classify_with_evidence source=zoom grad=1.35188
+L3_Z1_STEP step=1300/4488 category=localize source=zoom grad=0.903718
+L3_Z1_STEP step=1325/4488 category=localize source=zoom grad=0.720153
+L3_Z1_STEP step=1350/4488 category=measure_magnitude source=direct grad=0.84244
+L3_Z1_STEP step=1375/4488 category=localize_all_channels source=zoom grad=1.75406
+L3_Z1_STEP step=1400/4488 category=localize_all_channels source=zoom grad=1.14954
+L3_Z1_STEP step=1425/4488 category=localize_all_channels source=zoom grad=0.632468
+L3_Z1_STEP step=1450/4488 category=measure_magnitude source=replay grad=0.327468
+L3_Z1_STEP step=1475/4488 category=measure_magnitude source=direct grad=0.758912
+L3_Z1_STEP step=1500/4488 category=measure_magnitude source=direct grad=0.251149
+L3_Z1_STEP step=1525/4488 category=localize source=direct grad=0.0713791
+L3_Z1_STEP step=1550/4488 category=classify_with_evidence source=zoom grad=0.807979
+L3_Z1_STEP step=1575/4488 category=classify_with_evidence source=zoom grad=0.404968
+L3_Z1_STEP step=1600/4488 category=lead_lag_with_magnitude source=direct grad=0.351915
+L3_Z1_STEP step=1625/4488 category=localize source=zoom grad=0.815964
+L3_Z1_STEP step=1650/4488 category=localize_all_channels source=zoom grad=0.473082
+L3_Z1_STEP step=1675/4488 category=localize source=replay grad=0.650467
+L3_Z1_STEP step=1700/4488 category=localize_all_channels source=zoom grad=0.908741
+L3_Z1_STEP step=1725/4488 category=measure_magnitude source=direct grad=0.44733
+L3_Z1_STEP step=1750/4488 category=measure_magnitude source=direct grad=0.606438
+L3_Z1_STEP step=1775/4488 category=measure_magnitude source=direct grad=0.557605
+L3_Z1_STEP step=1800/4488 category=classify_with_evidence source=zoom grad=1.17725
+L3_Z1_STEP step=1825/4488 category=measure_magnitude source=direct grad=0.243312
+L3_Z1_STEP step=1850/4488 category=localize source=replay grad=0.678623
+L3_Z1_STEP step=1875/4488 category=localize source=direct grad=0.230283
+L3_Z1_STEP step=1900/4488 category=localize source=replay grad=1.17774
+L3_Z1_STEP step=1925/4488 category=measure_magnitude source=direct grad=0.418904
+L3_Z1_STEP step=1950/4488 category=localize source=direct grad=0.670436
+L3_Z1_STEP step=1975/4488 category=measure_magnitude source=direct grad=0.373727
+L3_Z1_STEP step=2000/4488 category=localize source=zoom grad=1.36529
+L3_Z1_STEP step=2025/4488 category=lead_lag_with_magnitude source=direct grad=0.24675
+L3_Z1_STEP step=2050/4488 category=localize source=direct grad=0.178082
+L3_Z1_STEP step=2075/4488 category=classify_with_evidence source=zoom grad=1.01583
+L3_Z1_STEP step=2100/4488 category=classify_with_evidence source=zoom grad=1.1448
+L3_Z1_STEP step=2125/4488 category=localize_all_channels source=zoom grad=0.859479
+L3_Z1_STEP step=2150/4488 category=measure_magnitude source=direct grad=0.295649
+L3_Z1_STEP step=2175/4488 category=localize_all_channels source=zoom grad=0.928792
+L3_Z1_STEP step=2200/4488 category=localize source=replay grad=1.42951
+L3_Z1_STEP step=2225/4488 category=localize_all_channels source=replay grad=1.54443
+L3_Z1_STEP step=2250/4488 category=classify_with_evidence source=zoom grad=2.64275
+L3_Z1_STEP step=2275/4488 category=localize_all_channels source=zoom grad=0.594704
+L3_Z1_STEP step=2300/4488 category=localize source=replay grad=0.632314
+L3_Z1_STEP step=2325/4488 category=measure_magnitude source=direct grad=0.838796
+L3_Z1_STEP step=2350/4488 category=localize_all_channels source=zoom grad=0.644551
+L3_Z1_STEP step=2375/4488 category=lead_lag_with_magnitude source=replay grad=0.38376
+L3_Z1_STEP step=2400/4488 category=classify_with_evidence source=zoom grad=0.605095
+L3_Z1_STEP step=2425/4488 category=localize source=zoom grad=1.42969
+L3_Z1_STEP step=2450/4488 category=measure_magnitude source=direct grad=0.472822
+L3_Z1_STEP step=2475/4488 category=classify_with_evidence source=zoom grad=1.66155
+L3_Z1_STEP step=2500/4488 category=measure_magnitude source=replay grad=0.720085
+L3_Z1_STEP step=2525/4488 category=classify_with_evidence source=zoom grad=0.793355
+L3_Z1_STEP step=2550/4488 category=measure_magnitude source=direct grad=4.89089
+L3_Z1_STEP step=2575/4488 category=measure_magnitude source=direct grad=0.399121
+L3_Z1_STEP step=2600/4488 category=lead_lag_with_magnitude source=direct grad=0.163377
+L3_Z1_STEP step=2625/4488 category=classify_with_evidence source=zoom grad=0.545512
+L3_Z1_STEP step=2650/4488 category=lead_lag_with_magnitude source=direct grad=0.16641
+L3_Z1_STEP step=2675/4488 category=lead_lag_with_magnitude source=direct grad=0.210419
+L3_Z1_STEP step=2700/4488 category=measure_magnitude source=direct grad=0.339394
+L3_Z1_STEP step=2725/4488 category=measure_magnitude source=replay grad=0.262957
+L3_Z1_STEP step=2750/4488 category=measure_magnitude source=direct grad=0.157836
+L3_Z1_STEP step=2775/4488 category=measure_magnitude source=direct grad=0.238739
+L3_Z1_STEP step=2800/4488 category=localize_all_channels source=zoom grad=0.944237
+L3_Z1_STEP step=2825/4488 category=classify_with_evidence source=zoom grad=0.603815
+L3_Z1_STEP step=2850/4488 category=measure_magnitude source=direct grad=0.273751
+L3_Z1_STEP step=2875/4488 category=classify_with_evidence source=zoom grad=1.38337
+L3_Z1_STEP step=2900/4488 category=classify_with_evidence source=zoom grad=0.986656
+L3_Z1_STEP step=2925/4488 category=measure_magnitude source=direct grad=0.366077
+L3_Z1_STEP step=2950/4488 category=localize source=direct grad=0.36568
+L3_Z1_STEP step=2975/4488 category=lead_lag_with_magnitude source=direct grad=0.325768
+L3_Z1_STEP step=3000/4488 category=measure_magnitude source=direct grad=0.542435
+L3_Z1_STEP step=3025/4488 category=measure_magnitude source=direct grad=0.984015
+L3_Z1_STEP step=3050/4488 category=localize_all_channels source=zoom grad=0.671342
+L3_Z1_STEP step=3075/4488 category=localize_all_channels source=direct grad=0.414996
+L3_Z1_STEP step=3100/4488 category=localize source=zoom grad=1.69357
+L3_Z1_STEP step=3125/4488 category=localize_all_channels source=zoom grad=1.7169
+L3_Z1_STEP step=3150/4488 category=lead_lag_with_magnitude source=direct grad=0.604946
+L3_Z1_STEP step=3175/4488 category=lead_lag_with_magnitude source=direct grad=0.450852
+L3_Z1_STEP step=3200/4488 category=classify_with_evidence source=zoom grad=0.833031
+L3_Z1_STEP step=3225/4488 category=localize source=replay grad=2.78142
+L3_Z1_STEP step=3250/4488 category=lead_lag_with_magnitude source=direct grad=0.324631
+L3_Z1_STEP step=3275/4488 category=classify_with_evidence source=zoom grad=0.694725
+L3_Z1_STEP step=3300/4488 category=classify_with_evidence source=zoom grad=0.809626
+L3_Z1_STEP step=3325/4488 category=localize source=direct grad=0.260473
+L3_Z1_STEP step=3350/4488 category=localize_all_channels source=direct grad=0.430072
+L3_Z1_STEP step=3375/4488 category=localize source=zoom grad=1.67238
+L3_Z1_STEP step=3400/4488 category=localize source=zoom grad=0.594739
+L3_Z1_STEP step=3425/4488 category=measure_magnitude source=direct grad=0.196844
+L3_Z1_STEP step=3450/4488 category=classify_with_evidence source=replay grad=0.906077
+L3_Z1_STEP step=3475/4488 category=lead_lag_with_magnitude source=direct grad=0.186681
+L3_Z1_STEP step=3500/4488 category=localize source=zoom grad=0.763708
+L3_Z1_STEP step=3525/4488 category=lead_lag_with_magnitude source=direct grad=0.589087
+L3_Z1_STEP step=3550/4488 category=measure_magnitude source=direct grad=0.282986
+L3_Z1_STEP step=3575/4488 category=measure_magnitude source=direct grad=0.706841
+L3_Z1_STEP step=3600/4488 category=measure_magnitude source=direct grad=0.648022
+L3_Z1_STEP step=3625/4488 category=localize source=zoom grad=4.88558
+L3_Z1_STEP step=3650/4488 category=measure_magnitude source=replay grad=0.318832
+L3_Z1_STEP step=3675/4488 category=localize source=replay grad=1.05668
+L3_Z1_STEP step=3700/4488 category=classify_with_evidence source=replay grad=1.04698
+L3_Z1_STEP step=3725/4488 category=localize source=zoom grad=2.11002
+L3_Z1_STEP step=3750/4488 category=localize source=replay grad=1.39479
+L3_Z1_STEP step=3775/4488 category=localize source=zoom grad=0.787905
+L3_Z1_STEP step=3800/4488 category=localize source=zoom grad=1.65095
+L3_Z1_STEP step=3825/4488 category=localize_all_channels source=replay grad=2.40408
+L3_Z1_STEP step=3850/4488 category=localize source=zoom grad=0.727801
+L3_Z1_STEP step=3875/4488 category=measure_magnitude source=direct grad=0.705694
+L3_Z1_STEP step=3900/4488 category=measure_magnitude source=direct grad=0.347947
+L3_Z1_STEP step=3925/4488 category=classify_with_evidence source=zoom grad=0.769693
+L3_Z1_STEP step=3950/4488 category=lead_lag_with_magnitude source=direct grad=0.264859
+L3_Z1_STEP step=3975/4488 category=localize source=zoom grad=1.06476
+L3_Z1_STEP step=4000/4488 category=classify_with_evidence source=zoom grad=0.985203
+L3_Z1_STEP step=4025/4488 category=classify_with_evidence source=zoom grad=0.710256
+L3_Z1_STEP step=4050/4488 category=measure_magnitude source=direct grad=0.681821
+L3_Z1_STEP step=4075/4488 category=lead_lag_with_magnitude source=replay grad=0.345047
+L3_Z1_STEP step=4100/4488 category=localize source=zoom grad=0.623388
+L3_Z1_STEP step=4125/4488 category=classify_with_evidence source=zoom grad=1.40867
+L3_Z1_STEP step=4150/4488 category=measure_magnitude source=direct grad=1.55913
+L3_Z1_STEP step=4175/4488 category=lead_lag_with_magnitude source=replay grad=0.248997
+L3_Z1_STEP step=4200/4488 category=localize source=replay grad=3.18776
+L3_Z1_STEP step=4225/4488 category=localize source=direct grad=2.02709
+L3_Z1_STEP step=4250/4488 category=measure_magnitude source=direct grad=0.450844
+L3_Z1_STEP step=4275/4488 category=classify_with_evidence source=zoom grad=1.25194
+L3_Z1_STEP step=4300/4488 category=classify_with_evidence source=zoom grad=0.794401
+L3_Z1_STEP step=4325/4488 category=classify_with_evidence source=zoom grad=0.897436
+L3_Z1_STEP step=4350/4488 category=localize source=zoom grad=0.883821
+L3_Z1_STEP step=4375/4488 category=measure_magnitude source=direct grad=0.490189
+L3_Z1_STEP step=4400/4488 category=measure_magnitude source=direct grad=0.280102
+L3_Z1_STEP step=4425/4488 category=localize_all_channels source=zoom grad=1.10139
+L3_Z1_STEP step=4450/4488 category=localize source=zoom grad=0.646973
+L3_Z1_STEP step=4475/4488 category=localize source=zoom grad=0.811594
+L3_Z1BIS_STATUS phase=perceptual_gate elapsed_s=25904
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/z1bis_20260912/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+Z1BIS_PERCEPTUAL 1/208
+Z1BIS_PERCEPTUAL 2/208
+Z1BIS_PERCEPTUAL 3/208
+Z1BIS_PERCEPTUAL 4/208
+Z1BIS_PERCEPTUAL 5/208
+Z1BIS_PERCEPTUAL 6/208
+Z1BIS_PERCEPTUAL 7/208
+Z1BIS_PERCEPTUAL 8/208
+Z1BIS_PERCEPTUAL 9/208
+Z1BIS_PERCEPTUAL 10/208
+Z1BIS_PERCEPTUAL 11/208
+Z1BIS_PERCEPTUAL 12/208
+Z1BIS_PERCEPTUAL 13/208
+Z1BIS_PERCEPTUAL 14/208
+Z1BIS_PERCEPTUAL 15/208
+Z1BIS_PERCEPTUAL 16/208
+Z1BIS_PERCEPTUAL 17/208
+Z1BIS_PERCEPTUAL 18/208
+Z1BIS_PERCEPTUAL 19/208
+Z1BIS_PERCEPTUAL 20/208
+Z1BIS_PERCEPTUAL 21/208
+Z1BIS_PERCEPTUAL 22/208
+Z1BIS_PERCEPTUAL 23/208
+Z1BIS_PERCEPTUAL 24/208
+Z1BIS_PERCEPTUAL 25/208
+Z1BIS_PERCEPTUAL 26/208
+Z1BIS_PERCEPTUAL 27/208
+Z1BIS_PERCEPTUAL 28/208
+Z1BIS_PERCEPTUAL 29/208
+Z1BIS_PERCEPTUAL 30/208
+Z1BIS_PERCEPTUAL 31/208
+Z1BIS_PERCEPTUAL 32/208
+Z1BIS_PERCEPTUAL 33/208
+Z1BIS_PERCEPTUAL 34/208
+Z1BIS_PERCEPTUAL 35/208
+Z1BIS_PERCEPTUAL 36/208
+Z1BIS_PERCEPTUAL 37/208
+Z1BIS_PERCEPTUAL 38/208
+Z1BIS_PERCEPTUAL 39/208
+Z1BIS_PERCEPTUAL 40/208
+Z1BIS_PERCEPTUAL 41/208
+Z1BIS_PERCEPTUAL 42/208
+Z1BIS_PERCEPTUAL 43/208
+Z1BIS_PERCEPTUAL 44/208
+Z1BIS_PERCEPTUAL 45/208
+Z1BIS_PERCEPTUAL 46/208
+Z1BIS_PERCEPTUAL 47/208
+Z1BIS_PERCEPTUAL 48/208
+Z1BIS_PERCEPTUAL 49/208
+Z1BIS_PERCEPTUAL 50/208
+Z1BIS_PERCEPTUAL 51/208
+Z1BIS_PERCEPTUAL 52/208
+Z1BIS_PERCEPTUAL 53/208
+Z1BIS_PERCEPTUAL 54/208
+Z1BIS_PERCEPTUAL 55/208
+Z1BIS_PERCEPTUAL 56/208
+Z1BIS_PERCEPTUAL 57/208
+Z1BIS_PERCEPTUAL 58/208
+Z1BIS_PERCEPTUAL 59/208
+Z1BIS_PERCEPTUAL 60/208
+Z1BIS_PERCEPTUAL 61/208
+Z1BIS_PERCEPTUAL 62/208
+Z1BIS_PERCEPTUAL 63/208
+Z1BIS_PERCEPTUAL 64/208
+Z1BIS_PERCEPTUAL 65/208
+Z1BIS_PERCEPTUAL 66/208
+Z1BIS_PERCEPTUAL 67/208
+Z1BIS_PERCEPTUAL 68/208
+Z1BIS_PERCEPTUAL 69/208
+Z1BIS_PERCEPTUAL 70/208
+Z1BIS_PERCEPTUAL 71/208
+Z1BIS_PERCEPTUAL 72/208
+Z1BIS_PERCEPTUAL 73/208
+Z1BIS_PERCEPTUAL 74/208
+Z1BIS_PERCEPTUAL 75/208
+Z1BIS_PERCEPTUAL 76/208
+Z1BIS_PERCEPTUAL 77/208
+Z1BIS_PERCEPTUAL 78/208
+Z1BIS_PERCEPTUAL 79/208
+Z1BIS_PERCEPTUAL 80/208
+Z1BIS_PERCEPTUAL 81/208
+Z1BIS_PERCEPTUAL 82/208
+Z1BIS_PERCEPTUAL 83/208
+Z1BIS_PERCEPTUAL 84/208
+Z1BIS_PERCEPTUAL 85/208
+Z1BIS_PERCEPTUAL 86/208
+Z1BIS_PERCEPTUAL 87/208
+Z1BIS_PERCEPTUAL 88/208
+Z1BIS_PERCEPTUAL 89/208
+Z1BIS_PERCEPTUAL 90/208
+Z1BIS_PERCEPTUAL 91/208
+Z1BIS_PERCEPTUAL 92/208
+Z1BIS_PERCEPTUAL 93/208
+Z1BIS_PERCEPTUAL 94/208
+Z1BIS_PERCEPTUAL 95/208
+Z1BIS_PERCEPTUAL 96/208
+Z1BIS_PERCEPTUAL 97/208
+Z1BIS_PERCEPTUAL 98/208
+Z1BIS_PERCEPTUAL 99/208
+Z1BIS_PERCEPTUAL 100/208
+Z1BIS_PERCEPTUAL 101/208
+Z1BIS_PERCEPTUAL 102/208
+Z1BIS_PERCEPTUAL 103/208
+Z1BIS_PERCEPTUAL 104/208
+Z1BIS_PERCEPTUAL 105/208
+Z1BIS_PERCEPTUAL 106/208
+Z1BIS_PERCEPTUAL 107/208
+Z1BIS_PERCEPTUAL 108/208
+Z1BIS_PERCEPTUAL 109/208
+Z1BIS_PERCEPTUAL 110/208
+Z1BIS_PERCEPTUAL 111/208
+Z1BIS_PERCEPTUAL 112/208
+Z1BIS_PERCEPTUAL 113/208
+Z1BIS_PERCEPTUAL 114/208
+Z1BIS_PERCEPTUAL 115/208
+Z1BIS_PERCEPTUAL 116/208
+Z1BIS_PERCEPTUAL 117/208
+Z1BIS_PERCEPTUAL 118/208
+Z1BIS_PERCEPTUAL 119/208
+Z1BIS_PERCEPTUAL 120/208
+Z1BIS_PERCEPTUAL 121/208
+Z1BIS_PERCEPTUAL 122/208
+Z1BIS_PERCEPTUAL 123/208
+Z1BIS_PERCEPTUAL 124/208
+Z1BIS_PERCEPTUAL 125/208
+Z1BIS_PERCEPTUAL 126/208
+Z1BIS_PERCEPTUAL 127/208
+Z1BIS_PERCEPTUAL 128/208
+Z1BIS_PERCEPTUAL 129/208
+Z1BIS_PERCEPTUAL 130/208
+Z1BIS_PERCEPTUAL 131/208
+Z1BIS_PERCEPTUAL 132/208
+Z1BIS_PERCEPTUAL 133/208
+Z1BIS_PERCEPTUAL 134/208
+Z1BIS_PERCEPTUAL 135/208
+Z1BIS_PERCEPTUAL 136/208
+Z1BIS_PERCEPTUAL 137/208
+Z1BIS_PERCEPTUAL 138/208
+Z1BIS_PERCEPTUAL 139/208
+Z1BIS_PERCEPTUAL 140/208
+Z1BIS_PERCEPTUAL 141/208
+Z1BIS_PERCEPTUAL 142/208
+Z1BIS_PERCEPTUAL 143/208
+Z1BIS_PERCEPTUAL 144/208
+Z1BIS_PERCEPTUAL 145/208
+Z1BIS_PERCEPTUAL 146/208
+Z1BIS_PERCEPTUAL 147/208
+Z1BIS_PERCEPTUAL 148/208
+Z1BIS_PERCEPTUAL 149/208
+Z1BIS_PERCEPTUAL 150/208
+Z1BIS_PERCEPTUAL 151/208
+Z1BIS_PERCEPTUAL 152/208
+Z1BIS_PERCEPTUAL 153/208
+Z1BIS_PERCEPTUAL 154/208
+Z1BIS_PERCEPTUAL 155/208
+Z1BIS_PERCEPTUAL 156/208
+Z1BIS_PERCEPTUAL 157/208
+Z1BIS_PERCEPTUAL 158/208
+Z1BIS_PERCEPTUAL 159/208
+Z1BIS_PERCEPTUAL 160/208
+Z1BIS_PERCEPTUAL 161/208
+Z1BIS_PERCEPTUAL 162/208
+Z1BIS_PERCEPTUAL 163/208
+Z1BIS_PERCEPTUAL 164/208
+Z1BIS_PERCEPTUAL 165/208
+Z1BIS_PERCEPTUAL 166/208
+Z1BIS_PERCEPTUAL 167/208
+Z1BIS_PERCEPTUAL 168/208
+Z1BIS_PERCEPTUAL 169/208
+Z1BIS_PERCEPTUAL 170/208
+Z1BIS_PERCEPTUAL 171/208
+Z1BIS_PERCEPTUAL 172/208
+Z1BIS_PERCEPTUAL 173/208
+Z1BIS_PERCEPTUAL 174/208
+Z1BIS_PERCEPTUAL 175/208
+Z1BIS_PERCEPTUAL 176/208
+Z1BIS_PERCEPTUAL 177/208
+Z1BIS_PERCEPTUAL 178/208
+Z1BIS_PERCEPTUAL 179/208
+Z1BIS_PERCEPTUAL 180/208
+Z1BIS_PERCEPTUAL 181/208
+Z1BIS_PERCEPTUAL 182/208
+Z1BIS_PERCEPTUAL 183/208
+Z1BIS_PERCEPTUAL 184/208
+Z1BIS_PERCEPTUAL 185/208
+Z1BIS_PERCEPTUAL 186/208
+Z1BIS_PERCEPTUAL 187/208
+Z1BIS_PERCEPTUAL 188/208
+Z1BIS_PERCEPTUAL 189/208
+Z1BIS_PERCEPTUAL 190/208
+Z1BIS_PERCEPTUAL 191/208
+Z1BIS_PERCEPTUAL 192/208
+Z1BIS_PERCEPTUAL 193/208
+Z1BIS_PERCEPTUAL 194/208
+Z1BIS_PERCEPTUAL 195/208
+Z1BIS_PERCEPTUAL 196/208
+Z1BIS_PERCEPTUAL 197/208
+Z1BIS_PERCEPTUAL 198/208
+Z1BIS_PERCEPTUAL 199/208
+Z1BIS_PERCEPTUAL 200/208
+Z1BIS_PERCEPTUAL 201/208
+Z1BIS_PERCEPTUAL 202/208
+Z1BIS_PERCEPTUAL 203/208
+Z1BIS_PERCEPTUAL 204/208
+Z1BIS_PERCEPTUAL 205/208
+Z1BIS_PERCEPTUAL 206/208
+Z1BIS_PERCEPTUAL 207/208
+Z1BIS_PERCEPTUAL 208/208
+L3_Z1BIS_PERCEPTUAL_OK delta=+0.134869
+L3_Z1BIS_STATUS phase=operational_gate elapsed_s=28035
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/z1bis_20260912/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+L3_Z1BIS_OPERATIONAL_OK primary_delta=+0.032100
+L3_Z1BIS_OK run_root=/root/l3/z1bis_20260912 elapsed_s=29505

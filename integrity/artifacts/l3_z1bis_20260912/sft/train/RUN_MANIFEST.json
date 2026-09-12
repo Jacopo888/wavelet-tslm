@@ -1,0 +1,777 @@
+{
+  "composed_slim_names": [
+    "llm_model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_B.default.weight",
+    "ts_encoder.band_embed.weight",
+    "ts_encoder.pad_token",
+    "ts_encoder.value_proj.0.bias",
+    "ts_encoder.value_proj.0.weight",
+    "ts_encoder.value_proj.2.bias",
+    "ts_encoder.value_proj.2.weight",
+    "ts_projector.projector.0.bias",
+    "ts_projector.projector.0.weight",
+    "ts_projector.projector.1.bias",
+    "ts_projector.projector.1.weight"
+  ],
+  "created_utc": "2026-09-12T13:27:30.391168+00:00",
+  "format": "l3_zoom_sft_manifest_v1",
+  "initial_checkpoint": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt",
+  "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+  "optimized_names": [
+    "llm_model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_B.default.weight"
+  ],
+  "order_sha256": "ebab4ee431bf552d0e132f78c9874145f213d79451b133667fc96bcbb3309e4f",
+  "resolved_config": {
+    "_l3": {
+      "base_config_path": "/root/timerlm/sft/tslm/configs/wavelet_precise_va1.yaml",
+      "config_path": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_z1bis.yaml"
+    },
+    "backbone": {
+      "model_id": "Qwen/Qwen3.5-4B",
+      "name": "qwen"
+    },
+    "dataset": {
+      "extra_kwargs": {
+        "train_dir": "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise",
+        "variant": "precise"
+      },
+      "name": "anomaly_xl_precise"
+    },
+    "model": {
+      "architecture": "wavelet",
+      "encoder": {
+        "coarse_blocks": 128,
+        "freeze": true,
+        "n_pos_freqs": 16,
+        "num_tokens": 256,
+        "output_dim": 512,
+        "type": "wavelet"
+      },
+      "extra_kwargs": {
+        "encoding_method": "raw",
+        "freeze_lm_embeddings": true
+      },
+      "projector": {
+        "type": "mlp"
+      }
+    },
+    "name": "anomaly_xl_wavelet_va1",
+    "operational_gate": {
+      "bootstrap_resamples": 10000,
+      "compare_vs_previous_vz1": true,
+      "expected_rows": 520,
+      "max_action_rate": 0.6,
+      "max_empty_rate": 0.02,
+      "max_false_negative_rate_on_positives": 0.15,
+      "max_false_positive_rate_on_negatives": 0.15,
+      "max_invalid_action_rate": 0.02,
+      "min_action_rate": 0.2,
+      "min_delta_vs_va1": {
+        "classify_with_evidence": 0.0,
+        "lead_lag_with_magnitude": -0.02,
+        "localize": 0.0,
+        "localize_all_channels": 0.0,
+        "measure_magnitude": -0.02,
+        "overall": 0.0
+      },
+      "seed": 20260912
+    },
+    "perceptual_gate": {
+      "bootstrap_resamples": 10000,
+      "expected_categories": {
+        "classify_with_evidence": 80,
+        "localize": 80,
+        "localize_all_channels": 48
+      },
+      "expected_id_order_sha256": "34ccb284c78a22fba2bd7161ace54acd08650b73802badd8ff87b09fa7bebe4a",
+      "expected_ids": 208,
+      "min_true_minus_best_control": 0.05,
+      "require_ci_low_above_zero": true,
+      "seed": 20260912
+    },
+    "rl": {
+      "G": 8,
+      "action_max_new_tokens": 500,
+      "advantage_eps": 1e-08,
+      "checkpoint_every": 25,
+      "clip_eps": 0.2,
+      "contract": "zoom",
+      "do_sample": true,
+      "excluded_categories": [
+        "lead_lag_with_magnitude"
+      ],
+      "expected_train_rows": 4488,
+      "format_penalty": 0.0,
+      "init_prompt_indices": [
+        46,
+        348,
+        617,
+        3484,
+        4030
+      ],
+      "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+      "kl_coef": 0.01,
+      "lr": 1e-05,
+      "max_grad_norm": 1.0,
+      "memory_gate_indices": [
+        3804,
+        3930
+      ],
+      "peak_limit_mib": 22528,
+      "pool_per_category": 50,
+      "pool_seed": 20260911,
+      "pool_size": 200,
+      "prompt_split": "train",
+      "prompts_per_step": 2,
+      "resample_every": 100,
+      "seed": 20260912,
+      "steps": 200,
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "train_prompt_expectations": {
+        "3804": {
+          "category": "localize_all_channels",
+          "id": "ec313c0ed31f8e1c",
+          "length": 131072,
+          "n_channels": 16
+        },
+        "3930": {
+          "category": "localize_all_channels",
+          "id": "2e0a358df6184934",
+          "length": 131072,
+          "n_channels": 16
+        }
+      },
+      "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d",
+      "trainable": "lora",
+      "weight_decay": 0.0
+    },
+    "runtime": {
+      "max_samples": null,
+      "output_dir": "results",
+      "run_name": "anomaly_xl_wavelet_va1"
+    },
+    "seed": 42,
+    "training": {
+      "backbone_training": "lora",
+      "batch_size": 1,
+      "checkpointing": {
+        "metric": "val_loss",
+        "mode": "min",
+        "save_best": true,
+        "save_every_n_steps": 500
+      },
+      "dataloader": {
+        "num_workers": 0,
+        "pin_memory": false
+      },
+      "early_stopping": {
+        "enabled": false,
+        "metric": "val_loss",
+        "mode": "min",
+        "patience": 3
+      },
+      "eval_max_new_tokens": 500,
+      "learning_rate": {
+        "default": 0.0001
+      },
+      "logging": {
+        "wandb": {
+          "enabled": false
+        }
+      },
+      "max_grad_norm": 1.0,
+      "num_epochs": 5,
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01
+    },
+    "zoom_sft": {
+      "batch_size": 1,
+      "categories": {
+        "classify_with_evidence": {
+          "direct_fraction_of_non_replay_negatives": 1.0,
+          "non_replay_route": "zoom_if_positive",
+          "replay_fraction": 0.15,
+          "zoom_fraction_of_non_replay_positives": 1.0
+        },
+        "lead_lag_with_magnitude": {
+          "direct_fraction_of_non_replay": 1.0,
+          "non_replay_route": "direct",
+          "replay_fraction": 0.15
+        },
+        "localize": {
+          "direct_fraction_of_non_replay_negatives": 1.0,
+          "non_replay_route": "zoom_if_positive",
+          "replay_fraction": 0.15,
+          "zoom_fraction_of_non_replay_positives": 1.0
+        },
+        "localize_all_channels": {
+          "direct_fraction_of_non_replay_negatives": 1.0,
+          "non_replay_route": "zoom_if_positive",
+          "replay_fraction": 0.15,
+          "zoom_fraction_of_non_replay_positives": 1.0
+        },
+        "measure_magnitude": {
+          "direct_fraction_of_non_replay": 1.0,
+          "non_replay_route": "direct",
+          "replay_fraction": 0.15
+        }
+      },
+      "epochs": 1,
+      "frozen_parameter_prefixes": [
+        "ts_encoder.",
+        "ts_projector."
+      ],
+      "length_bands": [
+        {
+          "max_length": 16384,
+          "name": "L16k"
+        },
+        {
+          "max_length": 32768,
+          "name": "L32k"
+        },
+        {
+          "max_length": 65536,
+          "name": "L64k"
+        },
+        {
+          "max_length": 131072,
+          "name": "L128k"
+        }
+      ],
+      "log_every": 25,
+      "lr": 0.0001,
+      "max_grad_norm": 1.0,
+      "position": {
+        "centered_max_fraction": 0.15,
+        "centered_radius": 0.01,
+        "histogram_bins": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean_range": [
+          0.35,
+          0.65
+        ],
+        "min_std": 0.15
+      },
+      "quota_tolerance": 0.02,
+      "seed": 20260912,
+      "trace_contract": "z1bis_v1",
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01,
+      "window_sizes": [
+        {
+          "samples": 1024,
+          "weight": 0.34
+        },
+        {
+          "samples": 2048,
+          "weight": 0.33
+        },
+        {
+          "samples": 4096,
+          "weight": 0.33
+        }
+      ]
+    }
+  },
+  "seed": 20260912,
+  "trace_contract": "z1bis_v1",
+  "trace_summary": {
+    "declared_category_quotas": {
+      "classify_with_evidence": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "non_replay_route": "zoom_if_positive",
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "lead_lag_with_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "non_replay_route": "direct",
+        "replay_fraction": 0.15
+      },
+      "localize": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "non_replay_route": "zoom_if_positive",
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "localize_all_channels": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "non_replay_route": "zoom_if_positive",
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "measure_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "non_replay_route": "direct",
+        "replay_fraction": 0.15
+      }
+    },
+    "observed_category_quotas": {
+      "classify_with_evidence": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "replay_fraction": 0.14973730297723292,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "lead_lag_with_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "replay_fraction": 0.15063520871143377
+      },
+      "localize": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "localize_all_channels": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "replay_fraction": 0.14981949458483754,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "measure_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "replay_fraction": 0.14986619090098127
+      }
+    },
+    "position_distribution": {
+      "classify_with_evidence/L128k": {
+        "centered": 3,
+        "centered_fraction": 0.012448132780082987,
+        "histogram_counts": [
+          12,
+          26,
+          25,
+          17,
+          23,
+          41,
+          25,
+          23,
+          32,
+          17
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5251885251880186,
+        "n": 241,
+        "std": 0.2628456548278531
+      },
+      "classify_with_evidence/L16k": {
+        "centered": 5,
+        "centered_fraction": 0.020161290322580645,
+        "histogram_counts": [
+          22,
+          26,
+          19,
+          25,
+          38,
+          18,
+          23,
+          37,
+          20,
+          20
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.500825451266381,
+        "n": 248,
+        "std": 0.2742581981829227
+      },
+      "classify_with_evidence/L32k": {
+        "centered": 5,
+        "centered_fraction": 0.02127659574468085,
+        "histogram_counts": [
+          15,
+          20,
+          23,
+          22,
+          23,
+          22,
+          28,
+          33,
+          30,
+          19
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5392427485039893,
+        "n": 235,
+        "std": 0.2731022368069365
+      },
+      "classify_with_evidence/L64k": {
+        "centered": 9,
+        "centered_fraction": 0.03643724696356275,
+        "histogram_counts": [
+          14,
+          24,
+          31,
+          29,
+          31,
+          17,
+          25,
+          20,
+          32,
+          24
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5142515854314271,
+        "n": 247,
+        "std": 0.2766254948510968
+      },
+      "localize/L128k": {
+        "centered": 0,
+        "centered_fraction": 0.0,
+        "histogram_counts": [
+          16,
+          23,
+          18,
+          21,
+          15,
+          8,
+          16,
+          24,
+          30,
+          10
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5016381701053176,
+        "n": 181,
+        "std": 0.28759966034129514
+      },
+      "localize/L16k": {
+        "centered": 4,
+        "centered_fraction": 0.02072538860103627,
+        "histogram_counts": [
+          15,
+          27,
+          26,
+          18,
+          17,
+          12,
+          17,
+          22,
+          16,
+          23
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.48921986318005184,
+        "n": 193,
+        "std": 0.2960134150318595
+      },
+      "localize/L32k": {
+        "centered": 6,
+        "centered_fraction": 0.030456852791878174,
+        "histogram_counts": [
+          14,
+          15,
+          19,
+          20,
+          27,
+          20,
+          27,
+          19,
+          23,
+          13
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5144681204394036,
+        "n": 197,
+        "std": 0.26011437710872143
+      },
+      "localize/L64k": {
+        "centered": 4,
+        "centered_fraction": 0.020202020202020204,
+        "histogram_counts": [
+          25,
+          25,
+          16,
+          22,
+          17,
+          26,
+          17,
+          10,
+          25,
+          15
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.46757615214646464,
+        "n": 198,
+        "std": 0.2904090933837604
+      },
+      "localize_all_channels/L128k": {
+        "centered": 3,
+        "centered_fraction": 0.015873015873015872,
+        "histogram_counts": [
+          7,
+          17,
+          25,
+          32,
+          22,
+          15,
+          20,
+          15,
+          24,
+          12
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.49687590422453703,
+        "n": 189,
+        "std": 0.2545140271317121
+      },
+      "localize_all_channels/L32k": {
+        "centered": 5,
+        "centered_fraction": 0.02857142857142857,
+        "histogram_counts": [
+          18,
+          12,
+          17,
+          20,
+          20,
+          14,
+          21,
+          19,
+          24,
+          10
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5012904575892857,
+        "n": 175,
+        "std": 0.27571955567101725
+      }
+    },
+    "pseudo_recovery_count": 0,
+    "rows": 4488,
+    "source_counts": {
+      "classify_with_evidence": {
+        "replay": 171,
+        "zoom": 971
+      },
+      "lead_lag_with_magnitude": {
+        "direct": 468,
+        "replay": 83
+      },
+      "localize": {
+        "direct": 183,
+        "replay": 168,
+        "zoom": 769
+      },
+      "localize_all_channels": {
+        "direct": 107,
+        "replay": 83,
+        "zoom": 364
+      },
+      "measure_magnitude": {
+        "direct": 953,
+        "replay": 168
+      }
+    },
+    "window_counts": {
+      "classify_with_evidence": {
+        "1024": 330,
+        "2048": 321,
+        "4096": 320
+      },
+      "localize": {
+        "1024": 261,
+        "2048": 254,
+        "4096": 254
+      },
+      "localize_all_channels": {
+        "1024": 124,
+        "2048": 120,
+        "4096": 120
+      }
+    }
+  },
+  "traces": "/root/l3/z1bis_20260912/traces/plan/traces.jsonl",
+  "traces_sha256": "a9fb9d8db9c3ee61ecd5ca39abe052974ad66ead2e2a62160be35ca22df3cbed",
+  "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+}
