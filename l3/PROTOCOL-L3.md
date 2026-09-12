@@ -595,3 +595,64 @@ marker `OK` per fase, tmux e redirezione su `worker.log`, e rifiuta di partire
 finché la revisione del diff non imposta `L3_SELECTORS_DIFF_REVIEWED=CLAUDE_APPROVED`.
 GRPO sulla scelta della finestra e doppio zoom restano fuori perimetro: si decidono
 su queste misure.
+
+## Catena notturna condizionale (13/09/2026, 01:45 locali)
+
+Dichiarata **prima** di conoscere i risultati delle due misure GPU, su richiesta di
+Jacopo («sfrutta la GPU tutte le ore») e seguendo la sua annotazione a quattro rami.
+Il ramo 3 del piano — entrambi i selettori trovano raramente l'evento — è già
+escluso dalla misura: oracle 100 % e selettore wavelet 77 % di contenimento a parità
+di ampiezza. Resta condizionale la scelta fra gli altri tre.
+
+### Ingressi della decisione
+
+- **P** — gate del contenuto sulle finestre autonome: delta appaiato fra contenuto
+  vero e miglior controllo, con CI95.
+- **W** — punteggio dell'oracle alla stessa ampiezza contro il braccio della policy:
+  misura se finestre migliori, a budget identico, producono risposte migliori.
+- **S** — il migliore fra i selettori deterministici (wavelet libero, wavelet nel
+  canale della policy) contro il braccio della policy.
+
+### Tabella (valutata nell'ordine, si ferma alla prima riga che si applica)
+
+1. **P < +0,03 oppure CI che include lo zero → `report_only`.** Se il modello non
+   usa il contenuto delle finestre che sceglie da sé, nessuna run lunga: si scrive
+   il risultato e si decide da svegli.
+2. **W < +0,05 oppure CI che include lo zero → `report_only`.** Finestre migliori
+   che non migliorano le risposte spostano il problema sul lettore (ramo 4: encoder
+   e proiettore sbloccati a learning rate basso con replay). Quell'esperimento non è
+   nel kit di stanotte e non si improvvisa al buio.
+3. **S ≥ +0,03 con CI oltre lo zero → `selector_sft`** (ramo 2). Si insegna alla
+   policy a proporre le coordinate del selettore: proposte calcolate **solo sul
+   train**, tracce tenute solo dove la proposta contiene davvero l'evento, ramo
+   diretto altrimenti, nessun pseudo-recupero, quota di replay invariata.
+4. **Altrimenti → `grpo`** (ramo 1). Il puntamento conta ma nessun selettore
+   deterministico batte la policy: si affina il comportamento esistente.
+
+Soglie: 0,03 / 0,05 / 0,03. Sono le stesse grandezze già usate nei gate precedenti e
+non vengono riviste dopo aver visto i numeri.
+
+### Vincoli del ramo `grpo`
+
+Partenza da `vz1bis_epoch_1_end.pt`, **step 0 fra i candidati** con il suo 0,3426 su
+val520 già misurato (stessa modalità e stesso split), validazione periodica, arresto
+per stagnazione, e nessun prolungamento automatico: se nessuno step supera lo step 0
+il candidato resta Z1-bis. Selezione centrata su localize e multicanale; lead_lag
+resta escluso dal pool, come in Z2, per non far vincere la scorciatoia
+dell'«independent».
+
+### Vincoli del ramo `selector_sft`
+
+Le proposte si calcolano con l'energia Haar, che è informazione disponibile in
+inferenza; il gold serve **solo** a filtrare quali tracce insegnare, mai a costruire
+le coordinate. Ampiezza proporzionale alla lunghezza della serie, scelta dalla scala
+misurata nel gate del contenuto: è il difetto di Z1-bis da correggere. Il gate
+operativo confronta il risultato con `va1` **e** con `vz1bis`, con le stesse soglie
+di condotta di Z1-bis.
+
+### Budget e interruzione
+
+Scadenza dichiarata nel driver (`L3_NIGHT_DEADLINE_HOURS`, default 9 h dall'avvio):
+alla scadenza nessuna fase nuova parte. Il nodo resta accesso e libero; nessuno
+spegnimento automatico, nessun accesso al test 800, nessuna modifica
+dell'architettura.
