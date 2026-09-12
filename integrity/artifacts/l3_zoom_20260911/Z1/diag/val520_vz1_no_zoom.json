@@ -1,0 +1,213 @@
+{
+  "checkpoint": "/root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt",
+  "checkpoint_sha256": "7957195172d90b760f176953cd1220aebf71a7a62028dae33f9589e84ceb4dd2",
+  "config": {
+    "_l3": {
+      "base_config_path": "/root/timerlm/sft/tslm/configs/wavelet_precise_va1.yaml",
+      "config_path": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_z1.yaml"
+    },
+    "backbone": {
+      "model_id": "Qwen/Qwen3.5-4B",
+      "name": "qwen"
+    },
+    "dataset": {
+      "extra_kwargs": {
+        "train_dir": "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise",
+        "variant": "precise"
+      },
+      "name": "anomaly_xl_precise"
+    },
+    "model": {
+      "architecture": "wavelet",
+      "encoder": {
+        "coarse_blocks": 128,
+        "freeze": false,
+        "n_pos_freqs": 16,
+        "num_tokens": 256,
+        "output_dim": 512,
+        "type": "wavelet"
+      },
+      "extra_kwargs": {
+        "encoding_method": "raw",
+        "freeze_lm_embeddings": true
+      },
+      "projector": {
+        "type": "mlp"
+      }
+    },
+    "name": "anomaly_xl_wavelet_va1",
+    "rl": {
+      "G": 8,
+      "action_max_new_tokens": 500,
+      "advantage_eps": 1e-08,
+      "checkpoint_every": 25,
+      "clip_eps": 0.2,
+      "contract": "zoom",
+      "do_sample": true,
+      "excluded_categories": [
+        "lead_lag_with_magnitude"
+      ],
+      "expected_train_rows": 4488,
+      "format_penalty": 0.0,
+      "init_prompt_indices": [
+        46,
+        348,
+        617,
+        3484,
+        4030
+      ],
+      "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+      "kl_coef": 0.01,
+      "lr": 1e-05,
+      "max_grad_norm": 1.0,
+      "memory_gate_indices": [
+        3804,
+        3930
+      ],
+      "peak_limit_mib": 22528,
+      "pool_per_category": 50,
+      "pool_seed": 20260911,
+      "pool_size": 200,
+      "prompt_split": "train",
+      "prompts_per_step": 2,
+      "resample_every": 100,
+      "seed": 20260911,
+      "steps": 200,
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "train_prompt_expectations": {
+        "3804": {
+          "category": "localize_all_channels",
+          "id": "ec313c0ed31f8e1c",
+          "length": 131072,
+          "n_channels": 16
+        },
+        "3930": {
+          "category": "localize_all_channels",
+          "id": "2e0a358df6184934",
+          "length": 131072,
+          "n_channels": 16
+        }
+      },
+      "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d",
+      "trainable": "lora",
+      "weight_decay": 0.0
+    },
+    "runtime": {
+      "max_samples": null,
+      "output_dir": "results",
+      "run_name": "anomaly_xl_wavelet_va1"
+    },
+    "seed": 42,
+    "training": {
+      "backbone_training": "lora",
+      "batch_size": 1,
+      "checkpointing": {
+        "metric": "val_loss",
+        "mode": "min",
+        "save_best": true,
+        "save_every_n_steps": 500
+      },
+      "dataloader": {
+        "num_workers": 0,
+        "pin_memory": false
+      },
+      "early_stopping": {
+        "enabled": false,
+        "metric": "val_loss",
+        "mode": "min",
+        "patience": 3
+      },
+      "eval_max_new_tokens": 500,
+      "learning_rate": {
+        "default": 0.0001
+      },
+      "logging": {
+        "wandb": {
+          "enabled": false
+        }
+      },
+      "max_grad_norm": 1.0,
+      "num_epochs": 5,
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01
+    },
+    "zoom_sft": {
+      "batch_size": 1,
+      "epochs": 1,
+      "heuristic_fraction": 0.3,
+      "log_every": 25,
+      "lr": 0.0001,
+      "max_grad_norm": 1.0,
+      "seed": 20260911,
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01
+    }
+  },
+  "empty_final": 0,
+  "eval_jsonl": "/root/l3/zoom_20260911c/Z1/diag/val520_vz1_no_zoom.jsonl",
+  "mode": "no_zoom",
+  "per_category": {
+    "classify_with_evidence": {
+      "count": 110,
+      "iou": 0.05234587637773844,
+      "kind_and_iou_above_0p5": 0.01818181818181818,
+      "kind_correct": 0.7727272727272727,
+      "kind_x_iou": 0.04310031263217469,
+      "primary": 0.04310031263217469,
+      "zoom_window_len": 0.0
+    },
+    "lead_lag_with_magnitude": {
+      "composite": 0.347451171875,
+      "count": 75,
+      "direction_correct": 0.36,
+      "lag_acc_at_1pct": 0.3333333333333333,
+      "lag_acc_at_5pct": 0.36,
+      "lag_mae_fraction": 0.64062744140625,
+      "primary": 0.347451171875,
+      "zoom_window_len": 0.0
+    },
+    "localize": {
+      "acc_at_iou_0p3": 0.23484848484848486,
+      "acc_at_iou_0p5": 0.21212121212121213,
+      "acc_at_iou_0p8": 0.20454545454545456,
+      "count": 132,
+      "end_mae_fraction": 0.020152583266749527,
+      "iou": 0.21998990748183983,
+      "iou_or_correct_empty": 0.21998990748183983,
+      "presence_correct": 0.8636363636363636,
+      "primary": 0.21998990748183983,
+      "start_mae_fraction": 0.02003802675189394,
+      "zoom_window_len": 0.0
+    },
+    "localize_all_channels": {
+      "count": 72,
+      "f1": 0.3268518518518519,
+      "fn": 1.3055555555555556,
+      "fp": 1.2777777777777777,
+      "precision": 0.33101851851851855,
+      "primary": 0.3268518518518519,
+      "recall": 0.3240740740740741,
+      "tp": 0.05555555555555555,
+      "zoom_window_len": 0.0
+    },
+    "measure_magnitude": {
+      "acc_at_rel_10pct": 0.31297709923664124,
+      "acc_at_rel_25pct": 0.6030534351145038,
+      "acc_at_rel_50pct": 0.8320610687022901,
+      "composite": 0.5588482736436997,
+      "count": 131,
+      "primary": 0.5588482736436997,
+      "rel_err": 0.2549438089497,
+      "zoom_window_len": 0.0
+    }
+  },
+  "primary": 0.3011173024008174,
+  "samples_evaluated": 520,
+  "split": "val",
+  "status": "DONE",
+  "zoom_invalid": 0,
+  "zoom_iou_with_gold": 0.0,
+  "zoom_rate": 0.0,
+  "zoom_window_len": 0.0
+}

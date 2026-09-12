@@ -1,0 +1,230 @@
+{
+  "composed_slim_names": [
+    "llm_model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_B.default.weight",
+    "ts_encoder.band_embed.weight",
+    "ts_encoder.pad_token",
+    "ts_encoder.value_proj.0.bias",
+    "ts_encoder.value_proj.0.weight",
+    "ts_encoder.value_proj.2.bias",
+    "ts_encoder.value_proj.2.weight",
+    "ts_projector.projector.0.bias",
+    "ts_projector.projector.0.weight",
+    "ts_projector.projector.1.bias",
+    "ts_projector.projector.1.weight"
+  ],
+  "created_utc": "2026-09-11T19:37:18.963891+00:00",
+  "format": "l3_zoom_sft_manifest_v1",
+  "initial_checkpoint": "/root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt",
+  "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+  "optimized_names": [
+    "llm_model.model.layers.11.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.11.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.15.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.19.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.23.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.27.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.3.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.31.self_attn.v_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.q_proj.lora_B.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_A.default.weight",
+    "llm_model.model.layers.7.self_attn.v_proj.lora_B.default.weight"
+  ],
+  "order_sha256": "ccfd54a08b988f91ecea3168ef8f3074c75c46a1ebf52f9bbc0c467f8f2fde24",
+  "resolved_config": {
+    "_l3": {
+      "base_config_path": "/root/timerlm/sft/tslm/configs/wavelet_precise_va1.yaml",
+      "config_path": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_z1.yaml"
+    },
+    "backbone": {
+      "model_id": "Qwen/Qwen3.5-4B",
+      "name": "qwen"
+    },
+    "dataset": {
+      "extra_kwargs": {
+        "train_dir": "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise",
+        "variant": "precise"
+      },
+      "name": "anomaly_xl_precise"
+    },
+    "model": {
+      "architecture": "wavelet",
+      "encoder": {
+        "coarse_blocks": 128,
+        "freeze": false,
+        "n_pos_freqs": 16,
+        "num_tokens": 256,
+        "output_dim": 512,
+        "type": "wavelet"
+      },
+      "extra_kwargs": {
+        "encoding_method": "raw",
+        "freeze_lm_embeddings": true
+      },
+      "projector": {
+        "type": "mlp"
+      }
+    },
+    "name": "anomaly_xl_wavelet_va1",
+    "rl": {
+      "G": 8,
+      "action_max_new_tokens": 500,
+      "advantage_eps": 1e-08,
+      "checkpoint_every": 25,
+      "clip_eps": 0.2,
+      "contract": "zoom",
+      "do_sample": true,
+      "excluded_categories": [
+        "lead_lag_with_magnitude"
+      ],
+      "expected_train_rows": 4488,
+      "format_penalty": 0.0,
+      "init_prompt_indices": [
+        46,
+        348,
+        617,
+        3484,
+        4030
+      ],
+      "initial_checkpoint_sha256": "cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531",
+      "kl_coef": 0.01,
+      "lr": 1e-05,
+      "max_grad_norm": 1.0,
+      "memory_gate_indices": [
+        3804,
+        3930
+      ],
+      "peak_limit_mib": 22528,
+      "pool_per_category": 50,
+      "pool_seed": 20260911,
+      "pool_size": 200,
+      "prompt_split": "train",
+      "prompts_per_step": 2,
+      "resample_every": 100,
+      "seed": 20260911,
+      "steps": 200,
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "train_prompt_expectations": {
+        "3804": {
+          "category": "localize_all_channels",
+          "id": "ec313c0ed31f8e1c",
+          "length": 131072,
+          "n_channels": 16
+        },
+        "3930": {
+          "category": "localize_all_channels",
+          "id": "2e0a358df6184934",
+          "length": 131072,
+          "n_channels": 16
+        }
+      },
+      "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d",
+      "trainable": "lora",
+      "weight_decay": 0.0
+    },
+    "runtime": {
+      "max_samples": null,
+      "output_dir": "results",
+      "run_name": "anomaly_xl_wavelet_va1"
+    },
+    "seed": 42,
+    "training": {
+      "backbone_training": "lora",
+      "batch_size": 1,
+      "checkpointing": {
+        "metric": "val_loss",
+        "mode": "min",
+        "save_best": true,
+        "save_every_n_steps": 500
+      },
+      "dataloader": {
+        "num_workers": 0,
+        "pin_memory": false
+      },
+      "early_stopping": {
+        "enabled": false,
+        "metric": "val_loss",
+        "mode": "min",
+        "patience": 3
+      },
+      "eval_max_new_tokens": 500,
+      "learning_rate": {
+        "default": 0.0001
+      },
+      "logging": {
+        "wandb": {
+          "enabled": false
+        }
+      },
+      "max_grad_norm": 1.0,
+      "num_epochs": 5,
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01
+    },
+    "zoom_sft": {
+      "batch_size": 1,
+      "epochs": 1,
+      "heuristic_fraction": 0.3,
+      "log_every": 25,
+      "lr": 0.0001,
+      "max_grad_norm": 1.0,
+      "seed": 20260911,
+      "warmup_ratio": 0.03,
+      "weight_decay": 0.01
+    }
+  },
+  "seed": 20260911,
+  "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+}

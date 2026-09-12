@@ -1,0 +1,47 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+DIAG_W step 100/520 running=0.2861
+DIAG_W step 200/520 running=0.3059
+DIAG_W step 300/520 running=0.3174
+DIAG_W step 400/520 running=0.3296
+DIAG_W step 500/520 running=0.3261
+DIAG_W_DONE {"primary": 0.32340192619776453, "samples_evaluated": 520, "zoom_window_len": 6901.167307692308}
+{
+ "classify_with_evidence": {
+  "count": 110,
+  "primary": 0.09105882891315935
+ },
+ "lead_lag_with_magnitude": {
+  "count": 75,
+  "primary": 0.2546875
+ },
+ "localize": {
+  "count": 132,
+  "primary": 0.2890096884946463
+ },
+ "localize_all_channels": {
+  "count": 72,
+  "primary": 0.4
+ },
+ "measure_magnitude": {
+  "count": 131,
+  "primary": 0.5503945729854711
+ }
+}

@@ -1,0 +1,10 @@
+{
+  "status": "DONE",
+  "oracle_improves_both_localization_categories": false,
+  "flag_z1_required": true,
+  "val520": {
+    "no_zoom": 0.31047483623163696,
+    "oracle": 0.2683142023738856,
+    "heuristic": 0.2631341433307222
+  }
+}

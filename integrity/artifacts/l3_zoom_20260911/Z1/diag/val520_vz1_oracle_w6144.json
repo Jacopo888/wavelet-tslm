@@ -1,0 +1,32 @@
+{
+  "checkpoint": "/root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt",
+  "mode": "oracle_width_6144",
+  "per_category": {
+    "classify_with_evidence": {
+      "count": 110,
+      "primary": 0.09105882891315935
+    },
+    "lead_lag_with_magnitude": {
+      "count": 75,
+      "primary": 0.2546875
+    },
+    "localize": {
+      "count": 132,
+      "primary": 0.2890096884946463
+    },
+    "localize_all_channels": {
+      "count": 72,
+      "primary": 0.4
+    },
+    "measure_magnitude": {
+      "count": 131,
+      "primary": 0.5503945729854711
+    }
+  },
+  "primary": 0.32340192619776453,
+  "samples_evaluated": 520,
+  "split": "val",
+  "status": "DONE",
+  "zoom_iou_with_gold": 0.012489150918131582,
+  "zoom_window_len": 6901.167307692308
+}

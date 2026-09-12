@@ -1,0 +1,26 @@
+{
+  "action_sources": {
+    "gold_jitter": 1747,
+    "heuristic": 2741
+  },
+  "checkpoint": "/root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt",
+  "checkpoint_sha256": "7957195172d90b760f176953cd1220aebf71a7a62028dae33f9589e84ceb4dd2",
+  "composed_tensor_count": 42,
+  "coverage": {
+    "classify_with_evidence": 1142,
+    "lead_lag_with_magnitude": 551,
+    "localize": 1120,
+    "localize_all_channels": 554,
+    "measure_magnitude": 1121
+  },
+  "episodes": 4488,
+  "heuristic_rate": 0.6107397504456328,
+  "loss_mean": 0.3096424526807505,
+  "optimized_tensor_count": 32,
+  "peak_mem_mib": 12020.03369140625,
+  "seconds": 35209.13918671408,
+  "segments": 8976,
+  "status": "DONE",
+  "steps": 4488,
+  "supervised_tokens": 300135
+}

@@ -1,0 +1,339 @@
+L3_ZOOM_STATUS phase=Z0 elapsed_s=5
+.....................................                                    [100%]
+37 passed in 3.30s
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+L3_ZOOM_STATUS phase=Z1 elapsed_s=3979
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_Z1_STEP step=25/4488 category=classify_with_evidence source=heuristic grad=5.555
+L3_Z1_STEP step=50/4488 category=localize source=heuristic grad=1.95162
+L3_Z1_STEP step=75/4488 category=localize_all_channels source=gold_jitter grad=0.842346
+L3_Z1_STEP step=100/4488 category=measure_magnitude source=heuristic grad=0.872916
+L3_Z1_STEP step=125/4488 category=localize_all_channels source=heuristic grad=1.2695
+L3_Z1_STEP step=150/4488 category=lead_lag_with_magnitude source=heuristic grad=1.09124
+L3_Z1_STEP step=175/4488 category=lead_lag_with_magnitude source=heuristic grad=1.05069
+L3_Z1_STEP step=200/4488 category=localize source=gold_jitter grad=1.40872
+L3_Z1_STEP step=225/4488 category=localize_all_channels source=gold_jitter grad=1.31383
+L3_Z1_STEP step=250/4488 category=measure_magnitude source=heuristic grad=1.50417
+L3_Z1_STEP step=275/4488 category=localize source=heuristic grad=2.59032
+L3_Z1_STEP step=300/4488 category=classify_with_evidence source=gold_jitter grad=0.911248
+L3_Z1_STEP step=325/4488 category=measure_magnitude source=heuristic grad=1.41062
+L3_Z1_STEP step=350/4488 category=classify_with_evidence source=gold_jitter grad=2.16656
+L3_Z1_STEP step=375/4488 category=classify_with_evidence source=heuristic grad=0.680858
+L3_Z1_STEP step=400/4488 category=localize source=gold_jitter grad=1.14943
+L3_Z1_STEP step=425/4488 category=classify_with_evidence source=gold_jitter grad=1.55316
+L3_Z1_STEP step=450/4488 category=measure_magnitude source=heuristic grad=1.46259
+L3_Z1_STEP step=475/4488 category=localize_all_channels source=gold_jitter grad=1.04302
+L3_Z1_STEP step=500/4488 category=classify_with_evidence source=gold_jitter grad=0.969669
+L3_Z1_STEP step=525/4488 category=localize_all_channels source=heuristic grad=1.59076
+L3_Z1_STEP step=550/4488 category=localize source=gold_jitter grad=0.712051
+L3_Z1_STEP step=575/4488 category=measure_magnitude source=heuristic grad=1.85613
+L3_Z1_STEP step=600/4488 category=classify_with_evidence source=gold_jitter grad=1.10876
+L3_Z1_STEP step=625/4488 category=classify_with_evidence source=gold_jitter grad=1.34412
+L3_Z1_STEP step=650/4488 category=measure_magnitude source=heuristic grad=1.47417
+L3_Z1_STEP step=675/4488 category=localize source=gold_jitter grad=2.28931
+L3_Z1_STEP step=700/4488 category=lead_lag_with_magnitude source=heuristic grad=1.21817
+L3_Z1_STEP step=725/4488 category=localize source=gold_jitter grad=1.35391
+L3_Z1_STEP step=750/4488 category=measure_magnitude source=heuristic grad=1.10661
+L3_Z1_STEP step=775/4488 category=localize_all_channels source=gold_jitter grad=1.47607
+L3_Z1_STEP step=800/4488 category=localize_all_channels source=heuristic grad=1.25358
+L3_Z1_STEP step=825/4488 category=measure_magnitude source=heuristic grad=2.18696
+L3_Z1_STEP step=850/4488 category=lead_lag_with_magnitude source=heuristic grad=1.72209
+L3_Z1_STEP step=875/4488 category=measure_magnitude source=heuristic grad=2.85617
+L3_Z1_STEP step=900/4488 category=localize source=gold_jitter grad=1.49397
+L3_Z1_STEP step=925/4488 category=classify_with_evidence source=gold_jitter grad=1.15204
+L3_Z1_STEP step=950/4488 category=measure_magnitude source=heuristic grad=0.405163
+L3_Z1_STEP step=975/4488 category=lead_lag_with_magnitude source=heuristic grad=2.75275
+L3_Z1_STEP step=1000/4488 category=measure_magnitude source=heuristic grad=3.11054
+L3_Z1_STEP step=1025/4488 category=measure_magnitude source=heuristic grad=1.01331
+L3_Z1_STEP step=1050/4488 category=localize_all_channels source=gold_jitter grad=1.40239
+L3_Z1_STEP step=1075/4488 category=measure_magnitude source=heuristic grad=2.24139
+L3_Z1_STEP step=1100/4488 category=localize source=heuristic grad=4.28075
+L3_Z1_STEP step=1125/4488 category=localize source=gold_jitter grad=1.38266
+L3_Z1_STEP step=1150/4488 category=measure_magnitude source=heuristic grad=1.20578
+L3_Z1_STEP step=1175/4488 category=lead_lag_with_magnitude source=heuristic grad=1.26137
+L3_Z1_STEP step=1200/4488 category=localize source=heuristic grad=1.31245
+L3_Z1_STEP step=1225/4488 category=classify_with_evidence source=heuristic grad=0.981198
+L3_Z1_STEP step=1250/4488 category=localize_all_channels source=heuristic grad=2.5396
+L3_Z1_STEP step=1275/4488 category=classify_with_evidence source=gold_jitter grad=2.01572
+L3_Z1_STEP step=1300/4488 category=localize_all_channels source=gold_jitter grad=1.37882
+L3_Z1_STEP step=1325/4488 category=localize source=gold_jitter grad=0.80855
+L3_Z1_STEP step=1350/4488 category=measure_magnitude source=heuristic grad=1.05549
+L3_Z1_STEP step=1375/4488 category=lead_lag_with_magnitude source=heuristic grad=1.01996
+L3_Z1_STEP step=1400/4488 category=localize source=gold_jitter grad=1.52971
+L3_Z1_STEP step=1425/4488 category=localize_all_channels source=heuristic grad=0.90525
+L3_Z1_STEP step=1450/4488 category=localize_all_channels source=heuristic grad=2.07994
+L3_Z1_STEP step=1475/4488 category=classify_with_evidence source=gold_jitter grad=0.732219
+L3_Z1_STEP step=1500/4488 category=lead_lag_with_magnitude source=heuristic grad=1.39699
+L3_Z1_STEP step=1525/4488 category=localize_all_channels source=gold_jitter grad=3.35167
+L3_Z1_STEP step=1550/4488 category=classify_with_evidence source=gold_jitter grad=0.660541
+L3_Z1_STEP step=1575/4488 category=localize_all_channels source=heuristic grad=1.6181
+L3_Z1_STEP step=1600/4488 category=measure_magnitude source=heuristic grad=1.23146
+L3_Z1_STEP step=1625/4488 category=localize_all_channels source=heuristic grad=0.856564
+L3_Z1_STEP step=1650/4488 category=localize_all_channels source=gold_jitter grad=0.774379
+L3_Z1_STEP step=1675/4488 category=localize source=gold_jitter grad=1.41898
+L3_Z1_STEP step=1700/4488 category=classify_with_evidence source=gold_jitter grad=0.757251
+L3_Z1_STEP step=1725/4488 category=classify_with_evidence source=gold_jitter grad=1.18695
+L3_Z1_STEP step=1750/4488 category=measure_magnitude source=heuristic grad=4.69194
+L3_Z1_STEP step=1775/4488 category=lead_lag_with_magnitude source=heuristic grad=1.26553
+L3_Z1_STEP step=1800/4488 category=classify_with_evidence source=gold_jitter grad=1.03032
+L3_Z1_STEP step=1825/4488 category=measure_magnitude source=heuristic grad=3.00751
+L3_Z1_STEP step=1850/4488 category=classify_with_evidence source=gold_jitter grad=0.841404
+L3_Z1_STEP step=1875/4488 category=localize source=gold_jitter grad=2.96751
+L3_Z1_STEP step=1900/4488 category=localize source=heuristic grad=1.28912
+L3_Z1_STEP step=1925/4488 category=classify_with_evidence source=heuristic grad=1.25678
+L3_Z1_STEP step=1950/4488 category=measure_magnitude source=heuristic grad=1.41664
+L3_Z1_STEP step=1975/4488 category=lead_lag_with_magnitude source=heuristic grad=1.18802
+L3_Z1_STEP step=2000/4488 category=lead_lag_with_magnitude source=heuristic grad=1.27156
+L3_Z1_STEP step=2025/4488 category=measure_magnitude source=heuristic grad=1.16949
+L3_Z1_STEP step=2050/4488 category=measure_magnitude source=heuristic grad=0.395051
+L3_Z1_STEP step=2075/4488 category=measure_magnitude source=heuristic grad=1.03217
+L3_Z1_STEP step=2100/4488 category=localize source=gold_jitter grad=1.79635
+L3_Z1_STEP step=2125/4488 category=measure_magnitude source=heuristic grad=0.746307
+L3_Z1_STEP step=2150/4488 category=localize source=gold_jitter grad=0.549622
+L3_Z1_STEP step=2175/4488 category=measure_magnitude source=heuristic grad=1.36968
+L3_Z1_STEP step=2200/4488 category=localize source=gold_jitter grad=2.15402
+L3_Z1_STEP step=2225/4488 category=measure_magnitude source=heuristic grad=0.737032
+L3_Z1_STEP step=2250/4488 category=localize source=gold_jitter grad=1.16475
+L3_Z1_STEP step=2275/4488 category=localize source=heuristic grad=0.808571
+L3_Z1_STEP step=2300/4488 category=classify_with_evidence source=gold_jitter grad=0.722821
+L3_Z1_STEP step=2325/4488 category=measure_magnitude source=heuristic grad=1.80715
+L3_Z1_STEP step=2350/4488 category=localize source=gold_jitter grad=1.12964
+L3_Z1_STEP step=2375/4488 category=classify_with_evidence source=gold_jitter grad=3.0223
+L3_Z1_STEP step=2400/4488 category=lead_lag_with_magnitude source=heuristic grad=4.40275
+L3_Z1_STEP step=2425/4488 category=classify_with_evidence source=gold_jitter grad=0.871355
+L3_Z1_STEP step=2450/4488 category=measure_magnitude source=heuristic grad=1.07552
+L3_Z1_STEP step=2475/4488 category=classify_with_evidence source=gold_jitter grad=1.67038
+L3_Z1_STEP step=2500/4488 category=localize source=gold_jitter grad=1.06013
+L3_Z1_STEP step=2525/4488 category=localize source=gold_jitter grad=2.0337
+L3_Z1_STEP step=2550/4488 category=measure_magnitude source=heuristic grad=1.08587
+L3_Z1_STEP step=2575/4488 category=measure_magnitude source=heuristic grad=1.94261
+L3_Z1_STEP step=2600/4488 category=lead_lag_with_magnitude source=heuristic grad=0.756158
+L3_Z1_STEP step=2625/4488 category=localize_all_channels source=gold_jitter grad=1.04076
+L3_Z1_STEP step=2650/4488 category=classify_with_evidence source=heuristic grad=1.11211
+L3_Z1_STEP step=2675/4488 category=measure_magnitude source=heuristic grad=1.0211
+L3_Z1_STEP step=2700/4488 category=measure_magnitude source=heuristic grad=1.33138
+L3_Z1_STEP step=2725/4488 category=classify_with_evidence source=heuristic grad=1.23605
+L3_Z1_STEP step=2750/4488 category=classify_with_evidence source=heuristic grad=1.1007
+L3_Z1_STEP step=2775/4488 category=classify_with_evidence source=heuristic grad=1.10274
+L3_Z1_STEP step=2800/4488 category=localize source=gold_jitter grad=0.465032
+L3_Z1_STEP step=2825/4488 category=localize source=heuristic grad=1.07744
+L3_Z1_STEP step=2850/4488 category=localize source=gold_jitter grad=1.77083
+L3_Z1_STEP step=2875/4488 category=localize_all_channels source=heuristic grad=1.3868
+L3_Z1_STEP step=2900/4488 category=localize_all_channels source=gold_jitter grad=1.12151
+L3_Z1_STEP step=2925/4488 category=localize_all_channels source=gold_jitter grad=0.785695
+L3_Z1_STEP step=2950/4488 category=measure_magnitude source=heuristic grad=0.420111
+L3_Z1_STEP step=2975/4488 category=measure_magnitude source=heuristic grad=1.49589
+L3_Z1_STEP step=3000/4488 category=measure_magnitude source=heuristic grad=2.17824
+L3_Z1_STEP step=3025/4488 category=classify_with_evidence source=gold_jitter grad=2.31733
+L3_Z1_STEP step=3050/4488 category=measure_magnitude source=heuristic grad=1.02655
+L3_Z1_STEP step=3075/4488 category=localize source=gold_jitter grad=1.55997
+L3_Z1_STEP step=3100/4488 category=measure_magnitude source=heuristic grad=1.42471
+L3_Z1_STEP step=3125/4488 category=classify_with_evidence source=gold_jitter grad=1.89302
+L3_Z1_STEP step=3150/4488 category=classify_with_evidence source=heuristic grad=1.93084
+L3_Z1_STEP step=3175/4488 category=lead_lag_with_magnitude source=heuristic grad=0.725304
+L3_Z1_STEP step=3200/4488 category=measure_magnitude source=heuristic grad=0.694213
+L3_Z1_STEP step=3225/4488 category=lead_lag_with_magnitude source=heuristic grad=1.82039
+L3_Z1_STEP step=3250/4488 category=localize source=gold_jitter grad=1.35403
+L3_Z1_STEP step=3275/4488 category=classify_with_evidence source=gold_jitter grad=1.02931
+L3_Z1_STEP step=3300/4488 category=measure_magnitude source=heuristic grad=0.834355
+L3_Z1_STEP step=3325/4488 category=lead_lag_with_magnitude source=heuristic grad=0.541393
+L3_Z1_STEP step=3350/4488 category=classify_with_evidence source=gold_jitter grad=1.76767
+L3_Z1_STEP step=3375/4488 category=localize source=heuristic grad=1.61159
+L3_Z1_STEP step=3400/4488 category=measure_magnitude source=heuristic grad=0.842245
+L3_Z1_STEP step=3425/4488 category=lead_lag_with_magnitude source=heuristic grad=6.43137
+L3_Z1_STEP step=3450/4488 category=classify_with_evidence source=heuristic grad=1.39681
+L3_Z1_STEP step=3475/4488 category=localize source=heuristic grad=1.78544
+L3_Z1_STEP step=3500/4488 category=measure_magnitude source=heuristic grad=0.920802
+L3_Z1_STEP step=3525/4488 category=classify_with_evidence source=gold_jitter grad=0.722879
+L3_Z1_STEP step=3550/4488 category=localize source=gold_jitter grad=0.630748
+L3_Z1_STEP step=3575/4488 category=measure_magnitude source=heuristic grad=0.783119
+L3_Z1_STEP step=3600/4488 category=localize source=gold_jitter grad=1.8471
+L3_Z1_STEP step=3625/4488 category=measure_magnitude source=heuristic grad=0.91136
+L3_Z1_STEP step=3650/4488 category=measure_magnitude source=heuristic grad=0.496503
+L3_Z1_STEP step=3675/4488 category=classify_with_evidence source=heuristic grad=1.12203
+L3_Z1_STEP step=3700/4488 category=localize source=gold_jitter grad=0.742362
+L3_Z1_STEP step=3725/4488 category=localize source=gold_jitter grad=2.09605
+L3_Z1_STEP step=3750/4488 category=localize source=gold_jitter grad=1.26998
+L3_Z1_STEP step=3775/4488 category=measure_magnitude source=heuristic grad=0.592875
+L3_Z1_STEP step=3800/4488 category=localize source=gold_jitter grad=1.21961
+L3_Z1_STEP step=3825/4488 category=lead_lag_with_magnitude source=heuristic grad=1.35745
+L3_Z1_STEP step=3850/4488 category=localize_all_channels source=heuristic grad=1.90227
+L3_Z1_STEP step=3875/4488 category=classify_with_evidence source=heuristic grad=0.852233
+L3_Z1_STEP step=3900/4488 category=localize source=heuristic grad=1.52291
+L3_Z1_STEP step=3925/4488 category=localize source=gold_jitter grad=2.07652
+L3_Z1_STEP step=3950/4488 category=measure_magnitude source=heuristic grad=0.668124
+L3_Z1_STEP step=3975/4488 category=localize_all_channels source=gold_jitter grad=1.48424
+L3_Z1_STEP step=4000/4488 category=lead_lag_with_magnitude source=heuristic grad=27.6551
+L3_Z1_STEP step=4025/4488 category=localize source=gold_jitter grad=0.951556
+L3_Z1_STEP step=4050/4488 category=localize source=gold_jitter grad=1.03307
+L3_Z1_STEP step=4075/4488 category=measure_magnitude source=heuristic grad=0.875209
+L3_Z1_STEP step=4100/4488 category=measure_magnitude source=heuristic grad=1.23269
+L3_Z1_STEP step=4125/4488 category=measure_magnitude source=heuristic grad=2.16114
+L3_Z1_STEP step=4150/4488 category=localize source=gold_jitter grad=1.13529
+L3_Z1_STEP step=4175/4488 category=classify_with_evidence source=gold_jitter grad=0.943359
+L3_Z1_STEP step=4200/4488 category=localize source=gold_jitter grad=1.60291
+L3_Z1_STEP step=4225/4488 category=classify_with_evidence source=gold_jitter grad=3.62501
+L3_Z1_STEP step=4250/4488 category=classify_with_evidence source=gold_jitter grad=0.858069
+L3_Z1_STEP step=4275/4488 category=localize source=heuristic grad=1.70674
+L3_Z1_STEP step=4300/4488 category=measure_magnitude source=heuristic grad=2.12467
+L3_Z1_STEP step=4325/4488 category=localize source=heuristic grad=0.903584
+L3_Z1_STEP step=4350/4488 category=measure_magnitude source=heuristic grad=1.08823
+L3_Z1_STEP step=4375/4488 category=classify_with_evidence source=gold_jitter grad=0.639679
+L3_Z1_STEP step=4400/4488 category=measure_magnitude source=heuristic grad=2.48404
+L3_Z1_STEP step=4425/4488 category=localize source=heuristic grad=0.838949
+L3_Z1_STEP step=4450/4488 category=localize_all_channels source=gold_jitter grad=0.889123
+L3_Z1_STEP step=4475/4488 category=measure_magnitude source=heuristic grad=1.25073
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/zoom_20260911c/Z1/train/vz1_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+AssertionError
+L3_ZOOM_FAILED phase=Z1 line=142 rc=1
