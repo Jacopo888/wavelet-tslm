@@ -11,6 +11,7 @@ Condizioni (tutte sulle righe in cui la policy ha agito, join per `id`):
   wavelet_native    euristica Haar con il suo budget nativo (max(1024, L/8))
   policy_wide_xK    centro della policy, ampiezza x K (quanto vale allargare)
   wavelet_wide_xK   centro dell'euristica, ampiezza x K
+  wavelet_in_policy_channel  canale della policy, posizione dell'energia wavelet
   oracle_matched    limite superiore: finestra della stessa ampiezza centrata sul gold
 
 Metrica principale: *contenimento* dell'evento gold sul canale corretto. L'IoU fra una
@@ -115,6 +116,31 @@ def wavelet_zoom_at_width(sample: Mapping[str, Any], width: int,
     if window is None:
         raise RuntimeError("wavelet selector produced an invalid window")
     return ZoomAction(names[channel_index], *window, length)
+
+
+def wavelet_zoom_in_channel(sample: Mapping[str, Any], channel: str, width: int,
+                            details: Sequence[Mapping[int, np.ndarray]] | None = None,
+                            ) -> ZoomAction:
+    """Energia Haar limitata a un canale dato: isola la scelta della posizione.
+
+    Serve a combinare le due misure della fase 1: la policy sceglie il canale quasi
+    sempre bene (99,6 %), il selettore wavelet spesso no (90,2 %), ma la posizione
+    dentro il canale e' il suo punto forte.
+    """
+    length = series_length(sample)
+    names = channel_names(sample)
+    if channel not in names:
+        raise ValueError(f"unknown channel: {channel}")
+    target = min(length, max(MIN_ZOOM_SAMPLES, int(width)))
+    buckets = max(8, math.ceil(length / max(1, target)))
+    scores, edges = wavelet_scores(sample, buckets, details)
+    row = scores[names.index(channel)]
+    bucket = int(np.argmax(row))
+    center = (int(edges[bucket]) + int(edges[bucket + 1])) // 2
+    window = clamp_zoom_window(center - target // 2, center + (target - target // 2), length)
+    if window is None:
+        raise RuntimeError("channel-restricted selector produced an invalid window")
+    return ZoomAction(channel, *window, length)
 
 
 def recenter(action: ZoomAction, width: int, length: int) -> ZoomAction:
@@ -275,10 +301,15 @@ def run(args: argparse.Namespace) -> int:
             details = channel_details(sample)
             wavelet_action = wavelet_zoom_at_width(sample, width, details=details)
             native = heuristic_zoom(sample)
+            in_channel = wavelet_zoom_in_channel(
+                sample, policy_action.channel, width, details=details)
             conditions = {
                 "policy": geometry(sample, policy_action),
                 "wavelet_matched": geometry(sample, wavelet_action),
                 "wavelet_native": geometry(sample, native),
+                # Esplorativa, aggiunta dopo la fase 1: canale della policy,
+                # posizione dell'energia wavelet.
+                "wavelet_in_policy_channel": geometry(sample, in_channel),
                 "oracle_matched": geometry(sample, oracle_at_width(sample, width)),
             }
             for factor in WIDE_FACTORS:
@@ -304,6 +335,9 @@ def run(args: argparse.Namespace) -> int:
                                   "start": policy_action.start, "end": policy_action.end},
                 "wavelet_action": {"channel": wavelet_action.channel,
                                    "start": wavelet_action.start, "end": wavelet_action.end},
+                "wavelet_in_policy_channel_action": {
+                    "channel": in_channel.channel, "start": in_channel.start,
+                    "end": in_channel.end},
                 "conditions": conditions,
             }
             _write_jsonl(handle, record)

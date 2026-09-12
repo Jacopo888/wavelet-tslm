@@ -19,6 +19,7 @@ from l3.tools.compare_selectors import (
     recenter,
     summarize,
     wavelet_zoom_at_width,
+    wavelet_zoom_in_channel,
 )
 from l3.zoom import MIN_ZOOM_SAMPLES, ZoomAction, heuristic_zoom
 
@@ -193,3 +194,49 @@ def test_width_ladder_is_paired_and_stratified_on_the_base_misses():
     assert misses["delta"]["mean"] == pytest.approx(0.2)
     assert ladder["self_wide_x4"]["delta_vs_self_true"]["mean"] == pytest.approx(-0.08)
     assert out["gate_passed"] is True
+
+
+def test_channel_restricted_selector_stays_in_the_requested_channel():
+    s = sample(category="localize_all_channels", channels=4, start=6000, end=6100)
+    gold_channel = s["channel_names"][-1]
+    right = wavelet_zoom_in_channel(s, gold_channel, 2048)
+    assert right.channel == gold_channel and right.window_len == 2048
+    assert geometry(s, right)["state"] == "contained"
+    other = wavelet_zoom_in_channel(s, s["channel_names"][0], 2048)
+    assert other.channel == s["channel_names"][0]
+    assert geometry(s, other)["state"] == "wrong_channel"
+    with pytest.raises(ValueError):
+        wavelet_zoom_in_channel(s, "ch_inesistente", 2048)
+
+
+def test_selector_scores_pair_against_the_policy_arm(tmp_path):
+    from l3.tools.score_selectors import baseline_scores, build_action, report
+
+    s = sample(length=16384, start=11000, end=11100)
+    policy = ZoomAction("ch0", 8000, 10048, 16384)
+    from l3.tools.compare_selectors import channel_details
+    details = channel_details(s)
+    for name in ("wavelet_matched", "wavelet_in_policy_channel", "oracle_matched"):
+        action = build_action(name, s, policy, details)
+        assert action is not None and action.window_len == policy.window_len
+    with pytest.raises(ValueError):
+        build_action("inesistente", s, policy, details)
+
+    path = tmp_path / "rows.jsonl"
+    lines = [json.dumps({"id": f"row{i}", "condition": c, "primary": v})
+             for i in range(4)
+             for c, v in (("self_true", 0.1), ("self_swap", 0.0))]
+    path.write_text(chr(10).join(lines), encoding="utf-8")
+    base = baseline_scores(path, "self_true")
+    assert base == {f"row{i}": 0.1 for i in range(4)}
+
+    rows = [{"id": f"row{i}", "selector": "oracle_matched", "primary": 0.5,
+             "category": "localize", "band": 16384,
+             "geometry": {"state": "contained"}} for i in range(4)]
+    out = report(rows, base, selectors=["oracle_matched"], seed=1, resamples=200,
+                 config_path=Path("c.yaml"), checkpoint=Path("k.pt"),
+                 policy_rows=Path("p.jsonl"), baseline_rows=path)
+    arm = out["arms"]["oracle_matched"]
+    assert arm["contained_rate"] == pytest.approx(1.0)
+    assert arm["paired"]["delta_vs_policy"]["mean"] == pytest.approx(0.4)
+    assert arm["mean_by_state"] == {"contained": pytest.approx(0.5)}
