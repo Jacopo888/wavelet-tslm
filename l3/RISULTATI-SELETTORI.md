@@ -205,3 +205,54 @@ esiste un comportamento utile da affinare e un tetto noto (78,1 % di conteniment
 0,234 di primary sulle righe con azione). In alternativa, o in aggiunta, il selettore
 deterministico può entrare nel ciclo come proposta esterna — resta anche una baseline
 onesta da riportare nel confronto. Il test 800 non è stato toccato.
+
+## 9. Quanto margine resta dopo W1 (misura del 13/09, 08:30-09:00Z)
+
+Ripetuto su `vw1` il confronto dei selettori, sulle **sue** 233 righe con azione, e poi
+sulle **231 righe zoomate da entrambi** i checkpoint, che è il confronto appaiato
+corretto. Controllo di convenzione superato: su `vz1bis` la finestra forzata dà
+0,1278 e l'episodio reale 0,1274 sulle stesse righe, quindi i due riferimenti sono
+intercambiabili e i due run si possono confrontare.
+
+| sulle 231 righe comuni | vz1bis | vw1 | Δ appaiato |
+|---|---:|---:|---|
+| policy (episodio reale) | 0,1296 | 0,1470 | +0,0174 [−0,0146; +0,0505] |
+| oracle alla stessa ampiezza (tetto) | 0,2364 | 0,1892 | **−0,0472** [−0,0906; −0,0037] |
+| wavelet nel canale della policy | 0,2380 | 0,1849 | — |
+| **divario tetto − policy** | **+0,1068** [+0,067; +0,147] | **+0,0422** [+0,006; +0,078] | — |
+
+Due letture, entrambe necessarie:
+
+1. **Il margine da miglior puntamento si è ridotto da +0,107 a +0,042.** Sulle righe
+   in cui la policy agisce, sapere esattamente dove guardare vale ora un quarto di
+   quello che valeva ieri. Il selettore deterministico non batte più la policy in
+   modo significativo (+0,038, CI [−0,004; +0,079]): come **proponente di
+   coordinate** ha esaurito il suo vantaggio, e resta utile solo come baseline da
+   riportare.
+2. **Parte della riduzione non è merito del puntamento: il tetto è sceso.** Con una
+   finestra perfetta `vw1` rende 0,1892 contro 0,2364 di `vz1bis`, Δ −0,0472 con CI
+   che esclude lo zero di poco. Per categoria il calo è −0,050 su classify, −0,021 su
+   localize, −0,092 sul multicanale, **ma nessuno dei tre esclude lo zero
+   individualmente**: il segnale esiste in aggregato, non è localizzato con certezza.
+   È il tipo di compromesso già visto in Z1 (il ramo senza crop peggiorava), e va
+   trattato come cautela misurata, non come conclusione.
+
+Quindi: su val520 W1 è un miglioramento netto e significativo contro `va1` nei tre
+compiti bersaglio, e il puntamento è migliorato; allo stesso tempo la lettura di una
+finestra ideale sembra avere perso qualcosa, e ciò che resta da guadagnare sul
+puntamento (+0,042) è dello stesso ordine di ciò che il tetto ha perso (−0,047).
+
+### Cosa ne consegue per il passo successivo
+
+- **GRPO sulla scelta della finestra** ha oggi un margine dichiarato di +0,042 sulle
+  righe con azione, non più +0,107: va deciso sapendo questo, e conviene concentrarlo
+  su localize e multicanale, dove il divario residuo è maggiore (localize +0,078 con
+  CI sopra lo zero).
+- **Recuperare il tetto** è un'alternativa dello stesso peso: stessa ricetta W1 con
+  più replay del formato originale, o learning rate più basso, misurando il tetto con
+  finestra perfetta come criterio.
+- **Selettore esterno nel ciclo**: non più giustificato dai numeri come proponente.
+
+Config GRPO da `vw1` pronta (`l3/configs/l3_zoom_w2grpo.yaml`, sha del checkpoint
+pinnato, step 0 fra i candidati); **non lanciata**: la scelta fra le due strade è di
+Jacopo. Test 800 non toccato. GPU libera.
