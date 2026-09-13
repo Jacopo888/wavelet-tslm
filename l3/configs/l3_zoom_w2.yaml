@@ -113,7 +113,8 @@ rl:
   prompt_split: train
   expected_train_rows: 4488
   train_sha256: b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d
-  initial_checkpoint_sha256: cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531
+  # W2 parte da vw1, non da va1: lo SHA atteso e' quello del checkpoint W1.
+  initial_checkpoint_sha256: 8221cd4aba0a9101374ec551ba31f239020586bb6fcc1257a407abdee748ed10
   G: 8
   prompts_per_step: 2
   temperature: 0.7
