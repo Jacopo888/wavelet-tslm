@@ -23,7 +23,7 @@ esattamente `l3.zoom.heuristic_zoom` alle sue impostazioni native su 240/240 rig
 
 | condizione | ampiezza media | contenimento | canale corretto |
 |---|---:|---:|---:|
-| oracle alla stessa ampiezza (limite superiore) | 1.947 | 100,0 % | 100,0 % |
+| finestra dell'oracle alla stessa ampiezza | 1.947 | 100,0 % | 100,0 % |
 | **policy** | 1.998 | **55,3 %** | **99,6 %** |
 | wavelet libero, stessa ampiezza | 1.988 | 68,9 % | 90,2 % |
 | **wavelet nel canale della policy** | 1.988 | **77,0 %** | 99,6 % |
@@ -119,14 +119,16 @@ criterio con cui la finestra è scelta.
 | policy (finestra emessa dal modello) | 55,3 % | 0,1278 | — |
 | wavelet libero | 68,9 % | 0,2188 | **+0,0910** [+0,0536; +0,1309] |
 | **wavelet nel canale della policy** | 77,0 % | **0,2340** | **+0,1062** [+0,0647; +0,1479] |
-| oracle alla stessa ampiezza | 100 % | 0,2327 | +0,1049 [+0,0628; +0,1458] |
+| finestra dell'oracle | 100 % | 0,2327 | +0,1049 [+0,0628; +0,1458] |
 
-**Il selettore deterministico raggiunge l'oracle.** A parità di token e di ampiezza,
+**Il selettore deterministico pareggia la finestra dell'oracle.** A parità di token e di ampiezza,
 una regola di energia Haar nel canale che la policy sceglie vale quanto sapere dove
 sta l'anomalia: 0,2340 contro 0,2327, e quasi il doppio dello 0,1278 della policy.
 
-Il margine residuo del sistema non è dunque nel lettore né nella rappresentazione: è
-**tutto nella scelta della finestra**, e una regola non addestrata lo copre già.
+Il margine misurato qui sta dunque nella **scelta della finestra**, e una regola non
+addestrata lo copre già. Attenzione a non leggerlo come «il lettore non ha margine»:
+la finestra dell'oracle è una strategia di scelta, non un limite superiore del
+lettore, e pareggiarla non dice nulla sul margine percettivo residuo.
 
 ## 7. Decisione presa dalla catena
 
@@ -206,53 +208,70 @@ esiste un comportamento utile da affinare e un tetto noto (78,1 % di conteniment
 deterministico può entrare nel ciclo come proposta esterna — resta anche una baseline
 onesta da riportare nel confronto. Il test 800 non è stato toccato.
 
-## 9. Quanto margine resta dopo W1 (misura del 13/09, 08:30-09:00Z)
+## 9. Quanto margine resta dopo W1 — con una ritrattazione (13/09)
 
-Ripetuto su `vw1` il confronto dei selettori, sulle **sue** 233 righe con azione, e poi
-sulle **231 righe zoomate da entrambi** i checkpoint, che è il confronto appaiato
-corretto. Controllo di convenzione superato: su `vz1bis` la finestra forzata dà
-0,1278 e l'episodio reale 0,1274 sulle stesse righe, quindi i due riferimenti sono
-intercambiabili e i due run si possono confrontare.
+Ripetuto su `vw1` il confronto dei selettori, sulle sue 233 righe con azione, e poi
+sulle 231 righe zoomate da entrambi i checkpoint. Controllo di convenzione superato:
+su `vz1bis` la finestra forzata dà 0,1278 e l'episodio reale 0,1274 sulle stesse
+righe, quindi i due riferimenti sono intercambiabili.
 
 | sulle 231 righe comuni | vz1bis | vw1 | Δ appaiato |
 |---|---:|---:|---|
 | policy (episodio reale) | 0,1296 | 0,1470 | +0,0174 [−0,0146; +0,0505] |
-| oracle alla stessa ampiezza (tetto) | 0,2364 | 0,1892 | **−0,0472** [−0,0906; −0,0037] |
+| finestra dell'oracle, ampiezza della policy | 0,2364 | 0,1892 | −0,0472 [−0,0906; −0,0037] |
 | wavelet nel canale della policy | 0,2380 | 0,1849 | — |
-| **divario tetto − policy** | **+0,1068** [+0,067; +0,147] | **+0,0422** [+0,006; +0,078] | — |
+| divario oracle − policy | +0,1068 [+0,067; +0,147] | +0,0422 [+0,006; +0,078] | — |
 
-Due letture, entrambe necessarie:
+### Ritrattazione: quel −0,047 non isola il lettore
 
-1. **Il margine da miglior puntamento si è ridotto da +0,107 a +0,042.** Sulle righe
-   in cui la policy agisce, sapere esattamente dove guardare vale ora un quarto di
-   quello che valeva ieri. Il selettore deterministico non batte più la policy in
-   modo significativo (+0,038, CI [−0,004; +0,079]): come **proponente di
-   coordinate** ha esaurito il suo vantaggio, e resta utile solo come baseline da
-   riportare.
-2. **Parte della riduzione non è merito del puntamento: il tetto è sceso.** Con una
-   finestra perfetta `vw1` rende 0,1892 contro 0,2364 di `vz1bis`, Δ −0,0472 con CI
-   che esclude lo zero di poco. Per categoria il calo è −0,050 su classify, −0,021 su
-   localize, −0,092 sul multicanale, **ma nessuno dei tre esclude lo zero
-   individualmente**: il segnale esiste in aggregato, non è localizzato con certezza.
-   È il tipo di compromesso già visto in Z1 (il ramo senza crop peggiorava), e va
-   trattato come cautela misurata, non come conclusione.
+Segnalato da Codex e **verificato**: `oracle_at_width` costruisce la finestra usando
+**l'ampiezza scelta da ciascuna policy**. Fra i due bracci cambiano quindi insieme il
+checkpoint e l'input: su 231 righe comuni, **116 hanno coordinate e ampiezza
+diverse**. Restringendo alle **115 righe con canale e coordinate identiche**:
 
-Quindi: su val520 W1 è un miglioramento netto e significativo contro `va1` nei tre
-compiti bersaglio, e il puntamento è migliorato; allo stesso tempo la lettura di una
-finestra ideale sembra avere perso qualcosa, e ciò che resta da guadagnare sul
-puntamento (+0,042) è dello stesso ordine di ciò che il tetto ha perso (−0,047).
+| sottoinsieme | n | Δ oracle vw1 − vz1bis |
+|---|---:|---|
+| finestre identiche | 115 | −0,0517 **[−0,1073; +0,0032]** |
+| classify | 64 | −0,0180 [−0,0846; +0,0440] |
+| localize | 36 | −0,0313 [−0,1218; +0,0547] |
+| multicanale | 15 | −0,2444 [−0,4556; −0,0444] |
 
-### Cosa ne consegue per il passo successivo
+A finestre identiche **l'effetto aggregato non esclude lo zero**. Ritiro quindi
+l'affermazione «il tetto del lettore è sceso»: non è isolata, e con il vincolo
+corretto non è sostenuta. Resta un solo segnale, sul multicanale con n=15, che va
+trattato come indizio da verificare, non come risultato.
 
-- **GRPO sulla scelta della finestra** ha oggi un margine dichiarato di +0,042 sulle
-  righe con azione, non più +0,107: va deciso sapendo questo, e conviene concentrarlo
-  su localize e multicanale, dove il divario residuo è maggiore (localize +0,078 con
-  CI sopra lo zero).
-- **Recuperare il tetto** è un'alternativa dello stesso peso: stessa ricetta W1 con
-  più replay del formato originale, o learning rate più basso, misurando il tetto con
-  finestra perfetta come criterio.
-- **Selettore esterno nel ciclo**: non più giustificato dai numeri come proponente.
+### Altre due correzioni alla mia lettura
 
-Config GRPO da `vw1` pronta (`l3/configs/l3_zoom_w2grpo.yaml`, sha del checkpoint
-pinnato, step 0 fra i candidati); **non lanciata**: la scelta fra le due strade è di
-Jacopo. Test 800 non toccato. GPU libera.
+- «Il selettore esterno ha esaurito il vantaggio» era troppo forte: Δ +0,0376 con
+  CI [−0,0037; +0,0788] significa **incerto**, ed è compatibile anche con un beneficio
+  rilevante. Il selettore resta un candidato operativo, non qualcosa da scartare per
+  un intervallo che sfiora lo zero.
+- La finestra dell'oracle **non è un tetto assoluto**: è una particolare strategia di
+  scelta (centrata sull'evento più lungo, ampiezza imposta). Pareggiarla non dimostra
+  che lettore e rappresentazione non abbiano margine. Nel documento ho sostituito
+  «tetto» con «finestra dell'oracle» dove indicava un limite superiore.
+
+Quello che resta sostenuto: sulle righe con azione il divario fra la finestra
+dell'oracle e la policy si è ridotto da +0,107 a +0,042, e la parte di questa
+riduzione attribuibile al lettore **non è ancora separata** da quella attribuibile
+alle finestre.
+
+### Misura in corso, prima di qualunque altro training
+
+Valutazione di `vw1` sugli **stessi 208 crop fuori centro** del gate percettivo di
+Z1-bis: stesso config e stesso seed, quindi canali, coordinate, ampiezze e header
+identici per costruzione, con verifica riga per riga dell'hash dell'header. È il
+confronto che separa il lettore dalle finestre, e dà anche il controllo del contenuto
+(vero contro sostituito e azzerato) per W1. Circa 0,6 h.
+
+Le tre strade dipendono dal suo esito, come indicato da Codex:
+
+1. **W1 legge davvero peggio gli stessi crop** → recupero breve con replay di crop
+   percettivi, non solo del formato originale, preservando il puntamento.
+2. **W1 legge uguale o meglio** → pilot GRPO da `vw1`, step 0 conservato, selezione su
+   localize e multicanale (config `l3/configs/l3_zoom_w2grpo.yaml`, pronta e non
+   lanciata).
+3. **Il selettore esterno conserva un vantaggio** → resta candidato operativo.
+
+Nessuna delle tre parte prima della misura. Test 800 non toccato.
