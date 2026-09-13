@@ -656,3 +656,43 @@ Scadenza dichiarata nel driver (`L3_NIGHT_DEADLINE_HOURS`, default 9 h dall'avvi
 alla scadenza nessuna fase nuova parte. Il nodo resta accesso e libero; nessuno
 spegnimento automatico, nessun accesso al test 800, nessuna modifica
 dell'architettura.
+
+## Separazione lettore/finestre dopo W1 (13/09, criteri dichiarati prima dei numeri)
+
+Misura: `vw1` valutato sui **208 crop fuori centro fissi** del gate percettivo di
+Z1-bis, con lo stesso config e lo stesso seed, quindi canale, coordinate, ampiezza e
+header identici per costruzione e hash dell'header verificato riga per riga. Il
+riferimento appaiato (`vz1bis`, crop vero 0,1994) è già su disco.
+
+Su indicazione di Codex si valutano **due confronti distinti**, non uno:
+
+- **Δ_lettura** = W1 crop vero − Z1-bis crop vero, appaiato sugli stessi 208 ID:
+  quanto è cambiata la lettura **degli stessi crop**.
+- **Δ_contenuto** = W1 crop vero − il migliore fra W1 sostituito e W1 azzerato: se
+  W1 ricava ancora un beneficio dal contenuto.
+
+### Soglia di rilevanza
+
+δ = **0,05**. È la stessa grandezza della soglia del gate percettivo e circa un terzo
+del beneficio del contenuto misurato su Z1-bis (+0,135): un calo di quell'ordine
+conta.
+
+### Diramazioni (dichiarate ora, valutate in ordine)
+
+1. **Calo rilevante e convincente** — Δ_lettura ≤ −0,05 **e** estremo superiore del
+   CI95 < 0 → recupero del lettore con replay di **crop percettivi**, non solo del
+   formato originale, preservando il puntamento.
+2. **Nessuna regressione rilevante, con incertezza abbastanza stretta** — estremo
+   **inferiore** del CI95 > −0,05, cioè un calo di 0,05 o più è **escluso**, **e**
+   Δ_contenuto ≥ +0,05 con CI che esclude lo zero → pilot GRPO da `vw1`, step 0
+   conservato, selezione su localize e multicanale.
+3. **Inconcludente** — il CI95 è compatibile sia con un calo rilevante sia con
+   nessun calo (estremo inferiore ≤ −0,05 **e** estremo superiore ≥ 0) → **nessun
+   training lungo**: si amplia la misura (più crop per ID su entrambi i checkpoint,
+   che restringe l'intervallo di circa la radice del numero di estrazioni) e si
+   decide dopo.
+
+«Non significativo» **non** vale come «uguale o migliore»: la diramazione 2 richiede
+di **escludere** un calo rilevante, non di non averlo rilevato. Con 208 coppie
+l'intervallo atteso è circa ±0,04, quindi l'esito 3 è possibile e va accettato come
+tale invece di forzare una decisione.
