@@ -177,7 +177,7 @@ def _paired_section(
 
 def perceptual_report(
     rows: Sequence[Mapping[str, Any]], gate: Mapping[str, Any], *, config_path: Path,
-    checkpoint: Path, reference_rows: Path,
+    checkpoint: Path, reference_rows: Path, seed_offset: int = 0,
 ) -> dict[str, Any]:
     seed = int(gate["seed"])
     resamples = int(gate["bootstrap_resamples"])
@@ -210,6 +210,7 @@ def perceptual_report(
             "min_true_minus_best_control": threshold,
             "bootstrap_resamples": resamples, "seed": seed,
         },
+        "seed_offset": seed_offset,
         "overall": overall, "per_category": categories,
         "condition_counts": dict(condition_counts),
         "header_identity_verified_ids": expected,
@@ -258,7 +259,11 @@ def evaluate(args: argparse.Namespace) -> int:
                     raise ValueError("fixed-ID ground-truth drift")
                 if not gold_events(sample):
                     raise ValueError("perceptual gate contains a non-positive row")
-                rng = random.Random(int(gate["seed"]) + ordinal * 104729)
+                # `--seed-offset` estrae un crop DIVERSO per lo stesso ID, a parita di
+                # tutto il resto: serve ad ampliare la misura appaiata (piu' crop
+                # per ID) quando un singolo crop lascia l'intervallo inconcludente.
+                rng = random.Random(int(gate["seed"]) + int(args.seed_offset)
+                                    + ordinal * 104729)
                 action, event, position = random_gold_action(sample, sft, rng)
                 radius = float(sft["position"]["centered_radius"])
                 if abs(position - 0.5) <= radius:
@@ -308,6 +313,7 @@ def evaluate(args: argparse.Namespace) -> int:
                             "gold_start": int(event["start"]), "gold_end": int(event["end"]),
                         },
                         "header_sha256": None if condition == "direct_new_format" else header_sha,
+                        "seed_offset": int(args.seed_offset),
                         "replacement_start": replacement_start if condition == "offcenter_swap" else None,
                         "direct_decision": direct_kind if condition == "direct_new_format" else None,
                     }
@@ -322,7 +328,7 @@ def evaluate(args: argparse.Namespace) -> int:
                 raise RuntimeError(f"header identity failed for {sample_id}")
         report = perceptual_report(
             written, gate, config_path=config_path, checkpoint=checkpoint,
-            reference_rows=reference_path,
+            reference_rows=reference_path, seed_offset=int(args.seed_offset),
         )
         _atomic_json_dump(out / "summary.json", report)
         if not report["gate_passed"]:
@@ -346,6 +352,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--reference-rows", required=True, type=Path)
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--max-tokens", type=int, default=500)
+    parser.add_argument("--seed-offset", type=int, default=0,
+                        help="sposta l'estrazione del crop mantenendo tutto il resto")
     return parser
 
 

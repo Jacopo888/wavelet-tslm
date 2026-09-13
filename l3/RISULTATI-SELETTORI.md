@@ -257,21 +257,49 @@ dell'oracle e la policy si è ridotto da +0,107 a +0,042, e la parte di questa
 riduzione attribuibile al lettore **non è ancora separata** da quella attribuibile
 alle finestre.
 
-### Misura in corso, prima di qualunque altro training
+### Misura a finestre identiche: esito inconcludente (13/09, 09:50Z)
 
-Valutazione di `vw1` sugli **stessi 208 crop fuori centro** del gate percettivo di
-Z1-bis: stesso config e stesso seed, quindi canali, coordinate, ampiezze e header
-identici per costruzione, con verifica riga per riga dell'hash dell'header. È il
-confronto che separa il lettore dalle finestre, e dà anche il controllo del contenuto
-(vero contro sostituito e azzerato) per W1. Circa 0,6 h.
+`vw1` valutato sugli **stessi 208 crop fuori centro** del gate percettivo di Z1-bis,
+con lo stesso config e lo stesso seed. Finestre identiche **verificate riga per riga**
+su tutti i 208 ID: hash dell'header, canale, coordinate, ampiezza e ground truth.
+Criteri dichiarati prima in `PROTOCOL-L3.md` §«Separazione lettore/finestre», con
+soglia di rilevanza δ = 0,05.
 
-Le tre strade dipendono dal suo esito, come indicato da Codex:
+| confronto | valore | CI95 |
+|---|---:|---|
+| **Δ_lettura** = W1 vero − Z1-bis vero (stessi crop) | **−0,0176** | **[−0,0522; +0,0161]** |
+| **Δ_contenuto** = W1 vero − miglior controllo | **+0,1115** | [+0,0790; +0,1456] |
 
-1. **W1 legge davvero peggio gli stessi crop** → recupero breve con replay di crop
-   percettivi, non solo del formato originale, preservando il puntamento.
-2. **W1 legge uguale o meglio** → pilot GRPO da `vw1`, step 0 conservato, selezione su
-   localize e multicanale (config `l3/configs/l3_zoom_w2grpo.yaml`, pronta e non
-   lanciata).
-3. **Il selettore esterno conserva un vantaggio** → resta candidato operativo.
+Condizioni W1: crop vero 0,1818, sostituito 0,0702, azzerato 0,0475.
+Per categoria, lettura: classify −0,0324 [−0,0849; +0,0176], localize −0,0025
+[−0,0469; +0,0422], multicanale −0,0181 [−0,1181; +0,0778].
 
-Nessuna delle tre parte prima della misura. Test 800 non toccato.
+**Esito: inconcludente sulla lettura, positivo sul contenuto.** L'intervallo di
+Δ_lettura è compatibile sia con un calo rilevante (−0,05) sia con nessun calo, quindi
+per la regola dichiarata **non parte alcun training lungo**. La stima resta negativa:
+non si dichiara equivalenza, si dichiara incertezza. Contemporaneamente W1 **ricava
+ancora un beneficio netto dal contenuto** del crop, +0,112 con intervallo ben sopra
+lo zero, in tutte e tre le categorie.
+
+Due sottoprodotti utili:
+
+- l'indizio sul multicanale (−0,244 su n=15) **non si riproduce** a finestre
+  identiche: qui è −0,018 [−0,118; +0,078]. Era un artefatto delle finestre diverse,
+  e va abbandonato.
+- il gate percettivo di W1 passerebbe di nuovo con margine (+0,112 contro la soglia
+  +0,05): la percezione del crop non è stata compromessa dall'addestramento W1.
+
+### Ampliamento in corso (azione dichiarata per l'esito 3)
+
+Due crop aggiuntivi per ID su **entrambi** i checkpoint (`--seed-offset` 1 e 2 in
+`diag_crop_content.py`): le coordinate dipendono solo da config, seed e offset, quindi
+restano identiche fra i bracci a parità di offset. Con 3 crop per ID le differenze
+vengono mediate **dentro l'ID** e bootstrappate **sugli ID** — i crop dello stesso
+esempio sono correlati, quindi l'unità di ricampionamento resta l'ID. Quattro
+valutazioni da ~0,55 h, circa 2,2 h in totale (~2 $). Nessun training.
+
+Le tre diramazioni restano quelle dichiarate, e si valuteranno sull'intervallo
+ristretto: recupero del lettore con replay di crop percettivi se il calo diventa
+rilevante e convincente; pilot GRPO da `vw1` se un calo di 0,05 viene **escluso** e il
+contenuto resta utile; ulteriore ampliamento o ripensamento se resta inconcludente.
+Test 800 non toccato.
