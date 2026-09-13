@@ -1,0 +1,144 @@
+# W2: recupero mirato della lettura multicanale. Come W1, ma metà delle tracce
+# multicanale insegna un crop percettivo (finestra che contiene il gold con start
+# uniforme, costruzione Z1-bis) invece delle coordinate del selettore. Serve a
+# recuperare i -0,079 di lettura misurati sul multicanale senza perdere il
+# puntamento. Solo LoRA, nessun tocco a encoder, wavelet o budget di token.
+base_config: ../../kaggle/patch/wavelet_precise_va1.yaml
+
+model:
+  encoder:
+    freeze: true
+
+training:
+  eval_max_new_tokens: 500
+
+zoom_sft:
+  trace_contract: z1bis_v1
+  epochs: 1
+  batch_size: 1
+  lr: 1.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_grad_norm: 1.0
+  seed: 20260914
+  log_every: 25
+  quota_tolerance: 0.02
+  frozen_parameter_prefixes: ["ts_encoder.", "ts_projector."]
+  w1:
+    # Primi intervalli per energia Haar nel canale dell'evento scelto: sono tutti
+    # candidati calcolabili senza gold. Il gold decide solo quale insegnare.
+    candidate_buckets: 4
+    # Start campionati per candidato, uniformemente fra le finestre che contengono
+    # il centro dell'intervallo: la posizione interna resta variabile.
+    draws_per_candidate: 3
+    # Se l'energia Haar fosse inutile piu' spesso di cosi', il ramo non ha senso e
+    # la pianificazione fallisce chiusa prima di toccare la GPU.
+    min_wavelet_rate: 0.45
+    perceptual_replay:
+      # Il calo di lettura misurato a finestre identiche e' concentrato qui.
+      categories: [localize_all_channels]
+      fraction: 0.5
+  window_sizes:
+    - {samples: 1024, weight: 0.34}
+    - {samples: 2048, weight: 0.33}
+    - {samples: 4096, weight: 0.33}
+  length_bands:
+    - {name: L16k, max_length: 16384}
+    - {name: L32k, max_length: 32768}
+    - {name: L64k, max_length: 65536}
+    - {name: L128k, max_length: 131072}
+  position:
+    # "Centered" means the gold center is within 1% of the crop center.
+    centered_radius: 0.01
+    centered_max_fraction: 0.15
+    mean_range: [0.35, 0.65]
+    min_std: 0.15
+    histogram_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  categories:
+    classify_with_evidence:
+      {replay_fraction: 0.15, non_replay_route: zoom_if_positive,
+       zoom_fraction_of_non_replay_positives: 1.0,
+       direct_fraction_of_non_replay_negatives: 1.0}
+    localize:
+      {replay_fraction: 0.15, non_replay_route: zoom_if_positive,
+       zoom_fraction_of_non_replay_positives: 1.0,
+       direct_fraction_of_non_replay_negatives: 1.0}
+    localize_all_channels:
+      {replay_fraction: 0.15, non_replay_route: zoom_if_positive,
+       zoom_fraction_of_non_replay_positives: 1.0,
+       direct_fraction_of_non_replay_negatives: 1.0}
+    measure_magnitude:
+      {replay_fraction: 0.15, non_replay_route: direct,
+       direct_fraction_of_non_replay: 1.0}
+    lead_lag_with_magnitude:
+      {replay_fraction: 0.15, non_replay_route: direct,
+       direct_fraction_of_non_replay: 1.0}
+
+perceptual_gate:
+  seed: 20260912
+  bootstrap_resamples: 10000
+  expected_ids: 208
+  expected_id_order_sha256: 34ccb284c78a22fba2bd7161ace54acd08650b73802badd8ff87b09fa7bebe4a
+  expected_categories:
+    classify_with_evidence: 80
+    localize: 80
+    localize_all_channels: 48
+  min_true_minus_best_control: 0.05
+  require_ci_low_above_zero: true
+
+operational_gate:
+  seed: 20260914
+  bootstrap_resamples: 10000
+  expected_rows: 520
+  max_empty_rate: 0.02
+  max_invalid_action_rate: 0.02
+  min_action_rate: 0.20
+  max_action_rate: 0.60
+  max_false_negative_rate_on_positives: 0.15
+  max_false_positive_rate_on_negatives: 0.15
+  min_delta_vs_va1:
+    overall: 0.00
+    classify_with_evidence: 0.00
+    localize: 0.00
+    localize_all_channels: 0.00
+    measure_magnitude: -0.02
+    lead_lag_with_magnitude: -0.02
+  # Il braccio di confronto e' vz1bis (0,3426 su val520): resta un riferimento
+  # riportato, non una soglia, ma il ramo ha senso solo se non regredisce.
+  compare_vs_previous_vz1: true
+
+rl:
+  # Tenuto solo perche' il loader L3 valida il contratto zoom: W1 non fa RL.
+  contract: zoom
+  prompt_split: train
+  expected_train_rows: 4488
+  train_sha256: b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d
+  initial_checkpoint_sha256: cd7238ae81da1afca9f225a99e9af4261be829798a39985a427d88a098bf2531
+  G: 8
+  prompts_per_step: 2
+  temperature: 0.7
+  top_p: 0.95
+  do_sample: true
+  lr: 1.0e-5
+  weight_decay: 0.0
+  clip_eps: 0.2
+  kl_coef: 0.01
+  advantage_eps: 1.0e-8
+  format_penalty: 0.0
+  max_grad_norm: 1.0
+  trainable: lora
+  steps: 200
+  checkpoint_every: 25
+  seed: 20260912
+  peak_limit_mib: 22528
+  action_max_new_tokens: 500
+  pool_seed: 20260911
+  pool_size: 200
+  pool_per_category: 50
+  resample_every: 100
+  excluded_categories: [lead_lag_with_magnitude]
+  init_prompt_indices: [46, 348, 617, 3484, 4030]
+  memory_gate_indices: [3804, 3930]
+  train_prompt_expectations:
+    "3804": {id: ec313c0ed31f8e1c, category: localize_all_channels, length: 131072, n_channels: 16}
+    "3930": {id: 2e0a358df6184934, category: localize_all_channels, length: 131072, n_channels: 16}

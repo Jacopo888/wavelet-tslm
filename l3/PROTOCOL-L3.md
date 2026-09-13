@@ -696,3 +696,60 @@ conta.
 di **escludere** un calo rilevante, non di non averlo rilevato. Con 208 coppie
 l'intervallo atteso è circa ±0,04, quindi l'esito 3 è possibile e va accettato come
 tale invece di forzare una decisione.
+
+## W2 — recupero mirato della lettura multicanale (13/09, criteri dichiarati prima)
+
+Deciso su indicazione di Codex dopo la separazione lettore/finestre. `W1` resta
+**riferimento e candidato step 0**: non viene sostituito da W2 se W2 non soddisfa
+entrambi gli obiettivi.
+
+### Intervento, uno solo
+
+Tracce W1 invariate, tranne che **metà delle righe multicanale con azione** insegna
+un **crop percettivo** — finestra che contiene il gold con start uniforme fra quelli
+ammissibili, la costruzione Z1-bis — invece delle coordinate del selettore. Quota
+esatta per categoria (non estratta), registrata nel manifest. Solo LoRA, `va1`
+encoder e proiettore congelati, nessun cambio a wavelet, budget di token, ampiezze o
+quote di replay del formato originale. Partenza da `vw1`, una epoca.
+
+Il resto delle tracce multicanale, e tutte le altre categorie, continuano a insegnare
+le coordinate del selettore: è ciò che deve preservare il puntamento.
+
+### Obiettivo 1 — recupero della lettura (sui crop identici)
+
+Stessi 208 ID, **3 crop per ID**, finestre identiche verificate riga per riga, come
+nella misura di separazione. Servono **entrambe**:
+
+1. **Δ_lettura(W2 − W1) sul multicanale > 0 con CI95 che esclude lo zero**: W2 legge
+   gli stessi crop multicanale meglio di W1.
+2. **Δ_lettura(W2 − Z1-bis) in aggregato ≥ −0,03 con estremo inferiore del CI95
+   > −0,05**: il calo rispetto al riferimento pre-W1 non è più compatibile con un
+   calo rilevante.
+
+Non basta migliorare il gate con finestre dell'oracle: il criterio è esplicitamente
+sul confronto a finestre identiche contro W1 e contro Z1-bis.
+
+### Obiettivo 2 — puntamento e operativo preservati
+
+Sulla val520 intera, con la policy autonoma:
+
+- `primary` ≥ **0,3451** (il 0,3551 di W1 meno 0,01 di tolleranza);
+- contenimento dell'evento nelle finestre scelte ≥ **57,5 %** (il 60,5 % di W1 meno
+  3 punti);
+- il gate operativo dichiarato per W1 passa (Δ per categoria contro `va1` non
+  negativi su overall, classify, localize e multicanale; tolleranza −0,02 su
+  magnitudo e lead-lag; azioni valide 20-60 %, invalide ≤ 2 %, vuote ≤ 2 %, falsi
+  negativi e positivi ≤ 15 %).
+
+### Verdetto
+
+- **Entrambi gli obiettivi soddisfatti** → W2 diventa il candidato e il pilot GRPO
+  parte da lui.
+- **Lettura recuperata ma operativo peggiorato** → si tiene W1; il recupero è
+  informativo ma non utilizzabile così.
+- **Lettura non recuperata** → si tiene W1, e il pilot GRPO resta possibile con un
+  **vincolo esplicito sulla lettura multicanale** nel criterio di selezione.
+
+Budget: tracce ~1 min, SFT ~7,2 h, lettura 3 × ~0,55 h, operativo ~0,5 h ≈ 9,5 h
+(~8 $). Nessun accesso al test 800. Nessun cambio simultaneo di encoder, wavelet o
+budget di token.

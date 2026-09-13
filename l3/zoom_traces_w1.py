@@ -45,6 +45,7 @@ from l3.zoom import ZoomAction, gold_events, series_length
 from l3.zoom_traces import (
     ALL_CATEGORIES,
     DIRECT_CATEGORIES,
+    ZOOM_CATEGORIES,
     TRAIN_TRACE_COLUMNS,
     Trace,
     _choose_replay_indices,
@@ -73,6 +74,17 @@ def _w1_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
     draws = int(w1.get("draws_per_candidate", 0))
     if not 1 <= draws <= 16:
         raise ValueError("w1.draws_per_candidate must be in [1, 16]")
+    replay = w1.get("perceptual_replay")
+    if replay is not None:
+        if not isinstance(replay, Mapping):
+            raise ValueError("w1.perceptual_replay must be a mapping")
+        categories = replay.get("categories")
+        if (not isinstance(categories, (list, tuple)) or not categories
+                or any(str(name) not in ZOOM_CATEGORIES for name in categories)):
+            raise ValueError("w1.perceptual_replay.categories must list zoom categories")
+        fraction = float(replay.get("fraction", -1.0))
+        if not 0.0 < fraction <= 1.0:
+            raise ValueError("w1.perceptual_replay.fraction must be in (0, 1]")
     return w1
 
 
@@ -164,6 +176,32 @@ def choose_event(sample: Mapping[str, Any], rng: random.Random) -> dict[str, Any
     return dict(rng.choice(events))
 
 
+def choose_perceptual_replay(samples: Sequence[Mapping[str, Any]],
+                             provisional: Mapping[int, Mapping[str, Any]],
+                             w1: Mapping[str, Any], seed: int) -> set[int]:
+    """Righe che insegnano un crop percettivo invece delle coordinate del selettore.
+
+    Conteggio esatto per categoria, come per le ampiezze: la quota dichiarata deve
+    comparire nel manifest senza dipendere dalla fortuna dell'estrazione.
+    """
+    replay = w1.get("perceptual_replay")
+    if not replay:
+        return set()
+    wanted = {str(name) for name in replay["categories"]}
+    fraction = float(replay["fraction"])
+    chosen: set[int] = set()
+    by_category: dict[str, list[int]] = defaultdict(list)
+    for index in provisional:
+        category = str(samples[index]["category"])
+        if category in wanted:
+            by_category[category].append(index)
+    for category in sorted(by_category):
+        pool = sorted(by_category[category])
+        _stable_rng(seed, category, "perceptual_replay").shuffle(pool)
+        chosen.update(pool[:round(len(pool) * fraction)])
+    return chosen
+
+
 def build_w1_routes(samples: Sequence[Mapping[str, Any]], config: Mapping[str, Any],
                     seed: int) -> tuple[dict[int, Trace], dict[int, Mapping[str, Any]],
                                         dict[int, int], set[int]]:
@@ -194,14 +232,21 @@ def build_w1_routes(samples: Sequence[Mapping[str, Any]], config: Mapping[str, A
 
 def plan_zoom_row(sample: Mapping[str, Any], details: Sequence[Mapping[int, np.ndarray]],
                   config: Mapping[str, Any], seed: int, index: int,
-                  event: Mapping[str, Any], width: int,
+                  event: Mapping[str, Any], width: int, perceptual: bool = False,
                   ) -> tuple[Trace, dict[str, Any]]:
     """Pianifica una singola riga con azione, usando la piramide appena calcolata."""
     sft = config["zoom_sft"]
     w1 = _w1_config(config)
     radius = float(sft["position"]["centered_radius"])
     rng = _stable_rng(seed, sample.get("id", ""), index, "w1")
-    action, position, origin = plan_positive_row(sample, w1, event, width, rng, details)
+    if perceptual:
+        # Ramo di recupero: finestra che contiene il gold con start uniforme
+        # (costruzione Z1-bis). Insegna a LEGGERE, non a proporre coordinate.
+        action, position = sample_containing_action(sample, event, width, rng)
+        origin = "perceptual_replay"
+    else:
+        action, position, origin = plan_positive_row(
+            sample, w1, event, width, rng, details)
     common = {"index": index, "sample_id": str(sample.get("id", "")),
               "category": str(sample["category"])}
     trace = Trace(
@@ -272,6 +317,10 @@ def write_w1_plan(out_dir: Path, config: Mapping[str, Any], seed: int) -> dict[s
             raise RuntimeError(f"expected {expected} train rows, found {len(samples)}")
         fixed, provisional, widths, replay = build_w1_routes(samples, config, seed)
         zoom_indices = set(provisional)
+        perceptual = choose_perceptual_replay(
+            samples, provisional, _w1_config(config), seed)
+        if perceptual:
+            print(f"W1_TRACES perceptual_replay={len(perceptual)} righe", flush=True)
         print(f"W1_TRACES routes: zoom={len(zoom_indices)} replay={len(replay)} "
               f"direct={len(fixed) - len(replay)}", flush=True)
 
@@ -287,7 +336,8 @@ def write_w1_plan(out_dir: Path, config: Mapping[str, Any], seed: int) -> dict[s
             full = {**meta, "time_series": channels}
             details = channel_details(full)
             trace, origin = plan_zoom_row(compact, details, config, seed, index,
-                                          provisional[index], widths[index])
+                                          provisional[index], widths[index],
+                                          index in perceptual)
             planned[index] = trace
             origins[index] = origin
             del channels, full, details
@@ -321,6 +371,9 @@ def write_w1_plan(out_dir: Path, config: Mapping[str, Any], seed: int) -> dict[s
         counts = Counter(str(row["origin"]) for row in origin_rows)
         zoom_rows = sum(value for key, value in counts.items()
                         if key.startswith("wavelet_rank_") or key == "gold_fallback")
+        # `wavelet_rate` misura la resa del selettore: si calcola sulle sole righe
+        # che lo hanno usato, escludendo il replay percettivo.
+
         w1_block = {
             "origin_counts": dict(counts),
             "zoom_rows": zoom_rows,
@@ -331,6 +384,8 @@ def write_w1_plan(out_dir: Path, config: Mapping[str, Any], seed: int) -> dict[s
                                    if zoom_rows else None),
             "candidate_buckets": int(config["zoom_sft"]["w1"]["candidate_buckets"]),
             "draws_per_candidate": int(config["zoom_sft"]["w1"]["draws_per_candidate"]),
+            "perceptual_replay_declared": config["zoom_sft"]["w1"].get("perceptual_replay"),
+            "perceptual_replay_rows": counts.get("perceptual_replay", 0),
             "declared_window_sizes": [int(item["samples"])
                                       for item in config["zoom_sft"]["window_sizes"]],
         }

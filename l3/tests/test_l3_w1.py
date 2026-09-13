@@ -16,6 +16,7 @@ from l3.tools.compare_selectors import channel_details, geometry
 from l3.zoom_traces_w1 import (
     _w1_config,
     assign_widths,
+    choose_perceptual_replay,
     build_w1_routes,
     choose_event,
     plan_positive_row,
@@ -216,3 +217,60 @@ def test_width_allocation_fails_closed_when_the_event_does_not_fit():
     provisional = {0: {"channel": "ch0", "start": 0, "end": 5000}}
     with pytest.raises(ValueError):
         assign_widths([s], provisional, config["zoom_sft"], seed=1)
+
+
+def test_perceptual_replay_config_is_validated():
+    with pytest.raises(ValueError):
+        _w1_config(base_config(w1={"perceptual_replay": {"categories": [],
+                                                         "fraction": 0.5}}))
+    with pytest.raises(ValueError):
+        _w1_config(base_config(w1={"perceptual_replay": {
+            "categories": ["measure_magnitude"], "fraction": 0.5}}))
+    with pytest.raises(ValueError):
+        _w1_config(base_config(w1={"perceptual_replay": {
+            "categories": ["localize_all_channels"], "fraction": 0.0}}))
+    ok = _w1_config(base_config(w1={"perceptual_replay": {
+        "categories": ["localize_all_channels"], "fraction": 0.5}}))
+    assert ok["perceptual_replay"]["fraction"] == 0.5
+
+
+def test_perceptual_replay_quota_is_exact_and_only_on_declared_categories():
+    samples = []
+    for index in range(10):
+        item = sample(category="localize_all_channels", channels=4,
+                      start=3000 + 100 * index, end=3100 + 100 * index)
+        item["id"] = f"multi{index}"
+        samples.append(item)
+    for index in range(10):
+        item = sample(category="localize", start=3000 + 100 * index,
+                      end=3100 + 100 * index)
+        item["id"] = f"single{index}"
+        samples.append(item)
+    config = base_config(w1={"perceptual_replay": {
+        "categories": ["localize_all_channels"], "fraction": 0.5}})
+    provisional = {index: choose_event(item, random.Random(index))
+                   for index, item in enumerate(samples)}
+    chosen = choose_perceptual_replay(samples, provisional,
+                                      _w1_config(config), seed=5)
+    assert len(chosen) == 5
+    assert all(samples[index]["category"] == "localize_all_channels" for index in chosen)
+    again = choose_perceptual_replay(samples, provisional, _w1_config(config), seed=5)
+    assert chosen == again
+    assert choose_perceptual_replay(samples, provisional,
+                                    _w1_config(base_config()), seed=5) == set()
+
+
+def test_perceptual_branch_teaches_a_gold_containing_window():
+    s = sample(category="localize_all_channels", channels=4, start=9000, end=9100)
+    config = base_config(w1={"perceptual_replay": {
+        "categories": ["localize_all_channels"], "fraction": 1.0}})
+    details = channel_details(s)
+    event = choose_event(s, random.Random(0))
+    trace, origin = plan_zoom_row(s, details, config, 5, 0, event, 2048, True)
+    assert origin["origin"] == "perceptual_replay"
+    assert trace.action.channel == str(event["channel"])
+    assert trace.action.start <= int(event["start"])
+    assert int(event["end"]) <= trace.action.end
+    assert geometry(s, trace.action)["state"] == "contained"
+    normale, origin_b = plan_zoom_row(s, details, config, 5, 0, event, 2048, False)
+    assert origin_b["origin"].startswith(("wavelet_rank_", "gold_fallback"))
