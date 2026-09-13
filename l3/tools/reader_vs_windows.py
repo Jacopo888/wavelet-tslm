@@ -221,9 +221,9 @@ def main() -> int:
         }
     decision = decide(reading, content, delta=args.delta, min_content=args.min_content)
 
-    print(f"\nΔ_lettura   (W1 vero − Z1bis vero): {reading['mean']:+.4f} "
+    print(f"\ndelta_lettura   (W1 vero - Z1bis vero): {reading['mean']:+.4f} "
           f"CI[{reading['ci95'][0]:+.4f}; {reading['ci95'][1]:+.4f}]")
-    print(f"Δ_contenuto (W1 vero − miglior controllo): {content['mean']:+.4f} "
+    print(f"delta_contenuto (W1 vero - miglior controllo): {content['mean']:+.4f} "
           f"CI[{content['ci95'][0]:+.4f}; {content['ci95'][1]:+.4f}]")
     print("condizioni W1:", {k: round(v, 4) for k, v in condition_means.items()})
     print("\nper categoria:")

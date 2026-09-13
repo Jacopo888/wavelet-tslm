@@ -68,3 +68,47 @@ def test_thresholds_are_recorded_in_the_decision():
     out = decide(content(0.07, 0.03), scores(0.08, 0.04, 0.045, 0.012), **THRESHOLDS)
     assert out["criteria"]["min_window_delta"] == 0.05
     assert "PROTOCOL-L3" in out["criteria"]["declared_in"]
+
+
+def test_w2_verdict_requires_both_objectives(tmp_path):
+    """La tabella del verdetto W2 non deve poter passare con un solo obiettivo."""
+    import json
+    import subprocess
+    import sys
+
+    def write(name, payload):
+        path = tmp_path / name
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return path
+
+    def reading(mean, low, high):
+        return {"mean": mean, "ci95": [low, high], "n": 208}
+
+    def run(multi, aggregate, primary, contained, gate_passed):
+        vs_w1 = write("vs_w1.json", {"per_category": {
+            "localize_all_channels": {"reading": reading(*multi)},
+            "localize": {"reading": reading(0.0, -0.02, 0.02)}}})
+        vs_z1 = write("vs_z1.json", {"reading": reading(*aggregate),
+                                     "content": reading(0.1, 0.08, 0.12),
+                                     "per_category": {}})
+        rows = tmp_path / "rows.jsonl"
+        rows.write_text(chr(10).join(
+            json.dumps({"id": f"r{i}", "primary": primary}) for i in range(10)),
+            encoding="utf-8")
+        geometry = write("geo.json", {"overall": {"policy": {"contained_rate": contained}}})
+        gate = write("gate.json", {"gate_passed": gate_passed, "checks": {"x": gate_passed}})
+        out = tmp_path / "VERDICT.json"
+        subprocess.run([sys.executable, str(ROOT / "l3" / "tools" / "w2_verdict.py"),
+                        "--vs-w1", str(vs_w1), "--vs-z1bis", str(vs_z1),
+                        "--policy-json", str(geometry), "--policy-rows", str(rows),
+                        "--geometry", str(geometry), "--gate", str(gate),
+                        "--out", str(out)], check=True, capture_output=True)
+        return json.loads(out.read_text(encoding="utf-8"))["verdict"]
+
+    assert run((0.05, 0.01, 0.09), (-0.01, -0.03, 0.01), 0.36, 0.62, True) ==         "w2_becomes_candidate"
+    # lettura recuperata ma operativo sotto soglia
+    assert run((0.05, 0.01, 0.09), (-0.01, -0.03, 0.01), 0.30, 0.62, True) ==         "keep_w1_reading_only"
+    # lettura non recuperata (CI del multicanale attraversa zero)
+    assert run((0.02, -0.01, 0.05), (-0.01, -0.03, 0.01), 0.36, 0.62, True) ==         "keep_w1_grpo_with_constraint"
+    # aggregato ancora compatibile con un calo rilevante
+    assert run((0.05, 0.01, 0.09), (-0.03, -0.06, 0.00), 0.36, 0.62, True) ==         "keep_w1_grpo_with_constraint"
