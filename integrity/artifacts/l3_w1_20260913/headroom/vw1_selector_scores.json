@@ -1,0 +1,120 @@
+{
+  "arms": {
+    "oracle_matched": {
+      "contained_rate": 1.0,
+      "mean": 0.1879088529321211,
+      "mean_by_state": {
+        "contained": 0.1879088529321211
+      },
+      "n": 233,
+      "per_band": {
+        "131072": {
+          "mean": 0.1499295200307812,
+          "n": 73
+        },
+        "16384": {
+          "mean": 0.23712000097127206,
+          "n": 47
+        },
+        "32768": {
+          "mean": 0.2323599475466252,
+          "n": 69
+        },
+        "65536": {
+          "mean": 0.1286461669220513,
+          "n": 44
+        }
+      },
+      "per_category": {
+        "classify_with_evidence": {
+          "mean": 0.16534469726699855,
+          "n": 110
+        },
+        "localize": {
+          "mean": 0.21763184403886057,
+          "n": 81
+        },
+        "localize_all_channels": {
+          "mean": 0.18968253968253967,
+          "n": 42
+        }
+      },
+      "window_states": {
+        "contained": 233
+      }
+    },
+    "wavelet_in_policy_channel": {
+      "contained_rate": 0.7811158798283262,
+      "mean": 0.18332872491324076,
+      "mean_by_state": {
+        "contained": 0.19622036005161517,
+        "outside": 0.0,
+        "partial": 0.3183403352450517
+      },
+      "n": 233,
+      "per_band": {
+        "131072": {
+          "mean": 0.17907066700701904,
+          "n": 73
+        },
+        "16384": {
+          "mean": 0.2009156597033243,
+          "n": 47
+        },
+        "32768": {
+          "mean": 0.20131261143738222,
+          "n": 69
+        },
+        "65536": {
+          "mean": 0.14340518222811574,
+          "n": 44
+        }
+      },
+      "per_category": {
+        "classify_with_evidence": {
+          "mean": 0.1423874531462553,
+          "n": 110
+        },
+        "localize": {
+          "mean": 0.19118896780284378,
+          "n": 81
+        },
+        "localize_all_channels": {
+          "mean": 0.2753968253968254,
+          "n": 42
+        }
+      },
+      "window_states": {
+        "contained": 182,
+        "outside": 29,
+        "partial": 22
+      }
+    }
+  },
+  "baseline": {
+    "condition": "self_true",
+    "mean": null,
+    "rows": 0,
+    "source": null
+  },
+  "criterion": {
+    "bootstrap_resamples": 10000,
+    "kind": "descriptive, paired bootstrap; no pass/fail",
+    "seed": 20260913
+  },
+  "format": "l3_selector_scores_v1",
+  "inputs": {
+    "checkpoint": "/root/l3/night_20260913T005001Z/w1_sft/train/vz1bis_epoch_1_end.pt",
+    "config": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_w1.yaml",
+    "policy_rows": "/root/l3/night_20260913T005001Z/w1_operational/val520_policy.jsonl"
+  },
+  "rows_per_selector": {
+    "oracle_matched": 233,
+    "wavelet_in_policy_channel": 233
+  },
+  "selectors": [
+    "wavelet_in_policy_channel",
+    "oracle_matched"
+  ],
+  "status": "DONE"
+}
