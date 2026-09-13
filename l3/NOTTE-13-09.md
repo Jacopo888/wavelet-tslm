@@ -5,7 +5,8 @@ Due sessioni tmux sul nodo, avviate alle 23:17 e 23:49 UTC del 12/09.
 | sessione | cosa fa | run root |
 |---|---|---|
 | `l3-selectors-20260912T231746Z` | gate del contenuto sulle finestre autonome + scala ×2/×4 | `/root/l3/selectors_20260912T231746Z` |
-| `l3-night-20260912T234945Z` | punteggio dei selettori → decisione → un ramo | `/root/l3/night_20260912T234945Z` |
+| `l3-night-20260912T234945Z` | punteggio dei selettori → decisione (conclusa 00:45Z) | `/root/l3/night_20260912T234945Z` |
+| `l3-night-20260913T005001Z` | **ramo `selector_sft` in corso** | `/root/l3/night_20260913T005001Z` |
 
 La seconda attende che la prima liberi la GPU, quindi non si sovrappongono.
 
@@ -48,16 +49,23 @@ circa, ed è la scelta giusta: meglio ferma che spesa su un'ipotesi già smentit
 ## Al risveglio, in ordine
 
 ```bash
-ssh root@78.141.232.142 'cat /root/l3/night_20260912T234945Z/BRANCH.txt; ls /root/l3/night_20260912T234945Z/*/OK'
+ssh root@78.141.232.142 'cat /root/l3/night_20260913T005001Z/BRANCH.txt; ls /root/l3/night_20260913T005001Z/*/OK'
 ```
 
-1. `night_.../DECISION.json` — il ramo scelto e **tutte** le misure che lo hanno
+**Corso effettivo**: la decisione è stata presa alle 00:45Z (ramo `selector_sft`,
+misure in `/root/l3/DECISION_20260913.json`). Il primo tentativo di pianificare le
+tracce è fallito sulla quota delle ampiezze — allocate a conteggi esatti in Z1-bis,
+estratte in modo indipendente da me — senza consumare GPU; corretto, la catena è
+stata rilanciata alle 00:50Z riusando la decisione già presa. I percorsi qui sotto
+si riferiscono alla run `night_20260913T005001Z`.
+
+1. `night_20260913T005001Z/DECISION.json` — il ramo scelto e **tutte** le misure che lo hanno
    deciso, con le soglie registrate accanto.
-2. `night_.../scores/scores/summary.json` — i tre bracci per categoria e per banda.
+2. `night_20260912T234945Z/scores/scores/summary.json` — i tre bracci per categoria e per banda.
 3. `selectors_.../selfwindow/content/summary.json` — contenuto vero contro
    sostituito e azzerato sulle finestre autonome, più la scala ×2/×4 e la
    stratificazione contenute/mancate.
-4. Se il ramo è `selector_sft`: `w1_sft/summary.json` (loss, passi, picco),
+4. Ramo scelto, `selector_sft`: `traces_w1/plan/summary.json` (88,7 % di proposte wavelet utili), `w1_sft/summary.json` (loss, passi, picco),
    `w1_operational/gate.json` (gate contro va1 e vz1bis) e
    `w1_geometry/geometry/summary.json` — **il numero da battere è 55,3 % di
    contenimento**.
