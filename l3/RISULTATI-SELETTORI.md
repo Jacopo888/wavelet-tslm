@@ -319,11 +319,14 @@ Il valore di questa misura sta però nella risoluzione per categoria, che è nuo
 | classify_with_evidence | 80 | −0,0300 [−0,0634; +0,0022] | +0,0916 [+0,0586; +0,1265] |
 | **localize_all_channels** | 48 | **−0,0789** [−0,1296; −0,0289] | +0,0648 [+0,0076; +0,1255] |
 
-- **Su localize la lettura non è cambiata affatto** (−0,0005), ed è la categoria dove
-  W1 guadagna di più in operativo: il miglioramento lì non ha alcun costo percettivo.
+- **Su localize non si rileva alcun calo** (−0,0005 con incertezza di circa ±0,03):
+  «nessun calo rilevato», non «nessun costo» — l'intervallo ammette ancora
+  variazioni fino a tre centesimi in entrambe le direzioni.
 - Su classify il calo è piccolo e l'intervallo sfiora lo zero.
-- **Sul multicanale il calo è reale e oltre la soglia** (−0,079 con CI che esclude lo
-  zero): è lì che l'addestramento W1 ha pagato un prezzo.
+- **Sul multicanale il calo è il più forte** (−0,079 con CI che esclude lo zero): la
+  stima supera la soglia di rilevanza, ma l'intervallo [−0,130; −0,029] **non
+  dimostra** che il calo la superi con certezza. È il segnale più solido che abbiamo,
+  non una misura conclusiva della sua entità.
 
 Correzione di una mia correzione: con un solo crop per ID avevo **ritirato**
 l'indizio sul multicanale (−0,018 [−0,118; +0,078]). A potenza tripla l'indizio
@@ -337,8 +340,9 @@ Resta pieno il beneficio del contenuto in tutte le categorie (+0,105 in aggregat
 
 Sostenuto: W1 migliora il puntamento e il risultato operativo; legge gli stessi crop
 in modo **leggermente** peggiore, di 0,030 in aggregato (CI esclude lo zero, la
-soglia di rilevanza no), e il costo è concentrato sul **multicanale** (−0,079),
-assente su localize; continua a ricavare dal contenuto un beneficio ampio.
+soglia di rilevanza no); il segnale più forte è sul **multicanale** (−0,079, stima
+oltre la soglia ma intervallo che non ne prova il superamento), mentre su localize
+**non si rileva** alcun calo; il beneficio dal contenuto resta ampio.
 
 Non sostenuto: che il calo aggregato sia irrilevante (l'intervallo tocca −0,051) né
 che sia rilevante (la stima è −0,030). Su questo punto la misura, a questa potenza,
