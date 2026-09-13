@@ -753,3 +753,54 @@ Sulla val520 intera, con la policy autonoma:
 Budget: tracce ~1 min, SFT ~7,2 h, lettura 3 × ~0,55 h, operativo ~0,5 h ≈ 9,5 h
 (~8 $). Nessun accesso al test 800. Nessun cambio simultaneo di encoder, wavelet o
 budget di token.
+
+## Pilot GRPO dopo W2 (13/09, criteri dichiarati prima dell'esito di W2)
+
+Il verdetto di W2 decide **solo il checkpoint di partenza**; il disegno del pilot è
+fissato qui, uguale nei tre casi, per non scegliere i parametri dopo aver visto i
+numeri.
+
+| verdetto di W2 | partenza del pilot | vincolo aggiuntivo |
+|---|---|---|
+| `w2_becomes_candidate` | `vw2` | nessuno oltre quelli sotto |
+| `keep_w1_reading_only` | `vw1` | vincolo sulla lettura multicanale |
+| `keep_w1_grpo_with_constraint` | `vw1` | vincolo sulla lettura multicanale |
+
+### Disegno
+
+GRPO sulla scelta della finestra, contratto `zoom` già nel kit: G=8, 2 prompt per
+passo, temperatura 0,7, top-p 0,95, lr 1e-5, clip 0,2, KL 0,01 token-level,
+`weight_decay` 0, solo LoRA, pool di 200 prompt ricampionato, `lead_lag` esclusa.
+Chunk da 25 passi fino a 150, validazione completa su val520 ogni 50.
+**Step 0 è fra i candidati**, seminato col primary già misurato del checkpoint di
+partenza: se nessuno step lo supera, il candidato resta il checkpoint di partenza e
+non si prolunga nulla.
+
+Prima di qualunque passo di training: `init-check` (identità della policy iniziale) e
+gate di memoria `zoom-memory` (1 passo, 16 rollout, picco < 22.528 MiB). **Questo
+percorso non è mai stato eseguito sul nodo**: se uno dei due guard non passa, la
+catena si ferma chiusa e la GPU resta libera.
+
+### Selezione dei candidati
+
+Uno step è selezionabile solo se, sulla val520 intera:
+
+1. `primary` complessivo ≥ primary dello step 0 (nessuna regressione aggregata);
+2. `localize_all_channels` ≥ suo valore allo step 0 **meno 0,02** — è il **vincolo
+   sulla lettura multicanale** richiesto da Codex, applicato al proxy misurabile a
+   ogni checkpoint;
+3. azioni invalide ≤ 2 % e risposte vuote ≤ 2 %.
+
+Fra gli step selezionabili si prende il primo che arriva entro 0,002 dal massimo.
+Arresto per stagnazione: due validazioni consecutive senza un guadagno di 0,005.
+
+### Verifica finale, solo sul checkpoint scelto
+
+Lettura sui 208 crop fissi × 3 offset a finestre identiche, contro il checkpoint di
+partenza e contro `Z1-bis`. Serve a escludere che il guadagno operativo sia stato
+comprato con un peggioramento della lettura: se la lettura multicanale contro la
+partenza scende oltre −0,03 con CI che esclude lo zero, il pilot è **respinto** e si
+tiene il checkpoint di partenza. Costo ~1,7 h, una sola volta.
+
+Budget del pilot: ~6 h di GRPO più ~1,7 h di verifica (~7 $). Nessun accesso al test
+800. Nessun cambio di architettura, encoder e proiettore restano congelati.
