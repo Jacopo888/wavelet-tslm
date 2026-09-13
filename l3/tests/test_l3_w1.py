@@ -15,11 +15,12 @@ if str(ROOT) not in sys.path:
 from l3.tools.compare_selectors import channel_details, geometry
 from l3.zoom_traces_w1 import (
     _w1_config,
+    assign_widths,
     build_w1_routes,
+    choose_event,
     plan_positive_row,
     plan_zoom_row,
     sample_containing_point,
-    trace_width,
     wavelet_candidate_centers,
 )
 
@@ -117,10 +118,12 @@ def test_candidate_centers_are_ordered_by_energy():
 def test_positive_row_teaches_a_wavelet_window_when_the_energy_is_on_the_event():
     s = sample(start=11000, end=11100)
     config = base_config()
-    action, event, position, origin = plan_positive_row(
-        s, config["zoom_sft"], _w1_config(config), random.Random(1), channel_details(s))
+    event = choose_event(s, random.Random(0))
+    action, position, origin = plan_positive_row(
+        s, _w1_config(config), event, 2048, random.Random(1), channel_details(s))
     assert origin == "wavelet_rank_1"
     assert action.start <= int(event["start"]) and int(event["end"]) <= action.end
+    assert action.window_len == 2048
     assert 0.0 <= position <= 1.0
     assert geometry(s, action)["state"] == "contained"
 
@@ -128,8 +131,9 @@ def test_positive_row_teaches_a_wavelet_window_when_the_energy_is_on_the_event()
 def test_decoy_energy_is_recovered_by_a_lower_ranked_candidate():
     s = sample(start=11000, end=11100, decoy=3000)
     config = base_config()
-    _, event, _, origin = plan_positive_row(
-        s, config["zoom_sft"], _w1_config(config), random.Random(2), channel_details(s))
+    event = choose_event(s, random.Random(0))
+    _, _, origin = plan_positive_row(
+        s, _w1_config(config), event, 2048, random.Random(2), channel_details(s))
     assert origin.startswith("wavelet_rank_")
     assert int(origin.rsplit("_", 1)[1]) >= 2
 
@@ -138,8 +142,9 @@ def test_single_candidate_on_a_decoy_falls_back_to_the_gold_window():
     s = sample(start=11000, end=11100, decoy=3000)
     config = base_config(w1={"candidate_buckets": 1, "draws_per_candidate": 2,
                              "min_wavelet_rate": 0.45})
-    action, event, _, origin = plan_positive_row(
-        s, config["zoom_sft"], _w1_config(config), random.Random(3), channel_details(s))
+    event = choose_event(s, random.Random(0))
+    action, _, origin = plan_positive_row(
+        s, _w1_config(config), event, 2048, random.Random(3), channel_details(s))
     assert origin == "gold_fallback"
     # Anche la ricaduta deve contenere l'evento: il piano resta valido.
     assert action.start <= int(event["start"]) and int(event["end"]) <= action.end
@@ -154,8 +159,8 @@ def test_routes_split_replay_direct_and_zoom():
     ]
     config = base_config()
     config["zoom_sft"]["categories"]["localize"]["replay_fraction"] = 0.0
-    fixed, zoom_indices, replay = build_w1_routes(samples, config, seed=7)
-    assert zoom_indices == {0}
+    fixed, provisional, widths, replay = build_w1_routes(samples, config, seed=7)
+    assert set(provisional) == {0} and set(widths) == {0}
     assert fixed[1].source == "direct" and fixed[2].source == "direct"
     assert replay == set()
 
@@ -167,9 +172,9 @@ def test_replay_quota_is_honoured_by_the_routes():
         item["id"] = f"row{index}"
     config = base_config()
     config["zoom_sft"]["categories"]["localize"]["replay_fraction"] = 0.30
-    fixed, zoom_indices, replay = build_w1_routes(samples, config, seed=11)
+    fixed, provisional, widths, replay = build_w1_routes(samples, config, seed=11)
     assert len(replay) == 3
-    assert len(zoom_indices) == 7
+    assert len(provisional) == 7
     assert all(fixed[index].source == "replay" for index in replay)
 
 
@@ -177,24 +182,37 @@ def test_plan_zoom_row_is_deterministic_for_a_given_seed():
     s = sample(start=9000, end=9100)
     config = base_config()
     details = channel_details(s)
-    first, origin_a = plan_zoom_row(s, details, config, seed=5, index=3)
-    second, origin_b = plan_zoom_row(s, details, config, seed=5, index=3)
+    event = choose_event(s, random.Random(0))
+    first, origin_a = plan_zoom_row(s, details, config, 5, 3, event, 2048)
+    second, origin_b = plan_zoom_row(s, details, config, 5, 3, event, 2048)
     assert (first.action.channel, first.action.start, first.action.end) == (
         second.action.channel, second.action.start, second.action.end)
     assert origin_a == origin_b
-    other, _ = plan_zoom_row(s, details, config, seed=6, index=3)
+    other, _ = plan_zoom_row(s, details, config, 6, 3, event, 2048)
     assert first.source == other.source == "zoom"
     assert first.length_band == "L16k"
 
 
-def test_trace_width_only_uses_declared_sizes_that_fit_the_event():
-    s = sample(start=1000, end=2500)
+def test_width_allocation_matches_the_declared_weights_exactly():
+    """E' il controllo che `validate_trace_plan` applica entro il 2%."""
+    samples = [sample(category="localize", start=1000 + 50 * i, end=1100 + 50 * i)
+               for i in range(100)]
+    for index, item in enumerate(samples):
+        item["id"] = f"row{index}"
     config = base_config()
-    rng = random.Random(0)
-    widths = {trace_width(s, config["zoom_sft"],
-                          {"channel": "ch0", "start": 1000, "end": 2500}, rng)
-              for _ in range(20)}
-    assert widths == {2048}
+    provisional = {index: choose_event(item, random.Random(index))
+                   for index, item in enumerate(samples)}
+    widths = assign_widths(samples, provisional, config["zoom_sft"], seed=3)
+    counts = {size: sum(1 for width in widths.values() if width == size)
+              for size in (1024, 2048)}
+    assert counts == {1024: 50, 2048: 50}
+    assert len(widths) == 100
+
+
+def test_width_allocation_fails_closed_when_the_event_does_not_fit():
+    s = sample(start=0, end=5000)
+    s["id"] = "wide"
+    config = base_config()
+    provisional = {0: {"channel": "ch0", "start": 0, "end": 5000}}
     with pytest.raises(ValueError):
-        trace_width(s, config["zoom_sft"],
-                    {"channel": "ch0", "start": 0, "end": 9000}, rng)
+        assign_widths([s], provisional, config["zoom_sft"], seed=1)

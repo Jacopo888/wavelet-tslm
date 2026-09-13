@@ -28,6 +28,9 @@ TRACE_PEAK_LIMIT_MIB="${L3_NIGHT_TRACE_PEAK_LIMIT_MIB:-8192}"
 MIN_CONTENT_DELTA="${L3_NIGHT_MIN_CONTENT_DELTA:-0.03}"
 MIN_WINDOW_DELTA="${L3_NIGHT_MIN_WINDOW_DELTA:-0.05}"
 MIN_SELECTOR_DELTA="${L3_NIGHT_MIN_SELECTOR_DELTA:-0.03}"
+# Decisione gia' presa in una run precedente: si riparte dal ramo senza
+# ripetere il gate del contenuto e il punteggio dei selettori.
+DECISION_SOURCE="${L3_NIGHT_DECISION:-}"
 
 [ "${L3_NIGHT_DIFF_REVIEWED:-}" = "CLAUDE_APPROVED" ] || {
   echo "refusing to start: set L3_NIGHT_DIFF_REVIEWED=CLAUDE_APPROVED after diff review" >&2
@@ -40,7 +43,7 @@ if [ "${1:-}" != "--worker" ] && [ -z "${TMUX:-}" ]; then
   mkdir -p "$RUN_ROOT"
   SESSION="l3-night-$(date -u +%Y%m%dT%H%M%SZ)"
   tmux new-session -d -s "$SESSION" \
-    "env L3_NIGHT_DIFF_REVIEWED=CLAUDE_APPROVED L3_NIGHT_RUN_ROOT='$RUN_ROOT' L3_GPU='$GPU' L3_ROOT='$ROOT' L3_PYTHON='$PY' L3_Z1BIS_ROOT='$Z1BIS_ROOT' L3_Z1BIS_CHECKPOINT='$CHECKPOINT' L3_VA1_CHECKPOINT='$VA1_CHECKPOINT' L3_POLICY_ROWS='$POLICY_ROWS' L3_CONTENT_DIR='$CONTENT_DIR' L3_PREVIOUS_ZOOM_ROOT='$PREVIOUS_ROOT' L3_NIGHT_DEADLINE_HOURS='$DEADLINE_HOURS' L3_NIGHT_CONTENT_WAIT_MINUTES='$CONTENT_WAIT_MINUTES' bash '$L3/node_l3_night.sh' --worker >'$RUN_ROOT/worker.log' 2>&1"
+    "env L3_NIGHT_DIFF_REVIEWED=CLAUDE_APPROVED L3_NIGHT_RUN_ROOT='$RUN_ROOT' L3_GPU='$GPU' L3_ROOT='$ROOT' L3_PYTHON='$PY' L3_Z1BIS_ROOT='$Z1BIS_ROOT' L3_Z1BIS_CHECKPOINT='$CHECKPOINT' L3_VA1_CHECKPOINT='$VA1_CHECKPOINT' L3_POLICY_ROWS='$POLICY_ROWS' L3_CONTENT_DIR='$CONTENT_DIR' L3_PREVIOUS_ZOOM_ROOT='$PREVIOUS_ROOT' L3_NIGHT_DEADLINE_HOURS='$DEADLINE_HOURS' L3_NIGHT_CONTENT_WAIT_MINUTES='$CONTENT_WAIT_MINUTES' L3_NIGHT_DECISION='$DECISION_SOURCE' bash '$L3/node_l3_night.sh' --worker >'$RUN_ROOT/worker.log' 2>&1"
   echo "L3_NIGHT_DETACHED session=$SESSION run_root=$RUN_ROOT log=$RUN_ROOT/worker.log"
   exit 0
 fi
@@ -119,44 +122,60 @@ CUDA_VISIBLE_DEVICES="" "$PY" -m pytest "$L3/tests/test_l3_selectors.py" \
   "$L3/tests/test_l3_w1.py" "$L3/tests/test_l3_decision.py" -q 2>&1 | tee "$CURRENT_DIR/pytest.log"
 finish_phase
 
+if [ -n "$DECISION_SOURCE" ]; then
+  # Ramo gia' deciso: si copia la decisione e le sue misure, non si rimisura.
+  [ -f "$DECISION_SOURCE" ] || { echo "missing decision: $DECISION_SOURCE" >&2; exit 1; }
+  start_phase decision_reused
+  cp "$DECISION_SOURCE" "$CURRENT_DIR/DECISION.json"
+  cp "$DECISION_SOURCE" "$RUN_ROOT/DECISION.json"
+  BRANCH=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1]))['branch'])" \
+    "$RUN_ROOT/DECISION.json")
+  echo "$BRANCH" > "$RUN_ROOT/BRANCH.txt"
+  printf 'L3_NIGHT_DECISION_REUSED branch=%s source=%s\n' "$BRANCH" "$DECISION_SOURCE" \
+    | tee -a "$CURRENT_DIR/phase.log"
+  finish_phase
+else
+
 # ---- attesa del gate del contenuto (fase A, in corso su GPU) ---------------
-start_phase wait_content
-DEADLINE_WAIT=$(( $(date +%s) + CONTENT_WAIT_MINUTES * 60 ))
-while [ ! -e "$CONTENT_DIR/summary.json" ]; do
-  if [ "$(date +%s)" -ge "$DEADLINE_WAIT" ]; then
-    echo "content gate did not finish within $CONTENT_WAIT_MINUTES minutes" >&2
-    exit 1
-  fi
-  sleep 60
-done
-# La GPU deve essere libera: la fase A scrive il summary prima di uscire.
-while pgrep -f "[g]ate_selfwindow_content.py" >/dev/null; do sleep 20; done
-cp "$CONTENT_DIR/summary.json" "$CURRENT_DIR/content_summary.json"
-finish_phase
+  start_phase wait_content
+  DEADLINE_WAIT=$(( $(date +%s) + CONTENT_WAIT_MINUTES * 60 ))
+  while [ ! -e "$CONTENT_DIR/summary.json" ]; do
+    if [ "$(date +%s)" -ge "$DEADLINE_WAIT" ]; then
+      echo "content gate did not finish within $CONTENT_WAIT_MINUTES minutes" >&2
+      exit 1
+    fi
+    sleep 60
+  done
+  # La GPU deve essere libera: la fase A scrive il summary prima di uscire.
+  while pgrep -f "[g]ate_selfwindow_content.py" >/dev/null; do sleep 20; done
+  cp "$CONTENT_DIR/summary.json" "$CURRENT_DIR/content_summary.json"
+  finish_phase
+  
+  # ---- punteggio dei selettori (GPU) ----------------------------------------
+  require_budget 1.5 scores || { echo "L3_NIGHT_OK_NO_BUDGET"; exit 0; }
+  start_phase scores
+  CUDA_VISIBLE_DEVICES="$GPU" "$PY" "$L3/tools/score_selectors.py" \
+    --config "$Z1BIS_CONFIG" --checkpoint "$CHECKPOINT" --policy-rows "$POLICY_ROWS" \
+    --baseline-rows "$CONTENT_DIR/rows.jsonl" --out-dir "$CURRENT_DIR/scores" \
+    2>&1 | tee "$CURRENT_DIR/scores.log"
+  finish_phase
+  
+  # ---- decisione -------------------------------------------------------------
+  start_phase decision
+  "$PY" "$L3/tools/decide_branch.py" \
+    --content-summary "$RUN_ROOT/wait_content/content_summary.json" \
+    --scores-summary "$RUN_ROOT/scores/scores/summary.json" \
+    --min-content-delta "$MIN_CONTENT_DELTA" \
+    --min-window-delta "$MIN_WINDOW_DELTA" \
+    --min-selector-delta "$MIN_SELECTOR_DELTA" \
+    --out "$CURRENT_DIR/DECISION.json" 2>&1 | tee "$CURRENT_DIR/decision.log"
+  BRANCH=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1]))['branch'])" \
+    "$CURRENT_DIR/DECISION.json")
+  echo "$BRANCH" > "$RUN_ROOT/BRANCH.txt"
+  cp "$CURRENT_DIR/DECISION.json" "$RUN_ROOT/DECISION.json"
+  finish_phase
 
-# ---- punteggio dei selettori (GPU) ----------------------------------------
-require_budget 1.5 scores || { echo "L3_NIGHT_OK_NO_BUDGET"; exit 0; }
-start_phase scores
-CUDA_VISIBLE_DEVICES="$GPU" "$PY" "$L3/tools/score_selectors.py" \
-  --config "$Z1BIS_CONFIG" --checkpoint "$CHECKPOINT" --policy-rows "$POLICY_ROWS" \
-  --baseline-rows "$CONTENT_DIR/rows.jsonl" --out-dir "$CURRENT_DIR/scores" \
-  2>&1 | tee "$CURRENT_DIR/scores.log"
-finish_phase
-
-# ---- decisione -------------------------------------------------------------
-start_phase decision
-"$PY" "$L3/tools/decide_branch.py" \
-  --content-summary "$RUN_ROOT/wait_content/content_summary.json" \
-  --scores-summary "$RUN_ROOT/scores/scores/summary.json" \
-  --min-content-delta "$MIN_CONTENT_DELTA" \
-  --min-window-delta "$MIN_WINDOW_DELTA" \
-  --min-selector-delta "$MIN_SELECTOR_DELTA" \
-  --out "$CURRENT_DIR/DECISION.json" 2>&1 | tee "$CURRENT_DIR/decision.log"
-BRANCH=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1]))['branch'])" \
-  "$CURRENT_DIR/DECISION.json")
-echo "$BRANCH" > "$RUN_ROOT/BRANCH.txt"
-cp "$CURRENT_DIR/DECISION.json" "$RUN_ROOT/DECISION.json"
-finish_phase
+fi
 
 # ---- ramo ------------------------------------------------------------------
 case "$BRANCH" in

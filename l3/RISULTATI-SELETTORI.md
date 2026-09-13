@@ -71,3 +71,72 @@ al 92,8 % di una finestra da 14.124 campioni non implica un punteggio migliore. 
 due misure GPU che decidono — contenuto sulle finestre autonome con la scala della
 finestra, e punteggio dei selettori a parità di budget — sono nelle sezioni
 seguenti.
+
+## 4. Il contenuto sulle finestre scelte dalla policy (GPU, 1,1 h)
+
+Stesse 235 righe, azioni della policy **congelate**: stesso checkpoint, stessa
+azione, stesso header, stesso numero di token. Cambia solo il contenuto del crop.
+
+| condizione | primary |
+|---|---:|
+| **crop vero** | **0,1278** |
+| crop azzerato | 0,0341 |
+| crop sostituito | 0,0241 |
+
+Δ appaiato vero − miglior controllo = **+0,0937**, CI95 **[+0,0648; +0,1234]**, contro
+la soglia +0,03 dichiarata prima. **Superata.** Il beneficio percettivo misurato con
+le finestre dell'oracle esiste anche sulle finestre che la policy sceglie da sé.
+
+La sotto-ipotesi registrata prima del run è confermata in modo netto: il vantaggio
+del contenuto vale **+0,1627** sulle righe in cui la finestra contiene l'evento e
+**+0,0082** dove lo manca. Il contenuto conta esattamente quando c'è qualcosa da
+leggere: è il legame fra percezione e puntamento che mancava.
+
+## 5. Allargare la finestra non paga
+
+Stesso centro scelto dalla policy, ampiezza moltiplicata, header veritiero sulle
+nuove coordinate.
+
+| ampiezza | contenimento | primary | Δ vs ampiezza scelta |
+|---|---:|---:|---|
+| scelta dalla policy (~1.990) | 55,3 % | 0,1278 | — |
+| ×2 (~3.900) | 79,6 % | 0,1341 | +0,0063 [−0,0269; +0,0400] |
+| ×4 (~7.500) | 87,2 % | 0,0615 | **−0,0663** [−0,0986; −0,0339] |
+
+Il contenimento sale di 32 punti, il punteggio no. A ×4 **peggiora in modo
+significativo**. Il crop resta 256 token: allargare compra contenimento e paga in
+risoluzione, e a partire da ×4 il secondo effetto domina. La strada «finestre più
+grandi» è chiusa da questa misura; quella giusta è **puntare meglio alla stessa
+ampiezza**.
+
+## 6. Punteggio dei selettori a parità di budget — il risultato centrale
+
+Stesse righe, stessa ampiezza, header veritiero, contenuto vero: cambia solo il
+criterio con cui la finestra è scelta.
+
+| braccio | contenimento | primary | Δ appaiato vs policy |
+|---|---:|---:|---|
+| policy (finestra emessa dal modello) | 55,3 % | 0,1278 | — |
+| wavelet libero | 68,9 % | 0,2188 | **+0,0910** [+0,0536; +0,1309] |
+| **wavelet nel canale della policy** | 77,0 % | **0,2340** | **+0,1062** [+0,0647; +0,1479] |
+| oracle alla stessa ampiezza | 100 % | 0,2327 | +0,1049 [+0,0628; +0,1458] |
+
+**Il selettore deterministico raggiunge l'oracle.** A parità di token e di ampiezza,
+una regola di energia Haar nel canale che la policy sceglie vale quanto sapere dove
+sta l'anomalia: 0,2340 contro 0,2327, e quasi il doppio dello 0,1278 della policy.
+
+Il margine residuo del sistema non è dunque nel lettore né nella rappresentazione: è
+**tutto nella scelta della finestra**, e una regola non addestrata lo copre già.
+
+## 7. Decisione presa dalla catena
+
+Tabella dichiarata prima in `PROTOCOL-L3.md`, valutata alle 00:45Z: contenuto
++0,0937 (soglia +0,03) ✓, finestre migliori +0,1049 (soglia +0,05) ✓, miglior
+selettore +0,1062 (soglia +0,03) ✓ → ramo **`selector_sft`**: insegnare alla policy
+a proporre quelle coordinate. `DECISION.json` conserva misure e soglie.
+
+Piano delle tracce W1 verificato prima della GPU (49,8 s, picco 2.655 MiB): su 2.104
+righe con azione, **l'88,7 % riceve una finestra proposta dall'energia Haar**
+(rank 1 nell'81 %, rank 2-4 nel 7,7 %) e solo l'11,3 % ricade sul meccanismo Z1-bis.
+Posizione interna dell'evento: media 0,50-0,54, deviazione 0,23-0,27, casi centrati
+1,4-4,5 % — la scorciatoia del centro resta impossibile.

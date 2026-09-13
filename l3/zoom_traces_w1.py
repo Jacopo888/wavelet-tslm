@@ -29,7 +29,7 @@ origini per riga vanno in `w1_origins.jsonl` accanto al piano.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 import json
 import math
 from pathlib import Path
@@ -48,6 +48,7 @@ from l3.zoom_traces import (
     TRAIN_TRACE_COLUMNS,
     Trace,
     _choose_replay_indices,
+    _weighted_counts,
     _stable_rng,
     _train_parquet_path,
     compact_trace_sample,
@@ -75,23 +76,34 @@ def _w1_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
     return w1
 
 
-def trace_width(sample: Mapping[str, Any], sft: Mapping[str, Any],
-                event: Mapping[str, Any], rng: random.Random) -> int:
-    """Ampiezza dal solo insieme dichiarato in `window_sizes`, come Z1-bis.
+def assign_widths(samples: Sequence[Mapping[str, Any]],
+                  provisional: Mapping[int, Mapping[str, Any]],
+                  sft: Mapping[str, Any], seed: int) -> dict[int, int]:
+    """Conteggi esatti per categoria, come Z1-bis: i pesi sono verificati a valle.
 
-    Le ampiezze non vivono nel blocco `w1`: `validate_trace_plan` verifica che la
-    distribuzione osservata rispetti i pesi dichiarati, quindi cambiarle significa
-    cambiare `window_sizes` nel config della run, non aggiungere un fattore qui.
+    `validate_trace_plan` confronta la distribuzione osservata delle ampiezze con i
+    pesi dichiarati entro il 2%, quindi l'estrazione indipendente non basta.
     """
-    length = series_length(sample)
-    span = int(event["end"]) - int(event["start"])
-    choices = [(int(item["samples"]), float(item["weight"]))
-               for item in sft["window_sizes"]]
-    eligible = [(size, weight) for size, weight in choices
-                if size >= span and size <= length]
-    if not eligible:
-        raise ValueError("no declared window size can contain the selected gold event")
-    return rng.choices([item[0] for item in eligible], [item[1] for item in eligible], k=1)[0]
+    choices = [(int(item["samples"]), float(item["weight"])) for item in sft["window_sizes"]]
+    by_category: dict[str, list[int]] = defaultdict(list)
+    for index in provisional:
+        by_category[str(samples[index]["category"])].append(index)
+    widths: dict[int, int] = {}
+    for category, indices in sorted(by_category.items()):
+        counts = _weighted_counts(len(indices), choices)
+        bag = [width for width, _ in choices for _ in range(counts[width])]
+        _stable_rng(seed, category, "widths").shuffle(bag)
+        ordered = list(indices)
+        _stable_rng(seed, category, "rows").shuffle(ordered)
+        for index, width in zip(ordered, bag):
+            event = provisional[index]
+            span = int(event["end"]) - int(event["start"])
+            if width < span or width > series_length(samples[index]):
+                raise ValueError(
+                    f"assigned window {width} cannot contain event at train index "
+                    f"{index}; no fallback is permitted")
+            widths[index] = width
+    return widths
 
 
 def sample_containing_point(length: int, point: int, width: int,
@@ -120,23 +132,15 @@ def wavelet_candidate_centers(sample: Mapping[str, Any], channel_index: int, wid
     return [(int(edges[bucket]) + int(edges[bucket + 1])) // 2 for bucket in order]
 
 
-def plan_positive_row(sample: Mapping[str, Any], sft: Mapping[str, Any],
-                      w1: Mapping[str, Any], rng: random.Random,
+def plan_positive_row(sample: Mapping[str, Any], w1: Mapping[str, Any],
+                      event: Mapping[str, Any], width: int, rng: random.Random,
                       details: Sequence[Mapping[int, np.ndarray]],
-                      ) -> tuple[ZoomAction, dict[str, Any], float, str]:
+                      ) -> tuple[ZoomAction, float, str]:
     """Sceglie la finestra da insegnare; ritorna anche l'origine del candidato."""
-    events = sorted(
-        (dict(event) for event in gold_events(sample)),
-        key=lambda item: (str(item["channel"]), int(item["start"]), int(item["end"])),
-    )
-    if not events:
-        raise ValueError("positive row without gold events")
-    event = dict(rng.choice(events))
     names = [str(name) for name in sample["channel_names"]]
     channel_index = names.index(str(event["channel"]))
     length = series_length(sample)
-    width = trace_width(sample, sft, event, rng)
-    draws = int(w1.get("draws_per_candidate", 3))
+    draws = int(w1["draws_per_candidate"])
     centers = wavelet_candidate_centers(
         sample, channel_index, width, int(w1["candidate_buckets"]), details)
     start, end = int(event["start"]), int(event["end"])
@@ -146,21 +150,31 @@ def plan_positive_row(sample: Mapping[str, Any], sft: Mapping[str, Any],
             if window[0] <= start and end <= window[1]:
                 action = ZoomAction(str(event["channel"]), window[0], window[1], length)
                 position = ((start + end) / 2.0 - window[0]) / width
-                return action, event, position, f"wavelet_rank_{rank}"
+                return action, position, f"wavelet_rank_{rank}"
     action, position = sample_containing_action(sample, event, width, rng)
-    return action, event, position, "gold_fallback"
+    return action, position, "gold_fallback"
+
+
+def choose_event(sample: Mapping[str, Any], rng: random.Random) -> dict[str, Any]:
+    """Evento gold da insegnare, scelto sui soli metadati (nessun valore serve)."""
+    events = sorted(gold_events(sample), key=lambda item: (
+        str(item["channel"]), int(item["start"]), int(item["end"])))
+    if not events:
+        raise ValueError("positive row without gold events")
+    return dict(rng.choice(events))
 
 
 def build_w1_routes(samples: Sequence[Mapping[str, Any]], config: Mapping[str, Any],
-                    seed: int) -> tuple[dict[int, Trace], set[int], set[int]]:
-    """Decide le rotte senza toccare i valori: replay, diretta, e chi vuole un'azione."""
+                    seed: int) -> tuple[dict[int, Trace], dict[int, Mapping[str, Any]],
+                                        dict[int, int], set[int]]:
+    """Rotte, evento e ampiezza senza toccare i valori: replay, diretta, zoom."""
     sft = config["zoom_sft"]
     _w1_config(config)
     if not samples:
         raise ValueError("cannot plan an empty dataset")
     replay = _choose_replay_indices(samples, sft, seed)
     fixed: dict[int, Trace] = {}
-    zoom_indices: set[int] = set()
+    provisional: dict[int, Mapping[str, Any]] = {}
     for index, sample in enumerate(samples):
         category = str(sample.get("category", ""))
         if category not in ALL_CATEGORIES:
@@ -172,23 +186,26 @@ def build_w1_routes(samples: Sequence[Mapping[str, Any]], config: Mapping[str, A
         elif category in DIRECT_CATEGORIES or not gold_events(sample):
             fixed[index] = Trace(**common, source="direct")
         else:
-            zoom_indices.add(index)
-    return fixed, zoom_indices, replay
+            provisional[index] = choose_event(
+                sample, _stable_rng(seed, sample.get("id", ""), index, "w1_event"))
+    widths = assign_widths(samples, provisional, sft, seed)
+    return fixed, provisional, widths, replay
 
 
 def plan_zoom_row(sample: Mapping[str, Any], details: Sequence[Mapping[int, np.ndarray]],
                   config: Mapping[str, Any], seed: int, index: int,
+                  event: Mapping[str, Any], width: int,
                   ) -> tuple[Trace, dict[str, Any]]:
     """Pianifica una singola riga con azione, usando la piramide appena calcolata."""
     sft = config["zoom_sft"]
     w1 = _w1_config(config)
     radius = float(sft["position"]["centered_radius"])
     rng = _stable_rng(seed, sample.get("id", ""), index, "w1")
-    action, event, position, origin = plan_positive_row(sample, sft, w1, rng, details)
+    action, position, origin = plan_positive_row(sample, w1, event, width, rng, details)
     common = {"index": index, "sample_id": str(sample.get("id", "")),
               "category": str(sample["category"])}
     trace = Trace(
-        **common, source="zoom", action=action, event=event, position=position,
+        **common, source="zoom", action=action, event=dict(event), position=position,
         length_band=length_band(series_length(sample), sft),
         centered=abs(position - 0.5) <= radius,
     )
@@ -253,7 +270,8 @@ def write_w1_plan(out_dir: Path, config: Mapping[str, Any], seed: int) -> dict[s
         samples, observed_sha = _load_train_samples(config)
         if len(samples) != expected:
             raise RuntimeError(f"expected {expected} train rows, found {len(samples)}")
-        fixed, zoom_indices, replay = build_w1_routes(samples, config, seed)
+        fixed, provisional, widths, replay = build_w1_routes(samples, config, seed)
+        zoom_indices = set(provisional)
         print(f"W1_TRACES routes: zoom={len(zoom_indices)} replay={len(replay)} "
               f"direct={len(fixed) - len(replay)}", flush=True)
 
@@ -268,7 +286,8 @@ def write_w1_plan(out_dir: Path, config: Mapping[str, Any], seed: int) -> dict[s
                 raise RuntimeError(f"stream/metadata order mismatch at index {index}")
             full = {**meta, "time_series": channels}
             details = channel_details(full)
-            trace, origin = plan_zoom_row(compact, details, config, seed, index)
+            trace, origin = plan_zoom_row(compact, details, config, seed, index,
+                                          provisional[index], widths[index])
             planned[index] = trace
             origins[index] = origin
             del channels, full, details
