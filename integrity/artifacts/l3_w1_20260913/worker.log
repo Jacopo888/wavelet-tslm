@@ -1,0 +1,302 @@
+L3_NIGHT_STATUS phase=preflight elapsed_s=0
+.............................                                            [100%]
+29 passed in 1.41s
+L3_NIGHT_PHASE_OK phase=preflight elapsed_s=2
+L3_NIGHT_STATUS phase=decision_reused elapsed_s=2
+L3_NIGHT_DECISION_REUSED branch=selector_sft source=/root/l3/DECISION_20260913.json
+L3_NIGHT_PHASE_OK phase=decision_reused elapsed_s=2
+L3_NIGHT_BUDGET label=selector_sft left_h=9.99 needed_h=8.0
+L3_NIGHT_STATUS phase=traces_w1 elapsed_s=2
+W1_TRACES routes: zoom=2104 replay=673 direct=1711
+W1_TRACES planned 250/2104
+W1_TRACES planned 500/2104
+W1_TRACES planned 750/2104
+W1_TRACES planned 1000/2104
+W1_TRACES planned 1250/2104
+W1_TRACES planned 1500/2104
+W1_TRACES planned 1750/2104
+W1_TRACES planned 2000/2104
+L3_W1_TRACES_OK wavelet_rate=0.8874 gold_fallback=0.1126 elapsed_s=49.8 peak_rss_mib=2655.3
+{
+  "origin_counts": {
+    "replay": 673,
+    "direct": 1711,
+    "wavelet_rank_1": 1705,
+    "wavelet_rank_2": 91,
+    "wavelet_rank_4": 35,
+    "gold_fallback": 237,
+    "wavelet_rank_3": 36
+  },
+  "zoom_rows": 2104,
+  "wavelet_rate": 0.8873574144486692,
+  "gold_fallback_rate": 0.1126425855513308,
+  "candidate_buckets": 4,
+  "draws_per_candidate": 3,
+  "declared_window_sizes": [
+    1024,
+    2048,
+    4096
+  ]
+}
+W1 wavelet_rate=0.8874 gold_fallback=0.1126
+L3_NIGHT_PHASE_OK phase=traces_w1 elapsed_s=53
+L3_NIGHT_BUDGET label=w1_sft left_h=9.98 needed_h=7.6
+L3_NIGHT_STATUS phase=w1_sft elapsed_s=53
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/timerlm/sft/tslm/results/anomaly_xl_precise/anomaly_xl_wavelet_va1/checkpoints/epoch_5_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 5
+  Validation loss: 0.3478
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_Z1_STEP step=25/4488 category=classify_with_evidence source=zoom grad=4.81208
+L3_Z1_STEP step=50/4488 category=measure_magnitude source=direct grad=11.5037
+L3_Z1_STEP step=75/4488 category=lead_lag_with_magnitude source=direct grad=0.576381
+L3_Z1_STEP step=100/4488 category=localize_all_channels source=zoom grad=0.661874
+L3_Z1_STEP step=125/4488 category=measure_magnitude source=direct grad=0.210238
+L3_Z1_STEP step=150/4488 category=measure_magnitude source=direct grad=1.76583
+L3_Z1_STEP step=175/4488 category=classify_with_evidence source=zoom grad=0.816974
+L3_Z1_STEP step=200/4488 category=localize source=zoom grad=1.37795
+L3_Z1_STEP step=225/4488 category=measure_magnitude source=direct grad=0.797522
+L3_Z1_STEP step=250/4488 category=localize source=zoom grad=0.92712
+L3_Z1_STEP step=275/4488 category=classify_with_evidence source=replay grad=1.45986
+L3_Z1_STEP step=300/4488 category=measure_magnitude source=direct grad=0.400938
+L3_Z1_STEP step=325/4488 category=localize source=direct grad=3.46483
+L3_Z1_STEP step=350/4488 category=measure_magnitude source=direct grad=1.0514
+L3_Z1_STEP step=375/4488 category=classify_with_evidence source=zoom grad=0.557355
+L3_Z1_STEP step=400/4488 category=measure_magnitude source=direct grad=0.287208
+L3_Z1_STEP step=425/4488 category=localize source=zoom grad=0.444265
+L3_Z1_STEP step=450/4488 category=classify_with_evidence source=zoom grad=1.87074
+L3_Z1_STEP step=475/4488 category=classify_with_evidence source=zoom grad=1.47764
+L3_Z1_STEP step=500/4488 category=localize source=zoom grad=2.07668
+L3_Z1_STEP step=525/4488 category=classify_with_evidence source=zoom grad=0.886082
+L3_Z1_STEP step=550/4488 category=classify_with_evidence source=zoom grad=0.740844
+L3_Z1_STEP step=575/4488 category=classify_with_evidence source=zoom grad=1.31075
+L3_Z1_STEP step=600/4488 category=measure_magnitude source=direct grad=0.449833
+L3_Z1_STEP step=625/4488 category=classify_with_evidence source=zoom grad=2.0545
+L3_Z1_STEP step=650/4488 category=localize source=direct grad=4.389
+L3_Z1_STEP step=675/4488 category=classify_with_evidence source=zoom grad=1.73156
+L3_Z1_STEP step=700/4488 category=lead_lag_with_magnitude source=direct grad=0.589285
+L3_Z1_STEP step=725/4488 category=localize_all_channels source=direct grad=1.83608
+L3_Z1_STEP step=750/4488 category=localize source=zoom grad=1.16573
+L3_Z1_STEP step=775/4488 category=lead_lag_with_magnitude source=direct grad=0.176776
+L3_Z1_STEP step=800/4488 category=lead_lag_with_magnitude source=direct grad=1.84384
+L3_Z1_STEP step=825/4488 category=localize source=zoom grad=0.814325
+L3_Z1_STEP step=850/4488 category=localize source=zoom grad=1.27344
+L3_Z1_STEP step=875/4488 category=localize_all_channels source=zoom grad=0.897889
+L3_Z1_STEP step=900/4488 category=localize source=zoom grad=1.66967
+L3_Z1_STEP step=925/4488 category=lead_lag_with_magnitude source=direct grad=0.286056
+L3_Z1_STEP step=950/4488 category=classify_with_evidence source=zoom grad=1.1004
+L3_Z1_STEP step=975/4488 category=classify_with_evidence source=replay grad=1.029
+L3_Z1_STEP step=1000/4488 category=lead_lag_with_magnitude source=direct grad=0.201961
+L3_Z1_STEP step=1025/4488 category=localize source=zoom grad=1.06919
+L3_Z1_STEP step=1050/4488 category=localize source=zoom grad=0.896929
+L3_Z1_STEP step=1075/4488 category=measure_magnitude source=direct grad=1.25413
+L3_Z1_STEP step=1100/4488 category=measure_magnitude source=direct grad=0.515088
+L3_Z1_STEP step=1125/4488 category=localize source=zoom grad=0.812961
+L3_Z1_STEP step=1150/4488 category=measure_magnitude source=direct grad=0.868209
+L3_Z1_STEP step=1175/4488 category=lead_lag_with_magnitude source=direct grad=0.388986
+L3_Z1_STEP step=1200/4488 category=measure_magnitude source=direct grad=1.38416
+L3_Z1_STEP step=1225/4488 category=localize source=zoom grad=0.9947
+L3_Z1_STEP step=1250/4488 category=localize_all_channels source=replay grad=0.875151
+L3_Z1_STEP step=1275/4488 category=classify_with_evidence source=zoom grad=1.78758
+L3_Z1_STEP step=1300/4488 category=localize source=zoom grad=1.63446
+L3_Z1_STEP step=1325/4488 category=lead_lag_with_magnitude source=direct grad=0.537145
+L3_Z1_STEP step=1350/4488 category=measure_magnitude source=replay grad=0.452646
+L3_Z1_STEP step=1375/4488 category=localize source=zoom grad=0.760692
+L3_Z1_STEP step=1400/4488 category=localize source=zoom grad=0.822794
+L3_Z1_STEP step=1425/4488 category=classify_with_evidence source=zoom grad=3.1706
+L3_Z1_STEP step=1450/4488 category=localize source=direct grad=0.0156913
+L3_Z1_STEP step=1475/4488 category=localize_all_channels source=direct grad=0.640722
+L3_Z1_STEP step=1500/4488 category=localize source=zoom grad=0.73229
+L3_Z1_STEP step=1525/4488 category=classify_with_evidence source=zoom grad=1.73941
+L3_Z1_STEP step=1550/4488 category=measure_magnitude source=replay grad=1.12465
+L3_Z1_STEP step=1575/4488 category=classify_with_evidence source=zoom grad=0.720835
+L3_Z1_STEP step=1600/4488 category=localize source=zoom grad=0.71789
+L3_Z1_STEP step=1625/4488 category=classify_with_evidence source=zoom grad=1.77973
+L3_Z1_STEP step=1650/4488 category=classify_with_evidence source=zoom grad=0.490205
+L3_Z1_STEP step=1675/4488 category=lead_lag_with_magnitude source=direct grad=0.460486
+L3_Z1_STEP step=1700/4488 category=classify_with_evidence source=zoom grad=0.80208
+L3_Z1_STEP step=1725/4488 category=lead_lag_with_magnitude source=replay grad=0.626599
+L3_Z1_STEP step=1750/4488 category=classify_with_evidence source=zoom grad=1.10398
+L3_Z1_STEP step=1775/4488 category=classify_with_evidence source=zoom grad=0.75578
+L3_Z1_STEP step=1800/4488 category=classify_with_evidence source=replay grad=1.10807
+L3_Z1_STEP step=1825/4488 category=classify_with_evidence source=zoom grad=0.836908
+L3_Z1_STEP step=1850/4488 category=measure_magnitude source=direct grad=0.276838
+L3_Z1_STEP step=1875/4488 category=classify_with_evidence source=zoom grad=1.28447
+L3_Z1_STEP step=1900/4488 category=measure_magnitude source=direct grad=0.337989
+L3_Z1_STEP step=1925/4488 category=measure_magnitude source=direct grad=0.821525
+L3_Z1_STEP step=1950/4488 category=localize_all_channels source=direct grad=0.407509
+L3_Z1_STEP step=1975/4488 category=localize_all_channels source=zoom grad=0.906847
+L3_Z1_STEP step=2000/4488 category=localize source=zoom grad=0.616638
+L3_Z1_STEP step=2025/4488 category=localize source=zoom grad=1.04545
+L3_Z1_STEP step=2050/4488 category=localize source=zoom grad=0.557189
+L3_Z1_STEP step=2075/4488 category=lead_lag_with_magnitude source=direct grad=0.383301
+L3_Z1_STEP step=2100/4488 category=localize source=zoom grad=0.54017
+L3_Z1_STEP step=2125/4488 category=localize source=replay grad=4.66749
+L3_Z1_STEP step=2150/4488 category=localize source=zoom grad=1.25283
+L3_Z1_STEP step=2175/4488 category=localize source=zoom grad=1.54499
+L3_Z1_STEP step=2200/4488 category=localize_all_channels source=zoom grad=0.850964
+L3_Z1_STEP step=2225/4488 category=classify_with_evidence source=zoom grad=1.02962
+L3_Z1_STEP step=2250/4488 category=localize source=zoom grad=1.08737
+L3_Z1_STEP step=2275/4488 category=localize source=zoom grad=0.708264
+L3_Z1_STEP step=2300/4488 category=classify_with_evidence source=zoom grad=1.23782
+L3_Z1_STEP step=2325/4488 category=classify_with_evidence source=zoom grad=0.940791
+L3_Z1_STEP step=2350/4488 category=measure_magnitude source=replay grad=0.56132
+L3_Z1_STEP step=2375/4488 category=localize source=zoom grad=0.915893
+L3_Z1_STEP step=2400/4488 category=measure_magnitude source=direct grad=0.347203
+L3_Z1_STEP step=2425/4488 category=classify_with_evidence source=zoom grad=1.11821
+L3_Z1_STEP step=2450/4488 category=measure_magnitude source=direct grad=0.965392
+L3_Z1_STEP step=2475/4488 category=localize source=zoom grad=1.27501
+L3_Z1_STEP step=2500/4488 category=localize source=zoom grad=0.508287
+L3_Z1_STEP step=2525/4488 category=localize_all_channels source=zoom grad=2.68964
+L3_Z1_STEP step=2550/4488 category=measure_magnitude source=direct grad=0.416559
+L3_Z1_STEP step=2575/4488 category=measure_magnitude source=direct grad=0.558653
+L3_Z1_STEP step=2600/4488 category=localize source=zoom grad=0.882345
+L3_Z1_STEP step=2625/4488 category=localize_all_channels source=direct grad=0.224581
+L3_Z1_STEP step=2650/4488 category=localize_all_channels source=zoom grad=0.915546
+L3_Z1_STEP step=2675/4488 category=measure_magnitude source=direct grad=0.954642
+L3_Z1_STEP step=2700/4488 category=lead_lag_with_magnitude source=direct grad=0.14287
+L3_Z1_STEP step=2725/4488 category=localize_all_channels source=zoom grad=1.05222
+L3_Z1_STEP step=2750/4488 category=localize source=zoom grad=0.679891
+L3_Z1_STEP step=2775/4488 category=classify_with_evidence source=zoom grad=0.944369
+L3_Z1_STEP step=2800/4488 category=localize source=zoom grad=1.05992
+L3_Z1_STEP step=2825/4488 category=lead_lag_with_magnitude source=direct grad=0.255635
+L3_Z1_STEP step=2850/4488 category=classify_with_evidence source=replay grad=1.17866
+L3_Z1_STEP step=2875/4488 category=measure_magnitude source=direct grad=0.388282
+L3_Z1_STEP step=2900/4488 category=localize_all_channels source=replay grad=0.872988
+L3_Z1_STEP step=2925/4488 category=localize source=zoom grad=1.55963
+L3_Z1_STEP step=2950/4488 category=lead_lag_with_magnitude source=direct grad=0.189695
+L3_Z1_STEP step=2975/4488 category=classify_with_evidence source=replay grad=1.00224
+L3_Z1_STEP step=3000/4488 category=classify_with_evidence source=replay grad=2.23315
+L3_Z1_STEP step=3025/4488 category=measure_magnitude source=replay grad=1.67959
+L3_Z1_STEP step=3050/4488 category=classify_with_evidence source=replay grad=0.70491
+L3_Z1_STEP step=3075/4488 category=classify_with_evidence source=replay grad=0.464377
+L3_Z1_STEP step=3100/4488 category=measure_magnitude source=direct grad=0.666912
+L3_Z1_STEP step=3125/4488 category=localize_all_channels source=zoom grad=1.71136
+L3_Z1_STEP step=3150/4488 category=localize source=zoom grad=0.505203
+L3_Z1_STEP step=3175/4488 category=localize source=zoom grad=2.39898
+L3_Z1_STEP step=3200/4488 category=lead_lag_with_magnitude source=direct grad=0.534965
+L3_Z1_STEP step=3225/4488 category=localize source=zoom grad=1.52228
+L3_Z1_STEP step=3250/4488 category=classify_with_evidence source=zoom grad=1.35676
+L3_Z1_STEP step=3275/4488 category=measure_magnitude source=direct grad=1.32978
+L3_Z1_STEP step=3300/4488 category=measure_magnitude source=replay grad=0.455874
+L3_Z1_STEP step=3325/4488 category=classify_with_evidence source=zoom grad=1.24842
+L3_Z1_STEP step=3350/4488 category=lead_lag_with_magnitude source=direct grad=0.162826
+L3_Z1_STEP step=3375/4488 category=measure_magnitude source=replay grad=0.276321
+L3_Z1_STEP step=3400/4488 category=localize source=zoom grad=0.508638
+L3_Z1_STEP step=3425/4488 category=measure_magnitude source=direct grad=0.428239
+L3_Z1_STEP step=3450/4488 category=measure_magnitude source=direct grad=0.999079
+L3_Z1_STEP step=3475/4488 category=measure_magnitude source=direct grad=0.425011
+L3_Z1_STEP step=3500/4488 category=measure_magnitude source=direct grad=0.509621
+L3_Z1_STEP step=3525/4488 category=measure_magnitude source=direct grad=0.601569
+L3_Z1_STEP step=3550/4488 category=localize source=zoom grad=0.729268
+L3_Z1_STEP step=3575/4488 category=lead_lag_with_magnitude source=direct grad=0.327451
+L3_Z1_STEP step=3600/4488 category=classify_with_evidence source=zoom grad=1.18501
+L3_Z1_STEP step=3625/4488 category=classify_with_evidence source=zoom grad=0.594599
+L3_Z1_STEP step=3650/4488 category=lead_lag_with_magnitude source=replay grad=0.289656
+L3_Z1_STEP step=3675/4488 category=measure_magnitude source=direct grad=0.894095
+L3_Z1_STEP step=3700/4488 category=measure_magnitude source=direct grad=0.563306
+L3_Z1_STEP step=3725/4488 category=measure_magnitude source=direct grad=0.30271
+L3_Z1_STEP step=3750/4488 category=measure_magnitude source=replay grad=0.704181
+L3_Z1_STEP step=3775/4488 category=measure_magnitude source=direct grad=1.2617
+L3_Z1_STEP step=3800/4488 category=lead_lag_with_magnitude source=direct grad=0.185375
+L3_Z1_STEP step=3825/4488 category=classify_with_evidence source=zoom grad=2.12423
+L3_Z1_STEP step=3850/4488 category=localize source=zoom grad=3.90944
+L3_Z1_STEP step=3875/4488 category=measure_magnitude source=direct grad=0.449767
+L3_Z1_STEP step=3900/4488 category=measure_magnitude source=direct grad=0.580123
+L3_Z1_STEP step=3925/4488 category=localize_all_channels source=zoom grad=1.86815
+L3_Z1_STEP step=3950/4488 category=localize_all_channels source=replay grad=1.16979
+L3_Z1_STEP step=3975/4488 category=measure_magnitude source=direct grad=0.271157
+L3_Z1_STEP step=4000/4488 category=measure_magnitude source=direct grad=0.439556
+L3_Z1_STEP step=4025/4488 category=localize source=zoom grad=1.7317
+L3_Z1_STEP step=4050/4488 category=localize source=replay grad=1.60969
+L3_Z1_STEP step=4075/4488 category=localize source=zoom grad=1.76809
+L3_Z1_STEP step=4100/4488 category=classify_with_evidence source=replay grad=2.51017
+L3_Z1_STEP step=4125/4488 category=lead_lag_with_magnitude source=direct grad=0.537098
+L3_Z1_STEP step=4150/4488 category=localize source=direct grad=0.355315
+L3_Z1_STEP step=4175/4488 category=localize source=direct grad=0.891067
+L3_Z1_STEP step=4200/4488 category=localize source=direct grad=5.29989
+L3_Z1_STEP step=4225/4488 category=localize source=direct grad=0.648472
+L3_Z1_STEP step=4250/4488 category=measure_magnitude source=direct grad=0.281415
+L3_Z1_STEP step=4275/4488 category=lead_lag_with_magnitude source=replay grad=0.590062
+L3_Z1_STEP step=4300/4488 category=measure_magnitude source=direct grad=0.428916
+L3_Z1_STEP step=4325/4488 category=lead_lag_with_magnitude source=direct grad=0.182691
+L3_Z1_STEP step=4350/4488 category=measure_magnitude source=direct grad=0.283803
+L3_Z1_STEP step=4375/4488 category=classify_with_evidence source=replay grad=0.92294
+L3_Z1_STEP step=4400/4488 category=measure_magnitude source=direct grad=0.747064
+L3_Z1_STEP step=4425/4488 category=measure_magnitude source=direct grad=0.404244
+L3_Z1_STEP step=4450/4488 category=localize source=direct grad=0.0939169
+L3_Z1_STEP step=4475/4488 category=classify_with_evidence source=zoom grad=1.99176
+L3_NIGHT_PHASE_OK phase=w1_sft elapsed_s=25842
+L3_NIGHT_STATUS phase=w1_operational elapsed_s=25842
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/night_20260913T005001Z/w1_sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+L3_Z1BIS_OPERATIONAL_OK primary_delta=+0.044602
+L3_NIGHT_PHASE_OK phase=w1_operational elapsed_s=27296
+L3_NIGHT_STATUS phase=w1_geometry elapsed_s=27296
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+SELECTORS 20/235
+SELECTORS 40/235
+SELECTORS 60/235
+SELECTORS 80/235
+SELECTORS 100/235
+SELECTORS 120/235
+SELECTORS 140/235
+SELECTORS 160/235
+SELECTORS 180/235
+SELECTORS 200/235
+SELECTORS 220/235
+SELECTORS 235/235
+
+condizione                n  contenuto   sovrapp   canale  ampiezza
+oracle_matched          233     100.0%    100.0%   100.0%      1873
+policy                  233      60.5%     66.1%   100.0%      1908
+policy_wide_x2          233      79.0%     81.1%   100.0%      3690
+policy_wide_x4          233      88.4%     88.8%   100.0%      7083
+policy_wide_x8          233      91.4%     91.8%   100.0%     13283
+wavelet_in_policy_channel  233      78.1%     87.6%   100.0%      1906
+wavelet_matched         233      68.2%     77.7%    89.7%      1906
+wavelet_native          233      79.4%     79.4%    89.7%      7905
+wavelet_wide_x2         233      79.0%     79.0%    89.7%      3651
+wavelet_wide_x4         233      79.4%     79.4%    89.7%      6988
+wavelet_wide_x8         233      82.0%     82.0%    89.7%     13092
+
+contenimento per banda di lunghezza:
+       L      oracle_matched              policy      policy_wide_x2      policy_wide_x4      policy_wide_x8  wavelet_in_policy_channel     wavelet_matched      wavelet_native     wavelet_wide_x2     wavelet_wide_x4     wavelet_wide_x8
+   16384              100.0%               74.5%               89.4%               91.5%               91.5%               72.3%               72.3%               89.4%               91.5%               91.5%               93.6%
+   32768              100.0%               71.0%               89.9%               98.6%               98.6%               78.3%               65.2%               73.9%               73.9%               75.4%               79.7%
+   65536              100.0%               59.1%               77.3%               84.1%               86.4%               75.0%               75.0%               86.4%               81.8%               81.8%               84.1%
+  131072              100.0%               42.5%               63.0%               79.5%               87.7%               83.6%               64.4%               74.0%               74.0%               74.0%               75.3%
+L3_SELECTORS_OK
+L3_NIGHT_PHASE_OK phase=w1_geometry elapsed_s=27336
+L3_NIGHT_OK branch=selector_sft run_root=/root/l3/night_20260913T005001Z elapsed_s=27336

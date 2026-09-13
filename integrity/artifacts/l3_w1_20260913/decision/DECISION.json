@@ -1,0 +1,116 @@
+{
+  "branch": "selector_sft",
+  "reasons": [
+    "il selettore wavelet_in_policy_channel supera la policy di +0.1062 con CI oltre lo zero: si insegna alla policy a proporre quelle coordinate"
+  ],
+  "criteria": {
+    "min_content_delta": 0.03,
+    "min_window_delta": 0.05,
+    "min_selector_delta": 0.03,
+    "declared_in": "l3/PROTOCOL-L3.md, sezione Catena notturna condizionale"
+  },
+  "measured": {
+    "content_delta": {
+      "mean": 0.0937008389031628,
+      "ci_low": 0.06475192074156069,
+      "ci_high": 0.1234347551735589,
+      "n": 235
+    },
+    "window_delta": {
+      "mean": 0.10490340513769018,
+      "ci_low": 0.0628034858904348,
+      "ci_high": 0.14575125709475978,
+      "n": 235
+    },
+    "best_selector": "wavelet_in_policy_channel",
+    "selector_delta": {
+      "mean": 0.10624575215357578,
+      "ci_low": 0.06470142607487978,
+      "ci_high": 0.14786852314053406,
+      "n": 235
+    },
+    "checks": {
+      "content_ok": true,
+      "window_ok": true,
+      "selector_ok": true
+    }
+  },
+  "content": {
+    "source": "/root/l3/night_20260912T234945Z/wait_content/content_summary.json",
+    "gate_passed": true,
+    "delta": {
+      "mean": 0.0937008389031628,
+      "ci_low": 0.06475192074156069,
+      "ci_high": 0.1234347551735589,
+      "n": 235
+    },
+    "condition_means": {
+      "self_swap": 0.024134092263796487,
+      "self_true": 0.1277811450315098,
+      "self_zero": 0.034080306128347004
+    },
+    "subhypothesis": {
+      "contained_delta": 0.16273633174703248,
+      "contained_exceeds_not_contained": true,
+      "not_contained_delta": 0.008228323953609892
+    },
+    "width_ladder": {
+      "self_wide_x2": {
+        "mean": 0.13408174784057056,
+        "delta_vs_self_true": {
+          "mean": 0.006300602809060729,
+          "ci_low": -0.026852269742176138,
+          "ci_high": 0.040024829160603875,
+          "n": 235
+        },
+        "contained_rate": 0.7957446808510639
+      },
+      "self_wide_x4": {
+        "mean": 0.0615214437768286,
+        "delta_vs_self_true": {
+          "mean": -0.06625970125468122,
+          "ci_low": -0.09855251067795666,
+          "ci_high": -0.033850217511558055,
+          "n": 235
+        },
+        "contained_rate": 0.8723404255319149
+      }
+    }
+  },
+  "scores": {
+    "source": "/root/l3/night_20260912T234945Z/scores/scores/summary.json",
+    "policy_mean": 0.1277811450315098,
+    "arms": {
+      "oracle_matched": {
+        "mean": 0.2326845501692,
+        "contained_rate": 1.0,
+        "delta_vs_policy": {
+          "mean": 0.10490340513769018,
+          "ci_low": 0.0628034858904348,
+          "ci_high": 0.14575125709475978,
+          "n": 235
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "mean": 0.2340268971850856,
+        "contained_rate": 0.7702127659574468,
+        "delta_vs_policy": {
+          "mean": 0.10624575215357578,
+          "ci_low": 0.06470142607487978,
+          "ci_high": 0.14786852314053406,
+          "n": 235
+        }
+      },
+      "wavelet_matched": {
+        "mean": 0.21878880194699035,
+        "contained_rate": 0.6893617021276596,
+        "delta_vs_policy": {
+          "mean": 0.09100765691548053,
+          "ci_low": 0.05361213712594771,
+          "ci_high": 0.13085697373897748,
+          "n": 235
+        }
+      }
+    }
+  }
+}

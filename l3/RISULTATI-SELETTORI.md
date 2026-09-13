@@ -140,3 +140,68 @@ righe con azione, **l'88,7 % riceve una finestra proposta dall'energia Haar**
 (rank 1 nell'81 %, rank 2-4 nel 7,7 %) e solo l'11,3 % ricade sul meccanismo Z1-bis.
 Posizione interna dell'evento: media 0,50-0,54, deviazione 0,23-0,27, casi centrati
 1,4-4,5 % — la scorciatoia del centro resta impossibile.
+
+## 8. Ramo `selector_sft` (W1): esito
+
+Run `/root/l3/night_20260913T005001Z`, catena 7,6 h, artefatti in
+`integrity/artifacts/l3_w1_20260913/`. SFT di 1 epoca da `va1`: 4.488 passi, 7,13 h,
+loss media 0,3637, picco 12.019 MiB, solo LoRA (32 tensori), 236.641 token
+supervisionati, rotte 46,9 % zoom / 38,1 % diretta / 15,0 % replay.
+Checkpoint `vw1_epoch_1_end.pt`, sha
+`8221cd4aba0a9101374ec551ba31f239020586bb6fcc1257a407abdee748ed10`
+(copia fuori dal nodo in `~/l3_offnode/w1_20260913/`).
+
+### Gate operativo su val520: superato, tutti i controlli
+
+`primary` complessivo **0,3551** (`vz1bis` 0,3426; `va1` 0,3105). Azione nel 45,2 %
+degli esempi, **0 azioni invalide**, **0 risposte vuote**, falsi negativi sui positivi
+10,4 %, falsi positivi sui negativi **3,7 %** (era 9,3 %). Rotte apprese come da
+disegno: classify 100 %, localize 62,9 %, multicanale 58,3 %, magnitudo e lead_lag
+0 %.
+
+Confronto appaiato (bootstrap 10k):
+
+| categoria | W1 | Δ vs va1 | Δ vs vz1bis |
+|---|---:|---|---|
+| classify_with_evidence | 0,1497 | **+0,0594** [+0,0135; +0,1071] | +0,0015 [−0,0426; +0,0456] |
+| localize | 0,2977 | **+0,0539** [+0,0123; +0,0960] | +0,0383 [−0,0038; +0,0824] |
+| localize_all_channels | 0,4194 | **+0,0611** [+0,0042; +0,1245] | +0,0250 [−0,0250; +0,0759] |
+| measure_magnitude | 0,5825 | +0,0047 [−0,0188; +0,0279] | +0,0008 [−0,0205; +0,0221] |
+| lead_lag_with_magnitude | 0,2983 | +0,0602 [−0,0131; +0,1383] | −0,0083 [−0,0883; +0,0713] |
+
+**Il limite residuo di Z1-bis è chiuso**: localize e multicanale, che contro `va1`
+avevano intervalli che attraversavano lo zero (+0,016 e +0,036), ora battono `va1`
+con intervalli che escludono lo zero (+0,054 e +0,061). Contro `vz1bis` il
+miglioramento va nella stessa direzione ma non è individualmente significativo.
+
+### Geometria delle nuove finestre: un terzo del divario recuperato
+
+Stesse 235 righe con azione, stessa metrica di prima:
+
+| | contenimento | canale | ampiezza |
+|---|---:|---:|---:|
+| policy Z1-bis (ieri) | 55,3 % | 99,6 % | 1.998 |
+| **policy W1** | **60,5 %** | **100,0 %** | 1.908 |
+| wavelet nel canale della policy W1 | 78,1 % | 100 % | 1.906 |
+| oracle | 100 % | 100 % | 1.873 |
+
+Per banda di lunghezza, W1 contro Z1-bis: 74,5 % contro 80,4 % a L=16k, 71,0 %
+contro 67,1 % a 32k, **59,1 % contro 50,0 %** a 65k, **42,5 % contro 32,0 %** a 131k.
+Il guadagno è dove serviva, sulle serie lunghe; sulle corte cede qualcosa.
+
+Sostenuto: *insegnare le coordinate del selettore migliora sia il puntamento
+(+5,2 punti di contenimento, +10,5 sulle serie da 131k) sia il risultato finale, e
+rende significativi contro `va1` proprio i due compiti che restavano incerti.*
+
+Non sostenuto: che l'imitazione sia completa. La stessa regola Haar, applicata alle
+righe della nuova policy, trova ancora l'evento nel 78,1 % dei casi contro il 60,5 %
+della policy: **il modello ha recuperato circa un terzo del divario**, non tutto. Il
+margine che resta è misurato e ha un obiettivo esplicito.
+
+### Prossimo passo naturale
+
+GRPO sulla scelta della finestra partendo da `vw1`, con step 0 fra i candidati: ora
+esiste un comportamento utile da affinare e un tetto noto (78,1 % di contenimento,
+0,234 di primary sulle righe con azione). In alternativa, o in aggiunta, il selettore
+deterministico può entrare nel ciclo come proposta esterna — resta anche una baseline
+onesta da riportare nel confronto. Il test 800 non è stato toccato.
