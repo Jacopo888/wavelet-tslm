@@ -289,17 +289,63 @@ Due sottoprodotti utili:
 - il gate percettivo di W1 passerebbe di nuovo con margine (+0,112 contro la soglia
   +0,05): la percezione del crop non è stata compromessa dall'addestramento W1.
 
-### Ampliamento in corso (azione dichiarata per l'esito 3)
+### Ampliamento eseguito: la regressione è reale, piccola, e localizzata (12:25Z)
 
-Due crop aggiuntivi per ID su **entrambi** i checkpoint (`--seed-offset` 1 e 2 in
-`diag_crop_content.py`): le coordinate dipendono solo da config, seed e offset, quindi
-restano identiche fra i bracci a parità di offset. Con 3 crop per ID le differenze
-vengono mediate **dentro l'ID** e bootstrappate **sugli ID** — i crop dello stesso
-esempio sono correlati, quindi l'unità di ricampionamento resta l'ID. Quattro
-valutazioni da ~0,55 h, circa 2,2 h in totale (~2 $). Nessun training.
+Due crop aggiuntivi per ID su **entrambi** i checkpoint (`--seed-offset` 1 e 2): le
+coordinate dipendono solo da config, seed e offset, quindi restano appaiate fra i
+bracci. 208 ID × 3 crop = 624 valutazioni per braccio; differenze mediate **dentro
+l'ID** e bootstrap **sugli ID**, perché i crop dello stesso esempio sono correlati.
+Finestre identiche verificate su tutti gli ID di tutte e tre le coppie.
 
-Le tre diramazioni restano quelle dichiarate, e si valuteranno sull'intervallo
-ristretto: recupero del lettore con replay di crop percettivi se il calo diventa
-rilevante e convincente; pilot GRPO da `vw1` se un calo di 0,05 viene **escluso** e il
-contenuto resta utile; ulteriore ampliamento o ripensamento se resta inconcludente.
-Test 800 non toccato.
+| confronto | 1 crop per ID | **3 crop per ID** |
+|---|---|---|
+| Δ_lettura | −0,0176 [−0,0522; +0,0161] | **−0,0299 [−0,0511; −0,0083]** |
+| Δ_contenuto | +0,1115 [+0,0790; +0,1456] | **+0,1053 [+0,0798; +0,1319]** |
+
+Condizioni W1 sui tre crop: vero 0,1742, sostituito 0,0632, azzerato 0,0566.
+
+**Ora il calo esclude lo zero, ma resta sotto la soglia di rilevanza.** La stima è
+−0,030 contro un δ dichiarato di 0,05, e l'intervallo mancava di escludere −0,05 per
+un millesimo (estremo inferiore −0,0511). Formalmente **nessuna diramazione è
+soddisfatta**: non è un calo rilevante e convincente (la stima è metà della soglia),
+e non si può dichiarare che un calo di 0,05 sia escluso. Quindi, per la regola
+dichiarata, **nessun training lungo parte**.
+
+Il valore di questa misura sta però nella risoluzione per categoria, che è nuova:
+
+| categoria | n | Δ_lettura | Δ_contenuto |
+|---|---:|---|---|
+| localize | 80 | **−0,0005** [−0,0308; +0,0318] | +0,1433 [+0,0987; +0,1892] |
+| classify_with_evidence | 80 | −0,0300 [−0,0634; +0,0022] | +0,0916 [+0,0586; +0,1265] |
+| **localize_all_channels** | 48 | **−0,0789** [−0,1296; −0,0289] | +0,0648 [+0,0076; +0,1255] |
+
+- **Su localize la lettura non è cambiata affatto** (−0,0005), ed è la categoria dove
+  W1 guadagna di più in operativo: il miglioramento lì non ha alcun costo percettivo.
+- Su classify il calo è piccolo e l'intervallo sfiora lo zero.
+- **Sul multicanale il calo è reale e oltre la soglia** (−0,079 con CI che esclude lo
+  zero): è lì che l'addestramento W1 ha pagato un prezzo.
+
+Correzione di una mia correzione: con un solo crop per ID avevo **ritirato**
+l'indizio sul multicanale (−0,018 [−0,118; +0,078]). A potenza tripla l'indizio
+riemerge in forma più piccola ma statisticamente netta. Il −0,244 su n=15 del
+confronto confuso resta non riprodotto nella grandezza; il fenomeno però esiste.
+
+Resta pieno il beneficio del contenuto in tutte le categorie (+0,105 in aggregato,
++0,065 anche sul multicanale): W1 legge ancora il crop, non lo ignora.
+
+### Situazione per la decisione
+
+Sostenuto: W1 migliora il puntamento e il risultato operativo; legge gli stessi crop
+in modo **leggermente** peggiore, di 0,030 in aggregato (CI esclude lo zero, la
+soglia di rilevanza no), e il costo è concentrato sul **multicanale** (−0,079),
+assente su localize; continua a ricavare dal contenuto un beneficio ampio.
+
+Non sostenuto: che il calo aggregato sia irrilevante (l'intervallo tocca −0,051) né
+che sia rilevante (la stima è −0,030). Su questo punto la misura, a questa potenza,
+resta al confine.
+
+Le opzioni, con i numeri accanto, restano da decidere: recupero del lettore mirato al
+multicanale con replay di crop percettivi (è l'unica categoria dove il calo supera la
+soglia); pilot GRPO da `vw1` con il multicanale sotto osservazione nel criterio di
+selezione; o un ulteriore ampliamento se si vuole chiudere il confine aggregato.
+Config GRPO pronta e non lanciata. Test 800 non toccato. GPU libera.

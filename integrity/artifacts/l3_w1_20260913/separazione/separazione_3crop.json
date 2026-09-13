@@ -1,0 +1,118 @@
+{
+  "format": "l3_reader_vs_windows_v2",
+  "ids": 208,
+  "crops_per_id": 3.0,
+  "pairs": [
+    [
+      "/root/l3/z1bis_20260912/perceptual_gate/gate/rows.jsonl",
+      "/root/l3/w1_perceptual/rows.jsonl"
+    ],
+    [
+      "/root/l3/sep_z1bis_off1/rows.jsonl",
+      "/root/l3/sep_w1_off1/rows.jsonl"
+    ],
+    [
+      "/root/l3/sep_z1bis_off2/rows.jsonl",
+      "/root/l3/sep_w1_off2/rows.jsonl"
+    ]
+  ],
+  "identical_windows_verified": true,
+  "reading": {
+    "n": 208,
+    "mean": -0.02993961775430189,
+    "ci95": [
+      -0.05111603961105094,
+      -0.008331515713188554
+    ],
+    "crops_per_id": 3.0
+  },
+  "content": {
+    "n": 208,
+    "mean": 0.10532600736416102,
+    "ci95": [
+      0.07976170505276542,
+      0.13186636829519865
+    ],
+    "crops_per_id": 3.0,
+    "condition_means": {
+      "offcenter_true": 0.17422690881195646,
+      "offcenter_swap": 0.06315240297189148,
+      "offcenter_zero": 0.0566225160630643
+    }
+  },
+  "per_category": {
+    "classify_with_evidence": {
+      "reading": {
+        "n": 80,
+        "mean": -0.03000498970034992,
+        "ci95": [
+          -0.06343716814580792,
+          0.0021546277255567133
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.091615965420425,
+        "ci95": [
+          0.05858617492020892,
+          0.1264601555978282
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "localize": {
+      "reading": {
+        "n": 80,
+        "mean": -0.00047690534972388263,
+        "ci95": [
+          -0.030812321093397144,
+          0.03180429423658449
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.14334276483750477,
+        "ci95": [
+          0.09868592826672593,
+          0.18923262161318352
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "localize_all_channels": {
+      "reading": {
+        "n": 48,
+        "mean": -0.07893518518518518,
+        "ci95": [
+          -0.12962962962962962,
+          -0.028935185185185185
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 48,
+        "mean": 0.06481481481481481,
+        "ci95": [
+          0.00763888888888889,
+          0.12546296296296297
+        ],
+        "crops_per_id": 3.0
+      }
+    }
+  },
+  "branch": "inconclusive_enlarge",
+  "reason": "nessuna diramazione soddisfatta (Δ_lettura -0.0299 CI[-0.0511; -0.0083], contenuto +0.1053 CI[+0.0798; +0.1319])",
+  "checks": {
+    "relevant_decline": false,
+    "excludes_relevant_decline": false,
+    "content_still_useful": true,
+    "inconclusive": false
+  },
+  "criteria": {
+    "delta": 0.05,
+    "min_content": 0.05,
+    "declared_in": "l3/PROTOCOL-L3.md, Separazione lettore/finestre"
+  }
+}

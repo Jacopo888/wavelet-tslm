@@ -1,0 +1,110 @@
+{
+  "format": "l3_reader_vs_windows_v2",
+  "ids": 208,
+  "crops_per_id": 1.0,
+  "pairs": [
+    [
+      "/root/l3/z1bis_20260912/perceptual_gate/gate/rows.jsonl",
+      "/root/l3/w1_perceptual/rows.jsonl"
+    ]
+  ],
+  "identical_windows_verified": true,
+  "reading": {
+    "n": 208,
+    "mean": -0.01759671404810497,
+    "ci95": [
+      -0.052226670479171365,
+      0.01607499140522016
+    ],
+    "crops_per_id": 1.0
+  },
+  "content": {
+    "n": 208,
+    "mean": 0.11154263113076651,
+    "ci95": [
+      0.0789536390133828,
+      0.14556452480806084
+    ],
+    "crops_per_id": 1.0,
+    "condition_means": {
+      "offcenter_true": 0.18178657949105564,
+      "offcenter_swap": 0.07024394836028915,
+      "offcenter_zero": 0.0475132899064621
+    }
+  },
+  "per_category": {
+    "classify_with_evidence": {
+      "reading": {
+        "n": 80,
+        "mean": -0.03241718246501031,
+        "ci95": [
+          -0.08488851016782754,
+          0.017634556112488712
+        ],
+        "crops_per_id": 1.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.06258436927514073,
+        "ci95": [
+          0.01981011714550752,
+          0.10724679221881661
+        ],
+        "crops_per_id": 1.0
+      }
+    },
+    "localize": {
+      "reading": {
+        "n": 80,
+        "mean": -0.002500940726729279,
+        "ci95": [
+          -0.046895419948246655,
+          0.04221390805839686
+        ],
+        "crops_per_id": 1.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.1686764716648522,
+        "ci95": [
+          0.11431652216322552,
+          0.22515767341085988
+        ],
+        "crops_per_id": 1.0
+      }
+    },
+    "localize_all_channels": {
+      "reading": {
+        "n": 48,
+        "mean": -0.01805555555555555,
+        "ci95": [
+          -0.11805555555555557,
+          0.07777777777777778
+        ],
+        "crops_per_id": 1.0
+      },
+      "content": {
+        "n": 48,
+        "mean": 0.09791666666666667,
+        "ci95": [
+          0.027777777777777776,
+          0.17916666666666667
+        ],
+        "crops_per_id": 1.0
+      }
+    }
+  },
+  "branch": "inconclusive_enlarge",
+  "reason": "CI95 [-0.0522; +0.0161] compatibile sia con un calo >= 0.05 sia con nessun calo: si amplia la misura",
+  "checks": {
+    "relevant_decline": false,
+    "excludes_relevant_decline": false,
+    "content_still_useful": true,
+    "inconclusive": true
+  },
+  "criteria": {
+    "delta": 0.05,
+    "min_content": 0.05,
+    "declared_in": "l3/PROTOCOL-L3.md, Separazione lettore/finestre"
+  }
+}
