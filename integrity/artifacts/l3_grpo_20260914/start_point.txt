@@ -1,0 +1,5 @@
+verdict=w2_becomes_candidate
+start_label=vw2
+start_checkpoint=/root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+start_sha256=9f48ca99490b1dd8b8fb9b8a075495e2be38dfb7ea2da7df51dfe6a55e629964
+config=/root/l3/grpo_20260914T012904Z/config_grpo.yaml

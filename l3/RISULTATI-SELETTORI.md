@@ -407,3 +407,76 @@ operativo*. Non sostenuto: che l'intervento fosse specifico del multicanale — 
 guadagno di lettura è ampio su tutte le categorie, quindi il meccanismo non è «ho
 curato il multicanale» ma «il replay percettivo fa bene in generale». Il multicanale
 resta la banda più debole in geometria (46,6 % a 131k).
+
+## 11. Pilot GRPO da W2: il rinforzo sulla scelta della finestra non muove la policy (14/09)
+
+Run `/root/l3/grpo_20260914T012904Z`, 18,0 h in tutto (guards 15 min, 150 passi di
+training ≈ 14,7 h, tre validazioni ≈ 1 h, verifica della lettura ≈ 1,7 h), artefatti
+in `integrity/artifacts/l3_grpo_20260914/`. Partenza `vw2` (verdetto
+`w2_becomes_candidate`), disegno e criteri dichiarati prima dell'esito di W2 in
+`PROTOCOL-L3.md` §«Pilot GRPO dopo W2». Guards superati: identità della policy
+iniziale verificata, gate di memoria a 13.095 MiB con 16 rollout su 16 parsabili.
+
+Un passo costa in media **359 s** (mediana 187, massimo 659): gli episodi zoom su
+serie multicanale da 131k con 8 rollout sono lenti. La stima iniziale di 6 ore era
+sbagliata di più del doppio.
+
+### Le tre validazioni su val520, appaiate contro lo step 0
+
+| step | primary | multicanale | Δ vs step 0 | selezionabile |
+|---:|---:|---:|---|---|
+| 0 (`vw2`) | 0,3747 | 0,4250 | — | sì |
+| 50 | 0,3799 | 0,4560 | +0,0052 [−0,0120; +0,0222] | sì |
+| 100 | 0,3743 | 0,4347 | −0,0004 [−0,0193; +0,0178] | no |
+| 150 | 0,3741 | 0,4194 | −0,0005 [−0,0205; +0,0194] | no |
+
+Tre validazioni su tre **indistinguibili dal punto di partenza**; per categoria
+nessun intervallo esclude lo zero. Comportamento intatto per tutto il pilot:
+235-237 azioni, 0 invalide, 0 vuote, KL 0,0005-0,0014. Arresto per stagnazione allo
+step 150 (stale = 2). Selezione congelata dalla regola dichiarata sullo **step 50**,
+che vince per 0,005: rumore, ma la regola è la regola e non si cambia dopo.
+
+### Verifica della lettura sul checkpoint scelto (208 crop × 3 offset, finestre identiche)
+
+| confronto | valore | CI95 |
+|---|---:|---|
+| multicanale, step 50 − `vw2` | +0,0106 | [−0,0282; +0,0507] |
+| aggregato, step 50 − `vw2` | +0,0027 | [−0,0097; +0,0155] |
+| aggregato, step 50 − Z1-bis | +0,0398 | [+0,0180; +0,0618] |
+| contenuto, vero − miglior controllo | +0,1778 | [+0,1486; +0,2069] |
+
+**Accettato**: nessun peggioramento della lettura. Lo step 50 legge come `vw2`, e
+come `vw2` legge meglio di Z1-bis. Checkpoint `vw2_grpo_step50.pt`, sha
+`cebefffb2ca40114d9b4875b745e74c4d10a2a05e9007b8638ef82e3959b97b8`, copia in
+`~/l3_offnode/grpo_20260914/`.
+
+### Cosa dice il pilot
+
+Sostenuto: *150 passi di GRPO sul reward ufficiale, G=8, a partire da una policy che
+già zooma bene, non producono alcun cambiamento misurabile né in operativo né in
+lettura*. La policy non peggiora — il KL resta minuscolo — ma non impara nulla che
+il reward riesca a premiare oltre quello che l'SFT le ha già insegnato.
+
+Non sostenuto: che il rinforzo sulla finestra sia inutile in generale. Il pilot è
+breve, il reward è quello grezzo del benchmark (denso solo su localize), la
+temperatura è fissa: un reward modellato sul contenimento, o più passi, potrebbero
+muovere qualcosa. Quello che il pilot esclude è che a **questo** budget e con
+**questo** reward ci sia un guadagno facile da prendere.
+
+Letto insieme al resto della giornata, il quadro è coerente: allargare la finestra
+non paga (§5), il replay percettivo paga su tutte le categorie (§10), il rinforzo
+sulla finestra non aggiunge (§11). Il margine che resta è **percettivo**, e la leva
+che ha funzionato è nelle **tracce**, non nel reward.
+
+### Candidato e prossimo passo
+
+Il candidato formale è lo step 50; in pratica è `vw2` con rumore addosso, e per ogni
+uso successivo la provenienza più semplice è `vw2` (sha `9f48ca99…`). La scelta fra i
+due non cambia nulla di misurabile.
+
+Il passo naturale ora è il **test 800, una sola volta, a disegno congelato**, con
+confronto appaiato a più bracci: `va1` (senza zoom), `vz1bis`, `vw2`, e il candidato
+GRPO se si vuole chiudere anche quel confronto. È una decisione di Jacopo, non della
+catena. Prima, se si vuole un'ulteriore garanzia sul risultato principale, un secondo
+seed di W2 (~9,5 h) verificherebbe che il +0,037 di lettura e lo 0,3747 operativo non
+dipendano dall'estrazione delle tracce.

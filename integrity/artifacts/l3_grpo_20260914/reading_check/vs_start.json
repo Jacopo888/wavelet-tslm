@@ -1,0 +1,118 @@
+{
+  "format": "l3_reader_vs_windows_v2",
+  "ids": 208,
+  "crops_per_id": 3.0,
+  "pairs": [
+    [
+      "/root/l3/w2_20260913T133901Z/reading/off0/rows.jsonl",
+      "/root/l3/grpo_20260914T012904Z/reading_check/off0/rows.jsonl"
+    ],
+    [
+      "/root/l3/w2_20260913T133901Z/reading/off1/rows.jsonl",
+      "/root/l3/grpo_20260914T012904Z/reading_check/off1/rows.jsonl"
+    ],
+    [
+      "/root/l3/w2_20260913T133901Z/reading/off2/rows.jsonl",
+      "/root/l3/grpo_20260914T012904Z/reading_check/off2/rows.jsonl"
+    ]
+  ],
+  "identical_windows_verified": true,
+  "reading": {
+    "n": 208,
+    "mean": 0.0027096296029942494,
+    "ci95": [
+      -0.009727139526959609,
+      0.0154710444060048
+    ],
+    "crops_per_id": 3.0
+  },
+  "content": {
+    "n": 208,
+    "mean": 0.17778582374670665,
+    "ci95": [
+      0.14857192467855496,
+      0.20692697764036927
+    ],
+    "crops_per_id": 3.0,
+    "condition_means": {
+      "offcenter_true": 0.24393771952893986,
+      "offcenter_swap": 0.06263795063541618,
+      "offcenter_zero": 0.060045314396974234
+    }
+  },
+  "per_category": {
+    "classify_with_evidence": {
+      "reading": {
+        "n": 80,
+        "mean": 0.005467558199384914,
+        "ci95": [
+          -0.0061888891467227645,
+          0.018104011209459807
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.16334614948773668,
+        "ci95": [
+          0.12087994675068814,
+          0.20788584269961524
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "localize": {
+      "reading": {
+        "n": 80,
+        "mean": -0.004811410120488755,
+        "ci95": [
+          -0.02449449254425585,
+          0.015113762123170773
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.19653588114258955,
+        "ci95": [
+          0.15225859709355422,
+          0.24206761411886574
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "localize_all_channels": {
+      "reading": {
+        "n": 48,
+        "mean": 0.01064814814814815,
+        "ci95": [
+          -0.028240740740740736,
+          0.05069444444444444
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 48,
+        "mean": 0.17060185185185184,
+        "ci95": [
+          0.10416666666666667,
+          0.24490740740740738
+        ],
+        "crops_per_id": 3.0
+      }
+    }
+  },
+  "branch": "grpo_pilot",
+  "reason": "un calo di 0.05 e' escluso (CI basso -0.0097) e il contenuto resta utile (+0.1778)",
+  "checks": {
+    "relevant_decline": false,
+    "excludes_relevant_decline": true,
+    "content_still_useful": true,
+    "inconclusive": false
+  },
+  "criteria": {
+    "delta": 0.05,
+    "min_content": 0.05,
+    "declared_in": "l3/PROTOCOL-L3.md, Separazione lettore/finestre"
+  }
+}

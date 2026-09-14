@@ -1,0 +1,70 @@
+[
+  {
+    "step": 0,
+    "primary": 0.37468144951633475,
+    "per_category": {
+      "localize": 0.3529627663812348,
+      "classify_with_evidence": 0.1837555480222319,
+      "measure_magnitude": 0.5826258599193029,
+      "localize_all_channels": 0.42500000000000004,
+      "lead_lag_with_magnitude": 0.2814156087239583
+    },
+    "invalid_rate": 0.0,
+    "empty_rate": 0.0,
+    "stale": 0,
+    "selectable": true,
+    "checkpoint": "/root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt",
+    "checkpoint_sha256": "9f48ca99490b1dd8b8fb9b8a075495e2be38dfb7ea2da7df51dfe6a55e629964"
+  },
+  {
+    "step": 50,
+    "primary": 0.37992178798963605,
+    "per_category": {
+      "localize": 0.347192121990987,
+      "classify_with_evidence": 0.20501180699741098,
+      "measure_magnitude": 0.5952560822692179,
+      "localize_all_channels": 0.45601851851851855,
+      "lead_lag_with_magnitude": 0.24489054361979168
+    },
+    "invalid_rate": 0.0,
+    "empty_rate": 0.0,
+    "checkpoint": "/root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000050_composed.pt",
+    "checkpoint_sha256": "cebefffb2ca40114d9b4875b745e74c4d10a2a05e9007b8638ef82e3959b97b8",
+    "selectable": true,
+    "stale": 0
+  },
+  {
+    "step": 100,
+    "primary": 0.3742881353035602,
+    "per_category": {
+      "localize": 0.33847609900985004,
+      "classify_with_evidence": 0.19631263706756352,
+      "measure_magnitude": 0.5758831255679417,
+      "localize_all_channels": 0.43472222222222223,
+      "lead_lag_with_magnitude": 0.28821207682291666
+    },
+    "invalid_rate": 0.0,
+    "empty_rate": 0.0,
+    "checkpoint": "/root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000100_composed.pt",
+    "checkpoint_sha256": "1cb8d26b0b2c95469a1890817db46e3f2aec8839fa9d8dbfd6a6abefb49e0491",
+    "selectable": false,
+    "stale": 1
+  },
+  {
+    "step": 150,
+    "primary": 0.37414533413778384,
+    "per_category": {
+      "localize": 0.35137321563283913,
+      "classify_with_evidence": 0.18667164874383774,
+      "measure_magnitude": 0.5836950269599955,
+      "localize_all_channels": 0.41944444444444445,
+      "lead_lag_with_magnitude": 0.27968505859375
+    },
+    "invalid_rate": 0.0,
+    "empty_rate": 0.0,
+    "checkpoint": "/root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000150_composed.pt",
+    "checkpoint_sha256": "031007bc2e5bd064e7b9cbc235727ab15bd06f94aa5ac30649f6f55d668b8643",
+    "selectable": false,
+    "stale": 2
+  }
+]

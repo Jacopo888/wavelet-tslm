@@ -1,0 +1,13 @@
+{
+  "status": "ACCEPTED",
+  "multichannel_reading_vs_start": {
+    "n": 48,
+    "mean": 0.01064814814814815,
+    "ci95": [
+      -0.028240740740740736,
+      0.05069444444444444
+    ],
+    "crops_per_id": 3.0
+  },
+  "criterion": "respinto se < -0.03 con CI95 che esclude lo zero"
+}

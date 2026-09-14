@@ -1,0 +1,118 @@
+{
+  "format": "l3_reader_vs_windows_v2",
+  "ids": 208,
+  "crops_per_id": 3.0,
+  "pairs": [
+    [
+      "/root/l3/z1bis_20260912/perceptual_gate/gate/rows.jsonl",
+      "/root/l3/grpo_20260914T012904Z/reading_check/off0/rows.jsonl"
+    ],
+    [
+      "/root/l3/sep_z1bis_off1/rows.jsonl",
+      "/root/l3/grpo_20260914T012904Z/reading_check/off1/rows.jsonl"
+    ],
+    [
+      "/root/l3/sep_z1bis_off2/rows.jsonl",
+      "/root/l3/grpo_20260914T012904Z/reading_check/off2/rows.jsonl"
+    ]
+  ],
+  "identical_windows_verified": true,
+  "reading": {
+    "n": 208,
+    "mean": 0.03977119296268154,
+    "ci95": [
+      0.01801811280199923,
+      0.06175930297797338
+    ],
+    "crops_per_id": 3.0
+  },
+  "content": {
+    "n": 208,
+    "mean": 0.17778582374670665,
+    "ci95": [
+      0.14857192467855496,
+      0.20692697764036927
+    ],
+    "crops_per_id": 3.0,
+    "condition_means": {
+      "offcenter_true": 0.24393771952893986,
+      "offcenter_swap": 0.06263795063541618,
+      "offcenter_zero": 0.060045314396974234
+    }
+  },
+  "per_category": {
+    "classify_with_evidence": {
+      "reading": {
+        "n": 80,
+        "mean": 0.033244040477407644,
+        "ci95": [
+          0.004034404209235908,
+          0.06401014198057965
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.16334614948773668,
+        "ci95": [
+          0.12087994675068814,
+          0.20788584269961524
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "localize": {
+      "reading": {
+        "n": 80,
+        "mean": 0.07196661678111992,
+        "ci95": [
+          0.042586844753654665,
+          0.1028694404387411
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 80,
+        "mean": 0.19653588114258955,
+        "ci95": [
+          0.15225859709355422,
+          0.24206761411886574
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "localize_all_channels": {
+      "reading": {
+        "n": 48,
+        "mean": -0.0030092592592592567,
+        "ci95": [
+          -0.06412037037037037,
+          0.057638888888888885
+        ],
+        "crops_per_id": 3.0
+      },
+      "content": {
+        "n": 48,
+        "mean": 0.17060185185185184,
+        "ci95": [
+          0.10416666666666667,
+          0.24490740740740738
+        ],
+        "crops_per_id": 3.0
+      }
+    }
+  },
+  "branch": "grpo_pilot",
+  "reason": "un calo di 0.05 e' escluso (CI basso +0.0180) e il contenuto resta utile (+0.1778)",
+  "checks": {
+    "relevant_decline": false,
+    "excludes_relevant_decline": true,
+    "content_still_useful": true,
+    "inconclusive": false
+  },
+  "criteria": {
+    "delta": 0.05,
+    "min_content": 0.05,
+    "declared_in": "l3/PROTOCOL-L3.md, Separazione lettore/finestre"
+  }
+}

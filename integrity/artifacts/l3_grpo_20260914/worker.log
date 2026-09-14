@@ -1,0 +1,1096 @@
+L3_GRPO_STATUS phase=start_point elapsed_s=0
+verdict=w2_becomes_candidate
+start_label=vw2
+start_checkpoint=/root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+start_sha256=9f48ca99490b1dd8b8fb9b8a075495e2be38dfb7ea2da7df51dfe6a55e629964
+config=/root/l3/grpo_20260914T012904Z/config_grpo.yaml
+L3_GRPO_PHASE_OK phase=start_point elapsed_s=1
+L3_GRPO_STATUS phase=guards elapsed_s=1
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=1 category=localize_all_channels+localize_all_channels reward=0.562500 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0 peak_mib=13095.0 s_per_step=870.8
+gate memoria: picco 13095 MiB, parsabili 16/16
+L3_GRPO_PHASE_OK phase=guards elapsed_s=929
+L3_GRPO_STATUS phase=training elapsed_s=929
+step0 primary=0.3747 multicanale=0.4250
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=1 category=classify_with_evidence+localize reward=0.155201 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0 peak_mib=9029.0 s_per_step=178.4
+L3_ZOOM_STEP step=2 category=localize_all_channels+measure_magnitude reward=0.908891 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000110601 peak_mib=11779.1 s_per_step=312.4
+L3_ZOOM_STEP step=3 category=classify_with_evidence+localize reward=0.230676 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000166774 peak_mib=9053.9 s_per_step=181.7
+L3_ZOOM_STEP step=4 category=localize_all_channels+measure_magnitude reward=0.508930 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000197996 peak_mib=13215.1 s_per_step=643.1
+L3_ZOOM_STEP step=5 category=classify_with_evidence+localize reward=0.356311 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000149986 peak_mib=9087.7 s_per_step=185.4
+L3_ZOOM_STEP step=6 category=localize_all_channels+measure_magnitude reward=0.179607 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000199973 peak_mib=13129.5 s_per_step=634.8
+L3_ZOOM_STEP step=7 category=classify_with_evidence+localize reward=0.501793 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=7.26978e-05 peak_mib=9101.0 s_per_step=134.3
+L3_ZOOM_STEP step=8 category=localize_all_channels+measure_magnitude reward=0.237872 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000236104 peak_mib=13217.6 s_per_step=647.1
+L3_ZOOM_STEP step=9 category=classify_with_evidence+localize reward=0.722757 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000125123 peak_mib=9054.1 s_per_step=129.3
+L3_ZOOM_STEP step=10 category=localize_all_channels+measure_magnitude reward=0.914040 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000111634 peak_mib=11791.8 s_per_step=313.6
+L3_ZOOM_STEP step=11 category=classify_with_evidence+localize reward=0.025436 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000105725 peak_mib=9085.2 s_per_step=131.9
+L3_ZOOM_STEP step=12 category=localize_all_channels+measure_magnitude reward=0.443476 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000263424 peak_mib=13183.7 s_per_step=638.0
+L3_ZOOM_STEP step=13 category=classify_with_evidence+localize reward=0.090939 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000224594 peak_mib=9089.8 s_per_step=184.1
+L3_ZOOM_STEP step=14 category=localize_all_channels+measure_magnitude reward=0.700869 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000127338 peak_mib=11791.8 s_per_step=313.1
+L3_ZOOM_STEP step=15 category=classify_with_evidence+localize reward=0.152927 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000306957 peak_mib=9091.7 s_per_step=184.3
+L3_ZOOM_STEP step=16 category=localize_all_channels+measure_magnitude reward=0.519471 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000232721 peak_mib=13181.6 s_per_step=648.2
+L3_ZOOM_STEP step=17 category=classify_with_evidence+localize reward=0.508792 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000197454 peak_mib=9081.7 s_per_step=129.3
+L3_ZOOM_STEP step=18 category=localize_all_channels+measure_magnitude reward=0.315398 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000224518 peak_mib=13126.6 s_per_step=646.3
+L3_ZOOM_STEP step=19 category=classify_with_evidence+localize reward=0.615777 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000251313 peak_mib=9058.0 s_per_step=129.8
+L3_ZOOM_STEP step=20 category=localize_all_channels+measure_magnitude reward=0.934726 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000175724 peak_mib=11817.7 s_per_step=313.5
+L3_ZOOM_STEP step=21 category=classify_with_evidence+localize reward=0.100011 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000559029 peak_mib=9087.2 s_per_step=183.8
+L3_ZOOM_STEP step=22 category=localize_all_channels+measure_magnitude reward=0.454531 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000300931 peak_mib=13161.4 s_per_step=650.3
+L3_ZOOM_STEP step=23 category=classify_with_evidence+localize reward=0.128610 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000526135 peak_mib=9094.3 s_per_step=187.5
+L3_ZOOM_STEP step=24 category=localize_all_channels+measure_magnitude reward=0.429158 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000470648 peak_mib=13109.9 s_per_step=632.2
+L3_ZOOM_STEP step=25 category=classify_with_evidence+localize reward=0.539205 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000109227 peak_mib=9057.7 s_per_step=129.1
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=26 category=localize_all_channels+measure_magnitude reward=0.448308 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000359267 peak_mib=13117.1 s_per_step=649.2
+L3_ZOOM_STEP step=27 category=classify_with_evidence+localize reward=0.235875 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000423891 peak_mib=9071.5 s_per_step=182.8
+L3_ZOOM_STEP step=28 category=localize_all_channels+measure_magnitude reward=0.278368 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000554516 peak_mib=13102.8 s_per_step=632.0
+L3_ZOOM_STEP step=29 category=classify_with_evidence+localize reward=0.116078 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000618709 peak_mib=9089.2 s_per_step=186.0
+L3_ZOOM_STEP step=30 category=localize_all_channels+measure_magnitude reward=0.475395 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000372723 peak_mib=13119.1 s_per_step=648.6
+L3_ZOOM_STEP step=31 category=classify_with_evidence+localize reward=0.011801 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000432967 peak_mib=9057.6 s_per_step=182.4
+L3_ZOOM_STEP step=32 category=localize_all_channels+measure_magnitude reward=0.416163 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000360404 peak_mib=13179.8 s_per_step=652.9
+L3_ZOOM_STEP step=33 category=classify_with_evidence+localize reward=0.000000 informative=0/2 zoom_rate=0.562 zoom_invalid=0 kl=0.000236086 peak_mib=9055.3 s_per_step=136.5
+L3_ZOOM_STEP step=34 category=localize_all_channels+measure_magnitude reward=0.276917 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000517706 peak_mib=13118.4 s_per_step=649.1
+L3_ZOOM_STEP step=35 category=classify_with_evidence+localize reward=0.069290 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00118449 peak_mib=9086.1 s_per_step=182.9
+L3_ZOOM_STEP step=36 category=localize_all_channels+measure_magnitude reward=0.342501 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000288121 peak_mib=13168.8 s_per_step=636.6
+L3_ZOOM_STEP step=37 category=classify_with_evidence+localize reward=0.172299 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00134108 peak_mib=9085.5 s_per_step=182.3
+L3_ZOOM_STEP step=38 category=localize_all_channels+measure_magnitude reward=0.395712 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00032003 peak_mib=13149.0 s_per_step=646.8
+L3_ZOOM_STEP step=39 category=classify_with_evidence+localize reward=0.000000 informative=0/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00161034 peak_mib=9101.4 s_per_step=187.1
+L3_ZOOM_STEP step=40 category=localize_all_channels+measure_magnitude reward=0.204587 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000377999 peak_mib=11810.5 s_per_step=314.0
+L3_ZOOM_STEP step=41 category=classify_with_evidence+localize reward=0.128241 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00148323 peak_mib=9086.2 s_per_step=184.3
+L3_ZOOM_STEP step=42 category=localize_all_channels+measure_magnitude reward=0.633855 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000283059 peak_mib=11785.4 s_per_step=314.1
+L3_ZOOM_STEP step=43 category=classify_with_evidence+localize reward=0.241554 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00141788 peak_mib=9086.6 s_per_step=183.6
+L3_ZOOM_STEP step=44 category=localize_all_channels+measure_magnitude reward=0.109569 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000933507 peak_mib=13207.1 s_per_step=660.9
+L3_ZOOM_STEP step=45 category=classify_with_evidence+localize reward=0.267759 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00212158 peak_mib=9058.5 s_per_step=183.0
+L3_ZOOM_STEP step=46 category=localize_all_channels+measure_magnitude reward=0.688486 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00104942 peak_mib=13118.0 s_per_step=634.1
+L3_ZOOM_STEP step=47 category=classify_with_evidence+localize reward=0.055398 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00230983 peak_mib=9100.2 s_per_step=189.3
+L3_ZOOM_STEP step=48 category=localize_all_channels+measure_magnitude reward=0.318109 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.00105074 peak_mib=11810.5 s_per_step=314.9
+L3_ZOOM_STEP step=49 category=classify_with_evidence+localize reward=0.106184 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000778632 peak_mib=9054.7 s_per_step=182.1
+L3_ZOOM_STEP step=50 category=localize_all_channels+measure_magnitude reward=0.556906 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.00025684 peak_mib=11785.4 s_per_step=314.3
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000050_composed.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+step=50 primary=0.3799 multicanale=0.4560 selezionabile=True scelto=50 stale=0
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=51 category=classify_with_evidence+localize reward=0.042131 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000441741 peak_mib=9042.7 s_per_step=181.2
+L3_ZOOM_STEP step=52 category=localize_all_channels+measure_magnitude reward=0.420121 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00153173 peak_mib=13172.3 s_per_step=649.4
+L3_ZOOM_STEP step=53 category=classify_with_evidence+localize reward=0.015707 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000447392 peak_mib=9089.4 s_per_step=185.9
+L3_ZOOM_STEP step=54 category=localize_all_channels+measure_magnitude reward=0.468254 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000458995 peak_mib=13107.6 s_per_step=634.9
+L3_ZOOM_STEP step=55 category=classify_with_evidence+localize reward=0.071168 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000450393 peak_mib=9092.6 s_per_step=188.2
+L3_ZOOM_STEP step=56 category=localize_all_channels+measure_magnitude reward=0.386295 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000916043 peak_mib=13207.1 s_per_step=653.7
+L3_ZOOM_STEP step=57 category=classify_with_evidence+localize reward=0.350786 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00057475 peak_mib=9057.3 s_per_step=183.5
+L3_ZOOM_STEP step=58 category=localize_all_channels+measure_magnitude reward=0.699484 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000138404 peak_mib=11782.5 s_per_step=314.0
+L3_ZOOM_STEP step=59 category=classify_with_evidence+localize reward=0.491083 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000647668 peak_mib=9087.5 s_per_step=186.6
+L3_ZOOM_STEP step=60 category=localize_all_channels+measure_magnitude reward=0.366249 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000168435 peak_mib=11810.3 s_per_step=314.6
+L3_ZOOM_STEP step=61 category=classify_with_evidence+localize reward=0.000000 informative=0/2 zoom_rate=0.562 zoom_invalid=0 kl=0.000811579 peak_mib=9090.5 s_per_step=139.0
+L3_ZOOM_STEP step=62 category=localize_all_channels+measure_magnitude reward=0.778599 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000148893 peak_mib=11782.5 s_per_step=314.1
+L3_ZOOM_STEP step=63 category=classify_with_evidence+localize reward=0.563590 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000221167 peak_mib=9090.4 s_per_step=133.7
+L3_ZOOM_STEP step=64 category=localize_all_channels+measure_magnitude reward=0.260659 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000841786 peak_mib=13171.9 s_per_step=636.6
+L3_ZOOM_STEP step=65 category=classify_with_evidence+localize reward=0.385717 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000931935 peak_mib=9056.3 s_per_step=182.3
+L3_ZOOM_STEP step=66 category=localize_all_channels+measure_magnitude reward=0.235719 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000677601 peak_mib=13050.8 s_per_step=634.8
+L3_ZOOM_STEP step=67 category=classify_with_evidence+localize reward=0.206274 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.0013679 peak_mib=9053.5 s_per_step=184.9
+L3_ZOOM_STEP step=68 category=localize_all_channels+measure_magnitude reward=0.417887 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000868593 peak_mib=13175.1 s_per_step=653.0
+L3_ZOOM_STEP step=69 category=classify_with_evidence+localize reward=0.025024 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000668009 peak_mib=9085.7 s_per_step=185.1
+L3_ZOOM_STEP step=70 category=localize_all_channels+measure_magnitude reward=0.842324 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000131895 peak_mib=11782.5 s_per_step=313.9
+L3_ZOOM_STEP step=71 category=classify_with_evidence+localize reward=0.196964 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00271419 peak_mib=9092.7 s_per_step=189.3
+L3_ZOOM_STEP step=72 category=localize_all_channels+measure_magnitude reward=0.731294 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.00147174 peak_mib=11810.3 s_per_step=314.1
+L3_ZOOM_STEP step=73 category=classify_with_evidence+localize reward=0.500000 informative=0/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000429053 peak_mib=9080.4 s_per_step=129.8
+L3_ZOOM_STEP step=74 category=localize_all_channels+measure_magnitude reward=0.509508 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000585308 peak_mib=13050.8 s_per_step=634.8
+L3_ZOOM_STEP step=75 category=classify_with_evidence+localize reward=0.204296 informative=1/2 zoom_rate=0.812 zoom_invalid=0 kl=0.00123723 peak_mib=9087.5 s_per_step=166.4
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=76 category=localize_all_channels+measure_magnitude reward=0.238383 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000906929 peak_mib=13204.8 s_per_step=659.6
+L3_ZOOM_STEP step=77 category=classify_with_evidence+localize reward=0.187500 informative=1/2 zoom_rate=0.812 zoom_invalid=0 kl=0.000298795 peak_mib=9052.1 s_per_step=162.4
+L3_ZOOM_STEP step=78 category=localize_all_channels+measure_magnitude reward=0.515367 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00107488 peak_mib=13117.3 s_per_step=650.5
+L3_ZOOM_STEP step=79 category=classify_with_evidence+localize reward=0.557065 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000783664 peak_mib=9092.9 s_per_step=134.2
+L3_ZOOM_STEP step=80 category=localize_all_channels+measure_magnitude reward=0.906406 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000599233 peak_mib=11810.9 s_per_step=315.0
+L3_ZOOM_STEP step=81 category=classify_with_evidence+localize reward=0.348522 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00140063 peak_mib=9049.4 s_per_step=182.2
+L3_ZOOM_STEP step=82 category=localize_all_channels+measure_magnitude reward=0.455561 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00114861 peak_mib=13051.8 s_per_step=634.0
+L3_ZOOM_STEP step=83 category=classify_with_evidence+localize reward=0.170777 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00113113 peak_mib=9082.9 s_per_step=185.1
+L3_ZOOM_STEP step=84 category=localize_all_channels+measure_magnitude reward=0.443101 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000809572 peak_mib=13206.2 s_per_step=652.9
+L3_ZOOM_STEP step=85 category=classify_with_evidence+localize reward=0.206875 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00142157 peak_mib=9087.3 s_per_step=186.4
+L3_ZOOM_STEP step=86 category=localize_all_channels+measure_magnitude reward=0.512312 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000720447 peak_mib=13157.6 s_per_step=661.0
+L3_ZOOM_STEP step=87 category=classify_with_evidence+localize reward=0.540096 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000398008 peak_mib=9097.9 s_per_step=135.5
+L3_ZOOM_STEP step=88 category=localize_all_channels+measure_magnitude reward=0.338604 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.0014763 peak_mib=13168.0 s_per_step=651.9
+L3_ZOOM_STEP step=89 category=classify_with_evidence+localize reward=0.205220 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000933865 peak_mib=9049.4 s_per_step=182.6
+L3_ZOOM_STEP step=90 category=localize_all_channels+measure_magnitude reward=0.540223 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.0006628 peak_mib=13145.4 s_per_step=656.7
+L3_ZOOM_STEP step=91 category=classify_with_evidence+localize reward=0.500000 informative=0/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000362368 peak_mib=9051.0 s_per_step=131.0
+L3_ZOOM_STEP step=92 category=localize_all_channels+measure_magnitude reward=0.400423 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00141254 peak_mib=13166.8 s_per_step=636.0
+L3_ZOOM_STEP step=93 category=classify_with_evidence+localize reward=0.210499 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00202824 peak_mib=9087.3 s_per_step=186.8
+L3_ZOOM_STEP step=94 category=localize_all_channels+measure_magnitude reward=0.830134 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000162905 peak_mib=11782.5 s_per_step=314.3
+L3_ZOOM_STEP step=95 category=classify_with_evidence+localize reward=0.500000 informative=0/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000334705 peak_mib=9091.5 s_per_step=135.5
+L3_ZOOM_STEP step=96 category=localize_all_channels+measure_magnitude reward=0.420283 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000796376 peak_mib=13220.3 s_per_step=657.6
+L3_ZOOM_STEP step=97 category=classify_with_evidence+localize reward=0.333998 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000244476 peak_mib=9085.0 s_per_step=134.6
+L3_ZOOM_STEP step=98 category=localize_all_channels+measure_magnitude reward=0.218208 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000447157 peak_mib=13155.9 s_per_step=651.9
+L3_ZOOM_STEP step=99 category=classify_with_evidence+localize reward=0.202486 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000592729 peak_mib=9052.4 s_per_step=184.7
+L3_ZOOM_STEP step=100 category=localize_all_channels+measure_magnitude reward=0.369517 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.00045831 peak_mib=11810.9 s_per_step=315.3
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000100_composed.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+step=100 primary=0.3743 multicanale=0.4347 selezionabile=False scelto=50 stale=1
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=101 category=classify_with_evidence+localize reward=0.073166 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000612851 peak_mib=9078.7 s_per_step=186.1
+L3_ZOOM_STEP step=102 category=localize_all_channels+measure_magnitude reward=0.189312 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000255165 peak_mib=11779.9 s_per_step=316.1
+L3_ZOOM_STEP step=103 category=classify_with_evidence+localize reward=0.112945 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000737458 peak_mib=9085.6 s_per_step=185.7
+L3_ZOOM_STEP step=104 category=localize_all_channels+measure_magnitude reward=0.406100 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000866325 peak_mib=13182.5 s_per_step=643.9
+L3_ZOOM_STEP step=105 category=classify_with_evidence+localize reward=0.543398 informative=2/2 zoom_rate=0.562 zoom_invalid=0 kl=0.000651651 peak_mib=9086.8 s_per_step=141.2
+L3_ZOOM_STEP step=106 category=localize_all_channels+measure_magnitude reward=0.661832 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000991854 peak_mib=11791.8 s_per_step=315.9
+L3_ZOOM_STEP step=107 category=classify_with_evidence+localize reward=0.112783 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000963582 peak_mib=9090.9 s_per_step=189.4
+L3_ZOOM_STEP step=108 category=localize_all_channels+measure_magnitude reward=0.213702 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.0010366 peak_mib=13178.1 s_per_step=640.9
+L3_ZOOM_STEP step=109 category=classify_with_evidence+localize reward=0.009314 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000653852 peak_mib=9083.4 s_per_step=186.1
+L3_ZOOM_STEP step=110 category=localize_all_channels+measure_magnitude reward=0.678346 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000771097 peak_mib=13154.9 s_per_step=662.3
+L3_ZOOM_STEP step=111 category=classify_with_evidence+localize reward=0.544488 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000485557 peak_mib=9055.4 s_per_step=132.1
+L3_ZOOM_STEP step=112 category=localize_all_channels+measure_magnitude reward=0.563469 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000684692 peak_mib=13110.0 s_per_step=636.6
+L3_ZOOM_STEP step=113 category=classify_with_evidence+localize reward=0.507528 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00100435 peak_mib=9087.4 s_per_step=135.3
+L3_ZOOM_STEP step=114 category=localize_all_channels+measure_magnitude reward=0.308149 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000851262 peak_mib=13158.8 s_per_step=661.5
+L3_ZOOM_STEP step=115 category=classify_with_evidence+localize reward=0.500000 informative=0/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000549811 peak_mib=9098.0 s_per_step=137.1
+L3_ZOOM_STEP step=116 category=localize_all_channels+measure_magnitude reward=0.953052 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000159144 peak_mib=11817.7 s_per_step=316.1
+L3_ZOOM_STEP step=117 category=classify_with_evidence+localize reward=0.615573 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000334778 peak_mib=9086.3 s_per_step=134.7
+L3_ZOOM_STEP step=118 category=localize_all_channels+measure_magnitude reward=0.767338 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.00021149 peak_mib=11791.8 s_per_step=314.4
+L3_ZOOM_STEP step=119 category=classify_with_evidence+localize reward=0.176135 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000426847 peak_mib=9055.3 s_per_step=131.5
+L3_ZOOM_STEP step=120 category=localize_all_channels+measure_magnitude reward=0.714709 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.00028361 peak_mib=11817.7 s_per_step=315.6
+L3_ZOOM_STEP step=121 category=classify_with_evidence+localize reward=0.132828 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000921968 peak_mib=9087.7 s_per_step=188.4
+L3_ZOOM_STEP step=122 category=localize_all_channels+measure_magnitude reward=0.253813 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000849737 peak_mib=13125.1 s_per_step=650.7
+L3_ZOOM_STEP step=123 category=classify_with_evidence+localize reward=0.037260 informative=1/2 zoom_rate=0.625 zoom_invalid=0 kl=0.00135172 peak_mib=9094.3 s_per_step=149.8
+L3_ZOOM_STEP step=124 category=localize_all_channels+measure_magnitude reward=0.848780 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000703552 peak_mib=11817.7 s_per_step=315.8
+L3_ZOOM_STEP step=125 category=classify_with_evidence+localize reward=0.224012 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000807914 peak_mib=9057.3 s_per_step=186.2
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 0, Test: 0
+L3_ZOOM_STEP step=126 category=localize_all_channels+measure_magnitude reward=0.361456 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000991084 peak_mib=13052.0 s_per_step=633.9
+L3_ZOOM_STEP step=127 category=classify_with_evidence+localize reward=0.311531 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000869019 peak_mib=9091.5 s_per_step=185.2
+L3_ZOOM_STEP step=128 category=localize_all_channels+measure_magnitude reward=0.347402 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00140502 peak_mib=13151.7 s_per_step=634.2
+L3_ZOOM_STEP step=129 category=classify_with_evidence+localize reward=0.018939 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00040615 peak_mib=9093.0 s_per_step=132.1
+L3_ZOOM_STEP step=130 category=localize_all_channels+measure_magnitude reward=0.560079 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00101036 peak_mib=13118.1 s_per_step=648.9
+L3_ZOOM_STEP step=131 category=classify_with_evidence+localize reward=0.109179 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.0011419 peak_mib=9102.6 s_per_step=187.8
+L3_ZOOM_STEP step=132 category=localize_all_channels+measure_magnitude reward=0.439838 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000603549 peak_mib=13103.2 s_per_step=634.9
+L3_ZOOM_STEP step=133 category=classify_with_evidence+localize reward=0.145223 informative=2/2 zoom_rate=0.938 zoom_invalid=0 kl=0.000866449 peak_mib=9087.4 s_per_step=178.1
+L3_ZOOM_STEP step=134 category=localize_all_channels+measure_magnitude reward=0.573969 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000722516 peak_mib=13051.9 s_per_step=633.0
+L3_ZOOM_STEP step=135 category=classify_with_evidence+localize reward=0.224816 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.000732149 peak_mib=9089.7 s_per_step=185.0
+L3_ZOOM_STEP step=136 category=localize_all_channels+measure_magnitude reward=0.235788 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000389829 peak_mib=13173.9 s_per_step=635.7
+L3_ZOOM_STEP step=137 category=classify_with_evidence+localize reward=0.066270 informative=1/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00110898 peak_mib=9093.0 s_per_step=186.4
+L3_ZOOM_STEP step=138 category=localize_all_channels+measure_magnitude reward=0.000000 informative=0/2 zoom_rate=0.188 zoom_invalid=0 kl=0.000692378 peak_mib=12936.3 s_per_step=433.3
+L3_ZOOM_STEP step=139 category=classify_with_evidence+localize reward=0.500000 informative=0/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000430904 peak_mib=9098.8 s_per_step=135.3
+L3_ZOOM_STEP step=140 category=localize_all_channels+measure_magnitude reward=0.945483 informative=1/2 zoom_rate=0.000 zoom_invalid=0 kl=0.000195393 peak_mib=11811.3 s_per_step=315.1
+L3_ZOOM_STEP step=141 category=classify_with_evidence+localize reward=0.253975 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000542205 peak_mib=9090.8 s_per_step=133.4
+L3_ZOOM_STEP step=142 category=localize_all_channels+measure_magnitude reward=0.426433 informative=1/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00142331 peak_mib=13154.9 s_per_step=659.0
+L3_ZOOM_STEP step=143 category=classify_with_evidence+localize reward=0.039855 informative=1/2 zoom_rate=0.750 zoom_invalid=0 kl=0.00111683 peak_mib=9050.7 s_per_step=155.8
+L3_ZOOM_STEP step=144 category=localize_all_channels+measure_magnitude reward=0.210224 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000766317 peak_mib=13180.9 s_per_step=638.3
+L3_ZOOM_STEP step=145 category=classify_with_evidence+localize reward=0.178635 informative=2/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00154269 peak_mib=9055.9 s_per_step=183.7
+L3_ZOOM_STEP step=146 category=localize_all_channels+measure_magnitude reward=0.489012 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.000980204 peak_mib=13118.7 s_per_step=649.6
+L3_ZOOM_STEP step=147 category=classify_with_evidence+localize reward=0.000000 informative=0/2 zoom_rate=1.000 zoom_invalid=0 kl=0.00440265 peak_mib=9096.1 s_per_step=187.3
+L3_ZOOM_STEP step=148 category=localize_all_channels+measure_magnitude reward=0.501133 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.0013518 peak_mib=13216.7 s_per_step=658.4
+L3_ZOOM_STEP step=149 category=classify_with_evidence+localize reward=0.064638 informative=2/2 zoom_rate=0.625 zoom_invalid=0 kl=0.0017355 peak_mib=9090.7 s_per_step=145.7
+L3_ZOOM_STEP step=150 category=localize_all_channels+measure_magnitude reward=0.383472 informative=2/2 zoom_rate=0.500 zoom_invalid=0 kl=0.00083207 peak_mib=13148.3 s_per_step=651.1
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000150_composed.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+step=150 primary=0.3741 multicanale=0.4194 selezionabile=False scelto=50 stale=2
+arresto per stagnazione allo step 150
+L3_GRPO_PHASE_OK phase=training elapsed_s=58423
+L3_GRPO_STATUS phase=reading_check elapsed_s=58423
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000050_composed.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+Z1BIS_PERCEPTUAL 1/208
+Z1BIS_PERCEPTUAL 2/208
+Z1BIS_PERCEPTUAL 3/208
+Z1BIS_PERCEPTUAL 4/208
+Z1BIS_PERCEPTUAL 5/208
+Z1BIS_PERCEPTUAL 6/208
+Z1BIS_PERCEPTUAL 7/208
+Z1BIS_PERCEPTUAL 8/208
+Z1BIS_PERCEPTUAL 9/208
+Z1BIS_PERCEPTUAL 10/208
+Z1BIS_PERCEPTUAL 11/208
+Z1BIS_PERCEPTUAL 12/208
+Z1BIS_PERCEPTUAL 13/208
+Z1BIS_PERCEPTUAL 14/208
+Z1BIS_PERCEPTUAL 15/208
+Z1BIS_PERCEPTUAL 16/208
+Z1BIS_PERCEPTUAL 17/208
+Z1BIS_PERCEPTUAL 18/208
+Z1BIS_PERCEPTUAL 19/208
+Z1BIS_PERCEPTUAL 20/208
+Z1BIS_PERCEPTUAL 21/208
+Z1BIS_PERCEPTUAL 22/208
+Z1BIS_PERCEPTUAL 23/208
+Z1BIS_PERCEPTUAL 24/208
+Z1BIS_PERCEPTUAL 25/208
+Z1BIS_PERCEPTUAL 26/208
+Z1BIS_PERCEPTUAL 27/208
+Z1BIS_PERCEPTUAL 28/208
+Z1BIS_PERCEPTUAL 29/208
+Z1BIS_PERCEPTUAL 30/208
+Z1BIS_PERCEPTUAL 31/208
+Z1BIS_PERCEPTUAL 32/208
+Z1BIS_PERCEPTUAL 33/208
+Z1BIS_PERCEPTUAL 34/208
+Z1BIS_PERCEPTUAL 35/208
+Z1BIS_PERCEPTUAL 36/208
+Z1BIS_PERCEPTUAL 37/208
+Z1BIS_PERCEPTUAL 38/208
+Z1BIS_PERCEPTUAL 39/208
+Z1BIS_PERCEPTUAL 40/208
+Z1BIS_PERCEPTUAL 41/208
+Z1BIS_PERCEPTUAL 42/208
+Z1BIS_PERCEPTUAL 43/208
+Z1BIS_PERCEPTUAL 44/208
+Z1BIS_PERCEPTUAL 45/208
+Z1BIS_PERCEPTUAL 46/208
+Z1BIS_PERCEPTUAL 47/208
+Z1BIS_PERCEPTUAL 48/208
+Z1BIS_PERCEPTUAL 49/208
+Z1BIS_PERCEPTUAL 50/208
+Z1BIS_PERCEPTUAL 51/208
+Z1BIS_PERCEPTUAL 52/208
+Z1BIS_PERCEPTUAL 53/208
+Z1BIS_PERCEPTUAL 54/208
+Z1BIS_PERCEPTUAL 55/208
+Z1BIS_PERCEPTUAL 56/208
+Z1BIS_PERCEPTUAL 57/208
+Z1BIS_PERCEPTUAL 58/208
+Z1BIS_PERCEPTUAL 59/208
+Z1BIS_PERCEPTUAL 60/208
+Z1BIS_PERCEPTUAL 61/208
+Z1BIS_PERCEPTUAL 62/208
+Z1BIS_PERCEPTUAL 63/208
+Z1BIS_PERCEPTUAL 64/208
+Z1BIS_PERCEPTUAL 65/208
+Z1BIS_PERCEPTUAL 66/208
+Z1BIS_PERCEPTUAL 67/208
+Z1BIS_PERCEPTUAL 68/208
+Z1BIS_PERCEPTUAL 69/208
+Z1BIS_PERCEPTUAL 70/208
+Z1BIS_PERCEPTUAL 71/208
+Z1BIS_PERCEPTUAL 72/208
+Z1BIS_PERCEPTUAL 73/208
+Z1BIS_PERCEPTUAL 74/208
+Z1BIS_PERCEPTUAL 75/208
+Z1BIS_PERCEPTUAL 76/208
+Z1BIS_PERCEPTUAL 77/208
+Z1BIS_PERCEPTUAL 78/208
+Z1BIS_PERCEPTUAL 79/208
+Z1BIS_PERCEPTUAL 80/208
+Z1BIS_PERCEPTUAL 81/208
+Z1BIS_PERCEPTUAL 82/208
+Z1BIS_PERCEPTUAL 83/208
+Z1BIS_PERCEPTUAL 84/208
+Z1BIS_PERCEPTUAL 85/208
+Z1BIS_PERCEPTUAL 86/208
+Z1BIS_PERCEPTUAL 87/208
+Z1BIS_PERCEPTUAL 88/208
+Z1BIS_PERCEPTUAL 89/208
+Z1BIS_PERCEPTUAL 90/208
+Z1BIS_PERCEPTUAL 91/208
+Z1BIS_PERCEPTUAL 92/208
+Z1BIS_PERCEPTUAL 93/208
+Z1BIS_PERCEPTUAL 94/208
+Z1BIS_PERCEPTUAL 95/208
+Z1BIS_PERCEPTUAL 96/208
+Z1BIS_PERCEPTUAL 97/208
+Z1BIS_PERCEPTUAL 98/208
+Z1BIS_PERCEPTUAL 99/208
+Z1BIS_PERCEPTUAL 100/208
+Z1BIS_PERCEPTUAL 101/208
+Z1BIS_PERCEPTUAL 102/208
+Z1BIS_PERCEPTUAL 103/208
+Z1BIS_PERCEPTUAL 104/208
+Z1BIS_PERCEPTUAL 105/208
+Z1BIS_PERCEPTUAL 106/208
+Z1BIS_PERCEPTUAL 107/208
+Z1BIS_PERCEPTUAL 108/208
+Z1BIS_PERCEPTUAL 109/208
+Z1BIS_PERCEPTUAL 110/208
+Z1BIS_PERCEPTUAL 111/208
+Z1BIS_PERCEPTUAL 112/208
+Z1BIS_PERCEPTUAL 113/208
+Z1BIS_PERCEPTUAL 114/208
+Z1BIS_PERCEPTUAL 115/208
+Z1BIS_PERCEPTUAL 116/208
+Z1BIS_PERCEPTUAL 117/208
+Z1BIS_PERCEPTUAL 118/208
+Z1BIS_PERCEPTUAL 119/208
+Z1BIS_PERCEPTUAL 120/208
+Z1BIS_PERCEPTUAL 121/208
+Z1BIS_PERCEPTUAL 122/208
+Z1BIS_PERCEPTUAL 123/208
+Z1BIS_PERCEPTUAL 124/208
+Z1BIS_PERCEPTUAL 125/208
+Z1BIS_PERCEPTUAL 126/208
+Z1BIS_PERCEPTUAL 127/208
+Z1BIS_PERCEPTUAL 128/208
+Z1BIS_PERCEPTUAL 129/208
+Z1BIS_PERCEPTUAL 130/208
+Z1BIS_PERCEPTUAL 131/208
+Z1BIS_PERCEPTUAL 132/208
+Z1BIS_PERCEPTUAL 133/208
+Z1BIS_PERCEPTUAL 134/208
+Z1BIS_PERCEPTUAL 135/208
+Z1BIS_PERCEPTUAL 136/208
+Z1BIS_PERCEPTUAL 137/208
+Z1BIS_PERCEPTUAL 138/208
+Z1BIS_PERCEPTUAL 139/208
+Z1BIS_PERCEPTUAL 140/208
+Z1BIS_PERCEPTUAL 141/208
+Z1BIS_PERCEPTUAL 142/208
+Z1BIS_PERCEPTUAL 143/208
+Z1BIS_PERCEPTUAL 144/208
+Z1BIS_PERCEPTUAL 145/208
+Z1BIS_PERCEPTUAL 146/208
+Z1BIS_PERCEPTUAL 147/208
+Z1BIS_PERCEPTUAL 148/208
+Z1BIS_PERCEPTUAL 149/208
+Z1BIS_PERCEPTUAL 150/208
+Z1BIS_PERCEPTUAL 151/208
+Z1BIS_PERCEPTUAL 152/208
+Z1BIS_PERCEPTUAL 153/208
+Z1BIS_PERCEPTUAL 154/208
+Z1BIS_PERCEPTUAL 155/208
+Z1BIS_PERCEPTUAL 156/208
+Z1BIS_PERCEPTUAL 157/208
+Z1BIS_PERCEPTUAL 158/208
+Z1BIS_PERCEPTUAL 159/208
+Z1BIS_PERCEPTUAL 160/208
+Z1BIS_PERCEPTUAL 161/208
+Z1BIS_PERCEPTUAL 162/208
+Z1BIS_PERCEPTUAL 163/208
+Z1BIS_PERCEPTUAL 164/208
+Z1BIS_PERCEPTUAL 165/208
+Z1BIS_PERCEPTUAL 166/208
+Z1BIS_PERCEPTUAL 167/208
+Z1BIS_PERCEPTUAL 168/208
+Z1BIS_PERCEPTUAL 169/208
+Z1BIS_PERCEPTUAL 170/208
+Z1BIS_PERCEPTUAL 171/208
+Z1BIS_PERCEPTUAL 172/208
+Z1BIS_PERCEPTUAL 173/208
+Z1BIS_PERCEPTUAL 174/208
+Z1BIS_PERCEPTUAL 175/208
+Z1BIS_PERCEPTUAL 176/208
+Z1BIS_PERCEPTUAL 177/208
+Z1BIS_PERCEPTUAL 178/208
+Z1BIS_PERCEPTUAL 179/208
+Z1BIS_PERCEPTUAL 180/208
+Z1BIS_PERCEPTUAL 181/208
+Z1BIS_PERCEPTUAL 182/208
+Z1BIS_PERCEPTUAL 183/208
+Z1BIS_PERCEPTUAL 184/208
+Z1BIS_PERCEPTUAL 185/208
+Z1BIS_PERCEPTUAL 186/208
+Z1BIS_PERCEPTUAL 187/208
+Z1BIS_PERCEPTUAL 188/208
+Z1BIS_PERCEPTUAL 189/208
+Z1BIS_PERCEPTUAL 190/208
+Z1BIS_PERCEPTUAL 191/208
+Z1BIS_PERCEPTUAL 192/208
+Z1BIS_PERCEPTUAL 193/208
+Z1BIS_PERCEPTUAL 194/208
+Z1BIS_PERCEPTUAL 195/208
+Z1BIS_PERCEPTUAL 196/208
+Z1BIS_PERCEPTUAL 197/208
+Z1BIS_PERCEPTUAL 198/208
+Z1BIS_PERCEPTUAL 199/208
+Z1BIS_PERCEPTUAL 200/208
+Z1BIS_PERCEPTUAL 201/208
+Z1BIS_PERCEPTUAL 202/208
+Z1BIS_PERCEPTUAL 203/208
+Z1BIS_PERCEPTUAL 204/208
+Z1BIS_PERCEPTUAL 205/208
+Z1BIS_PERCEPTUAL 206/208
+Z1BIS_PERCEPTUAL 207/208
+Z1BIS_PERCEPTUAL 208/208
+L3_Z1BIS_PERCEPTUAL_OK delta=+0.161148
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000050_composed.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+Z1BIS_PERCEPTUAL 1/208
+Z1BIS_PERCEPTUAL 2/208
+Z1BIS_PERCEPTUAL 3/208
+Z1BIS_PERCEPTUAL 4/208
+Z1BIS_PERCEPTUAL 5/208
+Z1BIS_PERCEPTUAL 6/208
+Z1BIS_PERCEPTUAL 7/208
+Z1BIS_PERCEPTUAL 8/208
+Z1BIS_PERCEPTUAL 9/208
+Z1BIS_PERCEPTUAL 10/208
+Z1BIS_PERCEPTUAL 11/208
+Z1BIS_PERCEPTUAL 12/208
+Z1BIS_PERCEPTUAL 13/208
+Z1BIS_PERCEPTUAL 14/208
+Z1BIS_PERCEPTUAL 15/208
+Z1BIS_PERCEPTUAL 16/208
+Z1BIS_PERCEPTUAL 17/208
+Z1BIS_PERCEPTUAL 18/208
+Z1BIS_PERCEPTUAL 19/208
+Z1BIS_PERCEPTUAL 20/208
+Z1BIS_PERCEPTUAL 21/208
+Z1BIS_PERCEPTUAL 22/208
+Z1BIS_PERCEPTUAL 23/208
+Z1BIS_PERCEPTUAL 24/208
+Z1BIS_PERCEPTUAL 25/208
+Z1BIS_PERCEPTUAL 26/208
+Z1BIS_PERCEPTUAL 27/208
+Z1BIS_PERCEPTUAL 28/208
+Z1BIS_PERCEPTUAL 29/208
+Z1BIS_PERCEPTUAL 30/208
+Z1BIS_PERCEPTUAL 31/208
+Z1BIS_PERCEPTUAL 32/208
+Z1BIS_PERCEPTUAL 33/208
+Z1BIS_PERCEPTUAL 34/208
+Z1BIS_PERCEPTUAL 35/208
+Z1BIS_PERCEPTUAL 36/208
+Z1BIS_PERCEPTUAL 37/208
+Z1BIS_PERCEPTUAL 38/208
+Z1BIS_PERCEPTUAL 39/208
+Z1BIS_PERCEPTUAL 40/208
+Z1BIS_PERCEPTUAL 41/208
+Z1BIS_PERCEPTUAL 42/208
+Z1BIS_PERCEPTUAL 43/208
+Z1BIS_PERCEPTUAL 44/208
+Z1BIS_PERCEPTUAL 45/208
+Z1BIS_PERCEPTUAL 46/208
+Z1BIS_PERCEPTUAL 47/208
+Z1BIS_PERCEPTUAL 48/208
+Z1BIS_PERCEPTUAL 49/208
+Z1BIS_PERCEPTUAL 50/208
+Z1BIS_PERCEPTUAL 51/208
+Z1BIS_PERCEPTUAL 52/208
+Z1BIS_PERCEPTUAL 53/208
+Z1BIS_PERCEPTUAL 54/208
+Z1BIS_PERCEPTUAL 55/208
+Z1BIS_PERCEPTUAL 56/208
+Z1BIS_PERCEPTUAL 57/208
+Z1BIS_PERCEPTUAL 58/208
+Z1BIS_PERCEPTUAL 59/208
+Z1BIS_PERCEPTUAL 60/208
+Z1BIS_PERCEPTUAL 61/208
+Z1BIS_PERCEPTUAL 62/208
+Z1BIS_PERCEPTUAL 63/208
+Z1BIS_PERCEPTUAL 64/208
+Z1BIS_PERCEPTUAL 65/208
+Z1BIS_PERCEPTUAL 66/208
+Z1BIS_PERCEPTUAL 67/208
+Z1BIS_PERCEPTUAL 68/208
+Z1BIS_PERCEPTUAL 69/208
+Z1BIS_PERCEPTUAL 70/208
+Z1BIS_PERCEPTUAL 71/208
+Z1BIS_PERCEPTUAL 72/208
+Z1BIS_PERCEPTUAL 73/208
+Z1BIS_PERCEPTUAL 74/208
+Z1BIS_PERCEPTUAL 75/208
+Z1BIS_PERCEPTUAL 76/208
+Z1BIS_PERCEPTUAL 77/208
+Z1BIS_PERCEPTUAL 78/208
+Z1BIS_PERCEPTUAL 79/208
+Z1BIS_PERCEPTUAL 80/208
+Z1BIS_PERCEPTUAL 81/208
+Z1BIS_PERCEPTUAL 82/208
+Z1BIS_PERCEPTUAL 83/208
+Z1BIS_PERCEPTUAL 84/208
+Z1BIS_PERCEPTUAL 85/208
+Z1BIS_PERCEPTUAL 86/208
+Z1BIS_PERCEPTUAL 87/208
+Z1BIS_PERCEPTUAL 88/208
+Z1BIS_PERCEPTUAL 89/208
+Z1BIS_PERCEPTUAL 90/208
+Z1BIS_PERCEPTUAL 91/208
+Z1BIS_PERCEPTUAL 92/208
+Z1BIS_PERCEPTUAL 93/208
+Z1BIS_PERCEPTUAL 94/208
+Z1BIS_PERCEPTUAL 95/208
+Z1BIS_PERCEPTUAL 96/208
+Z1BIS_PERCEPTUAL 97/208
+Z1BIS_PERCEPTUAL 98/208
+Z1BIS_PERCEPTUAL 99/208
+Z1BIS_PERCEPTUAL 100/208
+Z1BIS_PERCEPTUAL 101/208
+Z1BIS_PERCEPTUAL 102/208
+Z1BIS_PERCEPTUAL 103/208
+Z1BIS_PERCEPTUAL 104/208
+Z1BIS_PERCEPTUAL 105/208
+Z1BIS_PERCEPTUAL 106/208
+Z1BIS_PERCEPTUAL 107/208
+Z1BIS_PERCEPTUAL 108/208
+Z1BIS_PERCEPTUAL 109/208
+Z1BIS_PERCEPTUAL 110/208
+Z1BIS_PERCEPTUAL 111/208
+Z1BIS_PERCEPTUAL 112/208
+Z1BIS_PERCEPTUAL 113/208
+Z1BIS_PERCEPTUAL 114/208
+Z1BIS_PERCEPTUAL 115/208
+Z1BIS_PERCEPTUAL 116/208
+Z1BIS_PERCEPTUAL 117/208
+Z1BIS_PERCEPTUAL 118/208
+Z1BIS_PERCEPTUAL 119/208
+Z1BIS_PERCEPTUAL 120/208
+Z1BIS_PERCEPTUAL 121/208
+Z1BIS_PERCEPTUAL 122/208
+Z1BIS_PERCEPTUAL 123/208
+Z1BIS_PERCEPTUAL 124/208
+Z1BIS_PERCEPTUAL 125/208
+Z1BIS_PERCEPTUAL 126/208
+Z1BIS_PERCEPTUAL 127/208
+Z1BIS_PERCEPTUAL 128/208
+Z1BIS_PERCEPTUAL 129/208
+Z1BIS_PERCEPTUAL 130/208
+Z1BIS_PERCEPTUAL 131/208
+Z1BIS_PERCEPTUAL 132/208
+Z1BIS_PERCEPTUAL 133/208
+Z1BIS_PERCEPTUAL 134/208
+Z1BIS_PERCEPTUAL 135/208
+Z1BIS_PERCEPTUAL 136/208
+Z1BIS_PERCEPTUAL 137/208
+Z1BIS_PERCEPTUAL 138/208
+Z1BIS_PERCEPTUAL 139/208
+Z1BIS_PERCEPTUAL 140/208
+Z1BIS_PERCEPTUAL 141/208
+Z1BIS_PERCEPTUAL 142/208
+Z1BIS_PERCEPTUAL 143/208
+Z1BIS_PERCEPTUAL 144/208
+Z1BIS_PERCEPTUAL 145/208
+Z1BIS_PERCEPTUAL 146/208
+Z1BIS_PERCEPTUAL 147/208
+Z1BIS_PERCEPTUAL 148/208
+Z1BIS_PERCEPTUAL 149/208
+Z1BIS_PERCEPTUAL 150/208
+Z1BIS_PERCEPTUAL 151/208
+Z1BIS_PERCEPTUAL 152/208
+Z1BIS_PERCEPTUAL 153/208
+Z1BIS_PERCEPTUAL 154/208
+Z1BIS_PERCEPTUAL 155/208
+Z1BIS_PERCEPTUAL 156/208
+Z1BIS_PERCEPTUAL 157/208
+Z1BIS_PERCEPTUAL 158/208
+Z1BIS_PERCEPTUAL 159/208
+Z1BIS_PERCEPTUAL 160/208
+Z1BIS_PERCEPTUAL 161/208
+Z1BIS_PERCEPTUAL 162/208
+Z1BIS_PERCEPTUAL 163/208
+Z1BIS_PERCEPTUAL 164/208
+Z1BIS_PERCEPTUAL 165/208
+Z1BIS_PERCEPTUAL 166/208
+Z1BIS_PERCEPTUAL 167/208
+Z1BIS_PERCEPTUAL 168/208
+Z1BIS_PERCEPTUAL 169/208
+Z1BIS_PERCEPTUAL 170/208
+Z1BIS_PERCEPTUAL 171/208
+Z1BIS_PERCEPTUAL 172/208
+Z1BIS_PERCEPTUAL 173/208
+Z1BIS_PERCEPTUAL 174/208
+Z1BIS_PERCEPTUAL 175/208
+Z1BIS_PERCEPTUAL 176/208
+Z1BIS_PERCEPTUAL 177/208
+Z1BIS_PERCEPTUAL 178/208
+Z1BIS_PERCEPTUAL 179/208
+Z1BIS_PERCEPTUAL 180/208
+Z1BIS_PERCEPTUAL 181/208
+Z1BIS_PERCEPTUAL 182/208
+Z1BIS_PERCEPTUAL 183/208
+Z1BIS_PERCEPTUAL 184/208
+Z1BIS_PERCEPTUAL 185/208
+Z1BIS_PERCEPTUAL 186/208
+Z1BIS_PERCEPTUAL 187/208
+Z1BIS_PERCEPTUAL 188/208
+Z1BIS_PERCEPTUAL 189/208
+Z1BIS_PERCEPTUAL 190/208
+Z1BIS_PERCEPTUAL 191/208
+Z1BIS_PERCEPTUAL 192/208
+Z1BIS_PERCEPTUAL 193/208
+Z1BIS_PERCEPTUAL 194/208
+Z1BIS_PERCEPTUAL 195/208
+Z1BIS_PERCEPTUAL 196/208
+Z1BIS_PERCEPTUAL 197/208
+Z1BIS_PERCEPTUAL 198/208
+Z1BIS_PERCEPTUAL 199/208
+Z1BIS_PERCEPTUAL 200/208
+Z1BIS_PERCEPTUAL 201/208
+Z1BIS_PERCEPTUAL 202/208
+Z1BIS_PERCEPTUAL 203/208
+Z1BIS_PERCEPTUAL 204/208
+Z1BIS_PERCEPTUAL 205/208
+Z1BIS_PERCEPTUAL 206/208
+Z1BIS_PERCEPTUAL 207/208
+Z1BIS_PERCEPTUAL 208/208
+L3_Z1BIS_PERCEPTUAL_OK delta=+0.165917
+`torch_dtype` is deprecated! Use `dtype` instead!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Initializing wavelet model with LLM: Qwen/Qwen3.5-4B
+  Total parameters: 4,206,732,288
+  Trainable parameters: 4,206,732,288
+  Memory: 8024.4 MB
+
+Training mode: lora (r=16, alpha=32)
+  Trainable: 3,435,520 / 4,208,567,296 (0.08%)
+  - encoder: 286,208
+  - projector: 1,314,304
+  - backbone_lora: 1,835,008
+
+Loading checkpoint from: /root/l3/grpo_20260914T012904Z/training/train/checkpoints/step_000050_composed.pt
+  Partial (trainable-only) load: 42 tensors loaded, 427 frozen tensors kept from init
+  Resumed from epoch 0
+  Validation loss: 0.0000
+Loaded raw datasets - Train: 4488, Val: 520, Test: 800
+Z1BIS_PERCEPTUAL 1/208
+Z1BIS_PERCEPTUAL 2/208
+Z1BIS_PERCEPTUAL 3/208
+Z1BIS_PERCEPTUAL 4/208
+Z1BIS_PERCEPTUAL 5/208
+Z1BIS_PERCEPTUAL 6/208
+Z1BIS_PERCEPTUAL 7/208
+Z1BIS_PERCEPTUAL 8/208
+Z1BIS_PERCEPTUAL 9/208
+Z1BIS_PERCEPTUAL 10/208
+Z1BIS_PERCEPTUAL 11/208
+Z1BIS_PERCEPTUAL 12/208
+Z1BIS_PERCEPTUAL 13/208
+Z1BIS_PERCEPTUAL 14/208
+Z1BIS_PERCEPTUAL 15/208
+Z1BIS_PERCEPTUAL 16/208
+Z1BIS_PERCEPTUAL 17/208
+Z1BIS_PERCEPTUAL 18/208
+Z1BIS_PERCEPTUAL 19/208
+Z1BIS_PERCEPTUAL 20/208
+Z1BIS_PERCEPTUAL 21/208
+Z1BIS_PERCEPTUAL 22/208
+Z1BIS_PERCEPTUAL 23/208
+Z1BIS_PERCEPTUAL 24/208
+Z1BIS_PERCEPTUAL 25/208
+Z1BIS_PERCEPTUAL 26/208
+Z1BIS_PERCEPTUAL 27/208
+Z1BIS_PERCEPTUAL 28/208
+Z1BIS_PERCEPTUAL 29/208
+Z1BIS_PERCEPTUAL 30/208
+Z1BIS_PERCEPTUAL 31/208
+Z1BIS_PERCEPTUAL 32/208
+Z1BIS_PERCEPTUAL 33/208
+Z1BIS_PERCEPTUAL 34/208
+Z1BIS_PERCEPTUAL 35/208
+Z1BIS_PERCEPTUAL 36/208
+Z1BIS_PERCEPTUAL 37/208
+Z1BIS_PERCEPTUAL 38/208
+Z1BIS_PERCEPTUAL 39/208
+Z1BIS_PERCEPTUAL 40/208
+Z1BIS_PERCEPTUAL 41/208
+Z1BIS_PERCEPTUAL 42/208
+Z1BIS_PERCEPTUAL 43/208
+Z1BIS_PERCEPTUAL 44/208
+Z1BIS_PERCEPTUAL 45/208
+Z1BIS_PERCEPTUAL 46/208
+Z1BIS_PERCEPTUAL 47/208
+Z1BIS_PERCEPTUAL 48/208
+Z1BIS_PERCEPTUAL 49/208
+Z1BIS_PERCEPTUAL 50/208
+Z1BIS_PERCEPTUAL 51/208
+Z1BIS_PERCEPTUAL 52/208
+Z1BIS_PERCEPTUAL 53/208
+Z1BIS_PERCEPTUAL 54/208
+Z1BIS_PERCEPTUAL 55/208
+Z1BIS_PERCEPTUAL 56/208
+Z1BIS_PERCEPTUAL 57/208
+Z1BIS_PERCEPTUAL 58/208
+Z1BIS_PERCEPTUAL 59/208
+Z1BIS_PERCEPTUAL 60/208
+Z1BIS_PERCEPTUAL 61/208
+Z1BIS_PERCEPTUAL 62/208
+Z1BIS_PERCEPTUAL 63/208
+Z1BIS_PERCEPTUAL 64/208
+Z1BIS_PERCEPTUAL 65/208
+Z1BIS_PERCEPTUAL 66/208
+Z1BIS_PERCEPTUAL 67/208
+Z1BIS_PERCEPTUAL 68/208
+Z1BIS_PERCEPTUAL 69/208
+Z1BIS_PERCEPTUAL 70/208
+Z1BIS_PERCEPTUAL 71/208
+Z1BIS_PERCEPTUAL 72/208
+Z1BIS_PERCEPTUAL 73/208
+Z1BIS_PERCEPTUAL 74/208
+Z1BIS_PERCEPTUAL 75/208
+Z1BIS_PERCEPTUAL 76/208
+Z1BIS_PERCEPTUAL 77/208
+Z1BIS_PERCEPTUAL 78/208
+Z1BIS_PERCEPTUAL 79/208
+Z1BIS_PERCEPTUAL 80/208
+Z1BIS_PERCEPTUAL 81/208
+Z1BIS_PERCEPTUAL 82/208
+Z1BIS_PERCEPTUAL 83/208
+Z1BIS_PERCEPTUAL 84/208
+Z1BIS_PERCEPTUAL 85/208
+Z1BIS_PERCEPTUAL 86/208
+Z1BIS_PERCEPTUAL 87/208
+Z1BIS_PERCEPTUAL 88/208
+Z1BIS_PERCEPTUAL 89/208
+Z1BIS_PERCEPTUAL 90/208
+Z1BIS_PERCEPTUAL 91/208
+Z1BIS_PERCEPTUAL 92/208
+Z1BIS_PERCEPTUAL 93/208
+Z1BIS_PERCEPTUAL 94/208
+Z1BIS_PERCEPTUAL 95/208
+Z1BIS_PERCEPTUAL 96/208
+Z1BIS_PERCEPTUAL 97/208
+Z1BIS_PERCEPTUAL 98/208
+Z1BIS_PERCEPTUAL 99/208
+Z1BIS_PERCEPTUAL 100/208
+Z1BIS_PERCEPTUAL 101/208
+Z1BIS_PERCEPTUAL 102/208
+Z1BIS_PERCEPTUAL 103/208
+Z1BIS_PERCEPTUAL 104/208
+Z1BIS_PERCEPTUAL 105/208
+Z1BIS_PERCEPTUAL 106/208
+Z1BIS_PERCEPTUAL 107/208
+Z1BIS_PERCEPTUAL 108/208
+Z1BIS_PERCEPTUAL 109/208
+Z1BIS_PERCEPTUAL 110/208
+Z1BIS_PERCEPTUAL 111/208
+Z1BIS_PERCEPTUAL 112/208
+Z1BIS_PERCEPTUAL 113/208
+Z1BIS_PERCEPTUAL 114/208
+Z1BIS_PERCEPTUAL 115/208
+Z1BIS_PERCEPTUAL 116/208
+Z1BIS_PERCEPTUAL 117/208
+Z1BIS_PERCEPTUAL 118/208
+Z1BIS_PERCEPTUAL 119/208
+Z1BIS_PERCEPTUAL 120/208
+Z1BIS_PERCEPTUAL 121/208
+Z1BIS_PERCEPTUAL 122/208
+Z1BIS_PERCEPTUAL 123/208
+Z1BIS_PERCEPTUAL 124/208
+Z1BIS_PERCEPTUAL 125/208
+Z1BIS_PERCEPTUAL 126/208
+Z1BIS_PERCEPTUAL 127/208
+Z1BIS_PERCEPTUAL 128/208
+Z1BIS_PERCEPTUAL 129/208
+Z1BIS_PERCEPTUAL 130/208
+Z1BIS_PERCEPTUAL 131/208
+Z1BIS_PERCEPTUAL 132/208
+Z1BIS_PERCEPTUAL 133/208
+Z1BIS_PERCEPTUAL 134/208
+Z1BIS_PERCEPTUAL 135/208
+Z1BIS_PERCEPTUAL 136/208
+Z1BIS_PERCEPTUAL 137/208
+Z1BIS_PERCEPTUAL 138/208
+Z1BIS_PERCEPTUAL 139/208
+Z1BIS_PERCEPTUAL 140/208
+Z1BIS_PERCEPTUAL 141/208
+Z1BIS_PERCEPTUAL 142/208
+Z1BIS_PERCEPTUAL 143/208
+Z1BIS_PERCEPTUAL 144/208
+Z1BIS_PERCEPTUAL 145/208
+Z1BIS_PERCEPTUAL 146/208
+Z1BIS_PERCEPTUAL 147/208
+Z1BIS_PERCEPTUAL 148/208
+Z1BIS_PERCEPTUAL 149/208
+Z1BIS_PERCEPTUAL 150/208
+Z1BIS_PERCEPTUAL 151/208
+Z1BIS_PERCEPTUAL 152/208
+Z1BIS_PERCEPTUAL 153/208
+Z1BIS_PERCEPTUAL 154/208
+Z1BIS_PERCEPTUAL 155/208
+Z1BIS_PERCEPTUAL 156/208
+Z1BIS_PERCEPTUAL 157/208
+Z1BIS_PERCEPTUAL 158/208
+Z1BIS_PERCEPTUAL 159/208
+Z1BIS_PERCEPTUAL 160/208
+Z1BIS_PERCEPTUAL 161/208
+Z1BIS_PERCEPTUAL 162/208
+Z1BIS_PERCEPTUAL 163/208
+Z1BIS_PERCEPTUAL 164/208
+Z1BIS_PERCEPTUAL 165/208
+Z1BIS_PERCEPTUAL 166/208
+Z1BIS_PERCEPTUAL 167/208
+Z1BIS_PERCEPTUAL 168/208
+Z1BIS_PERCEPTUAL 169/208
+Z1BIS_PERCEPTUAL 170/208
+Z1BIS_PERCEPTUAL 171/208
+Z1BIS_PERCEPTUAL 172/208
+Z1BIS_PERCEPTUAL 173/208
+Z1BIS_PERCEPTUAL 174/208
+Z1BIS_PERCEPTUAL 175/208
+Z1BIS_PERCEPTUAL 176/208
+Z1BIS_PERCEPTUAL 177/208
+Z1BIS_PERCEPTUAL 178/208
+Z1BIS_PERCEPTUAL 179/208
+Z1BIS_PERCEPTUAL 180/208
+Z1BIS_PERCEPTUAL 181/208
+Z1BIS_PERCEPTUAL 182/208
+Z1BIS_PERCEPTUAL 183/208
+Z1BIS_PERCEPTUAL 184/208
+Z1BIS_PERCEPTUAL 185/208
+Z1BIS_PERCEPTUAL 186/208
+Z1BIS_PERCEPTUAL 187/208
+Z1BIS_PERCEPTUAL 188/208
+Z1BIS_PERCEPTUAL 189/208
+Z1BIS_PERCEPTUAL 190/208
+Z1BIS_PERCEPTUAL 191/208
+Z1BIS_PERCEPTUAL 192/208
+Z1BIS_PERCEPTUAL 193/208
+Z1BIS_PERCEPTUAL 194/208
+Z1BIS_PERCEPTUAL 195/208
+Z1BIS_PERCEPTUAL 196/208
+Z1BIS_PERCEPTUAL 197/208
+Z1BIS_PERCEPTUAL 198/208
+Z1BIS_PERCEPTUAL 199/208
+Z1BIS_PERCEPTUAL 200/208
+Z1BIS_PERCEPTUAL 201/208
+Z1BIS_PERCEPTUAL 202/208
+Z1BIS_PERCEPTUAL 203/208
+Z1BIS_PERCEPTUAL 204/208
+Z1BIS_PERCEPTUAL 205/208
+Z1BIS_PERCEPTUAL 206/208
+Z1BIS_PERCEPTUAL 207/208
+Z1BIS_PERCEPTUAL 208/208
+L3_Z1BIS_PERCEPTUAL_OK delta=+0.206293
+finestre identiche verificate su 208 ID, 3.0 crop per ID (3 coppie)
+
+delta_lettura   (W1 vero - Z1bis vero): +0.0027 CI[-0.0097; +0.0155]
+delta_contenuto (W1 vero - miglior controllo): +0.1778 CI[+0.1486; +0.2069]
+condizioni W1: {'offcenter_true': 0.2439, 'offcenter_swap': 0.0626, 'offcenter_zero': 0.06}
+
+per categoria:
+  classify_with_evidence     n= 80 lettura +0.0055 CI[-0.0062; +0.0181]  contenuto +0.1633 CI[+0.1209; +0.2079]
+  localize                   n= 80 lettura -0.0048 CI[-0.0245; +0.0151]  contenuto +0.1965 CI[+0.1523; +0.2421]
+  localize_all_channels      n= 48 lettura +0.0106 CI[-0.0282; +0.0507]  contenuto +0.1706 CI[+0.1042; +0.2449]
+
+RAMO: grpo_pilot
+  motivo: un calo di 0.05 e' escluso (CI basso -0.0097) e il contenuto resta utile (+0.1778)
+finestre identiche verificate su 208 ID, 3.0 crop per ID (3 coppie)
+
+delta_lettura   (W1 vero - Z1bis vero): +0.0398 CI[+0.0180; +0.0618]
+delta_contenuto (W1 vero - miglior controllo): +0.1778 CI[+0.1486; +0.2069]
+condizioni W1: {'offcenter_true': 0.2439, 'offcenter_swap': 0.0626, 'offcenter_zero': 0.06}
+
+per categoria:
+  classify_with_evidence     n= 80 lettura +0.0332 CI[+0.0040; +0.0640]  contenuto +0.1633 CI[+0.1209; +0.2079]
+  localize                   n= 80 lettura +0.0720 CI[+0.0426; +0.1029]  contenuto +0.1965 CI[+0.1523; +0.2421]
+  localize_all_channels      n= 48 lettura -0.0030 CI[-0.0641; +0.0576]  contenuto +0.1706 CI[+0.1042; +0.2449]
+
+RAMO: grpo_pilot
+  motivo: un calo di 0.05 e' escluso (CI basso +0.0180) e il contenuto resta utile (+0.1778)
+lettura multicanale vs partenza: +0.0106 CI[-0.0282; +0.0507] -> ACCEPTED
+L3_GRPO_PHASE_OK phase=reading_check elapsed_s=64806
+L3_GRPO_OK run_root=/root/l3/grpo_20260914T012904Z verdict=w2_becomes_candidate start=vw2 elapsed_s=64806
