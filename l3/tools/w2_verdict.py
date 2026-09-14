@@ -39,6 +39,13 @@ def main() -> int:
     parser.add_argument("--min-contained-rate", type=float, default=0.575)
     parser.add_argument("--min-aggregate-reading", type=float, default=-0.03)
     parser.add_argument("--reading-ci-floor", type=float, default=-0.05)
+    parser.add_argument("--mode", choices=("w2", "w3"), default="w2",
+                        help="w2: il multicanale deve migliorare sulla partenza; "
+                             "w3: nessun calo rilevante in aggregato sulla partenza")
+    parser.add_argument("--start-primary", type=float, default=None,
+                        help="w3: primary val520 della partenza, per l'arm di punta")
+    parser.add_argument("--min-vs-z1bis", type=float, default=0.03,
+                        help="w3: guadagno minimo di lettura aggregato contro Z1-bis")
     args = parser.parse_args()
 
     vs_w1 = load(args.vs_w1)
@@ -53,13 +60,26 @@ def main() -> int:
     primary = statistics.fmean(float(row["primary"]) for row in rows)
     contained = float(geometry["overall"]["policy"]["contained_rate"])
 
-    reading_checks = {
-        "multichannel_improves_over_w1": (multichannel["mean"] > 0.0
-                                          and multichannel["ci95"][0] > 0.0),
-        "aggregate_not_a_relevant_decline": (
-            aggregate["mean"] >= args.min_aggregate_reading
-            and aggregate["ci95"][0] > args.reading_ci_floor),
-    }
+    if args.mode == "w2":
+        reading_checks = {
+            "multichannel_improves_over_w1": (multichannel["mean"] > 0.0
+                                              and multichannel["ci95"][0] > 0.0),
+            "aggregate_not_a_relevant_decline": (
+                aggregate["mean"] >= args.min_aggregate_reading
+                and aggregate["ci95"][0] > args.reading_ci_floor),
+        }
+    else:
+        # W3: la partenza e' gia' un lettore buono; si chiede di non peggiorarlo in
+        # aggregato (nessun calo rilevante) e di conservare il vantaggio su Z1-bis.
+        start_aggregate = vs_w1["reading"]
+        reading_checks = {
+            "aggregate_no_relevant_decline_vs_start": (
+                start_aggregate["mean"] >= args.min_aggregate_reading
+                and start_aggregate["ci95"][0] > args.reading_ci_floor),
+            "aggregate_gain_vs_z1bis_kept": (
+                aggregate["mean"] >= float(args.min_vs_z1bis)
+                and aggregate["ci95"][0] > 0.0),
+        }
     operational_checks = {
         "primary_at_least_threshold": primary >= args.min_primary,
         "contained_rate_at_least_threshold": contained >= args.min_contained_rate,
@@ -67,6 +87,12 @@ def main() -> int:
     }
     reading_ok = all(reading_checks.values())
     operational_ok = all(operational_checks.values())
+    headline = None
+    if args.mode == "w3" and args.start_primary is not None:
+        # Arm di punta per il test: il nuovo checkpoint solo se passa i gate E non
+        # e' sotto la partenza in operativo; altrimenti la partenza.
+        headline = ("new" if reading_ok and operational_ok
+                    and primary >= float(args.start_primary) else "start")
     if reading_ok and operational_ok:
         verdict = "w2_becomes_candidate"
         note = ("entrambi gli obiettivi soddisfatti: W2 diventa il candidato e il "
@@ -82,7 +108,9 @@ def main() -> int:
 
     report = {
         "format": "l3_w2_verdict_v1",
+        "mode": args.mode,
         "verdict": verdict,
+        "headline_arm": headline,
         "note": note,
         "reading": {
             "multichannel_vs_w1": multichannel,
@@ -120,6 +148,8 @@ def main() -> int:
     print(f"val520 primary {primary:.4f} | contenimento {100 * contained:.1f} % | "
           f"gate {'superato' if report['operational']['gate_passed'] else 'non superato'}")
     print(f"L3_W2_VERDICT={verdict}\n  {note}")
+    if headline is not None:
+        print(f"L3_HEADLINE_ARM={headline}")
     return 0
 
 

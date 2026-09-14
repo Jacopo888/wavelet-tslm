@@ -804,3 +804,44 @@ tiene il checkpoint di partenza. Costo ~1,7 h, una sola volta.
 
 Budget del pilot: ~6 h di GRPO più ~1,7 h di verifica (~7 $). Nessun accesso al test
 800. Nessun cambio di architettura, encoder e proiettore restano congelati.
+
+## W3 e test 800 (14/09, dichiarati prima del run, ordine di Jacopo «procedi con W3 e in coda il test 800»)
+
+### W3 — un solo intervento
+
+Come W2, ma il replay percettivo al 50 % è esteso a **tutte e tre le categorie con
+azione** (classify, localize, multicanale), quota esatta per categoria. È
+l'estrapolazione dichiarata del risultato di W2: il guadagno di lettura era arrivato
+su tutte le categorie, non solo su quella trattata. Solo LoRA da `vw2`, una epoca,
+nessun tocco a encoder, wavelet, ampiezze, budget di token o quote di replay del
+formato originale.
+
+Obiettivo 1, lettura (208 ID × 3 crop, finestre identiche): **nessun calo rilevante
+in aggregato contro `vw2`** (Δ ≥ −0,03 con estremo inferiore del CI > −0,05) **e**
+vantaggio su Z1-bis conservato (Δ aggregato ≥ +0,03 con CI > 0). Non si chiede che
+W3 migliori `vw2` in lettura: `vw2` è già un lettore buono.
+
+Obiettivo 2, operativo su val520: primary ≥ **0,3647** (0,3747 − 0,01), contenimento
+≥ **60,9 %** (63,9 − 3), gate operativo contro `va1` superato.
+
+**Arm di punta** per il test: `vw3` solo se passa entrambi gli obiettivi **e** il suo
+primary su val520 non è sotto quello di `vw2`; altrimenti `vw2`.
+
+### Test 800 — una lettura per braccio
+
+Bracci, tutti dichiarati ora e ciascuno letto **una sola volta**:
+
+| braccio | cosa rappresenta | fonte |
+|---|---|---|
+| `va1` | SFT senza zoom | righe già esistenti (`output_logs/evalonly_test_epoch_5_end_epoch_0.jsonl`, sha `67212566…`, 800 righe, primary 0,2744) — **non riletto** |
+| `vz1bis` | tracce con finestra gold, posizione variabile | una lettura |
+| `vw2` | + coordinate del selettore, replay percettivo multicanale | una lettura |
+| `vw3` | + replay percettivo su tutte le categorie | una lettura |
+
+Il checkpoint GRPO (step 50) **non è un braccio**: indistinguibile da `vw2` su val e in
+lettura. Confronti appaiati (bootstrap 10.000, seed 20260915): ogni braccio zoom
+contro `va1`; `vw2` e `vw3` contro `vz1bis`; `vw3` contro `vw2`. Il preflight fallisce
+chiuso se esiste già un output `test800` in qualunque run. Il test viene letto **dopo**
+il verdetto di W3, quindi nessuna scelta di disegno può dipendere dal test.
+
+Budget: W3 ≈ 9,5 h, test 3 × ~40 min ≈ 2 h. Totale ≈ 11,5 h (~10 $).

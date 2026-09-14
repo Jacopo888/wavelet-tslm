@@ -112,3 +112,50 @@ def test_w2_verdict_requires_both_objectives(tmp_path):
     assert run((0.02, -0.01, 0.05), (-0.01, -0.03, 0.01), 0.36, 0.62, True) ==         "keep_w1_grpo_with_constraint"
     # aggregato ancora compatibile con un calo rilevante
     assert run((0.05, 0.01, 0.09), (-0.03, -0.06, 0.00), 0.36, 0.62, True) ==         "keep_w1_grpo_with_constraint"
+
+
+def test_w3_verdict_uses_aggregate_no_decline_and_headline(tmp_path):
+    """Modo w3: niente calo rilevante vs partenza, vantaggio su Z1-bis conservato."""
+    import json
+    import subprocess
+    import sys
+
+    def write(name, payload):
+        path = tmp_path / name
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return path
+
+    def reading(mean, low, high):
+        return {"mean": mean, "ci95": [low, high], "n": 208}
+
+    def run(vs_start, vs_z1, primary, contained, gate_passed, start_primary):
+        vs_w1 = write("vs_w2.json", {"reading": reading(*vs_start), "per_category": {
+            "localize_all_channels": {"reading": reading(0.0, -0.03, 0.03)}}})
+        vs_z1bis = write("vs_z1.json", {"reading": reading(*vs_z1),
+                                        "content": reading(0.15, 0.12, 0.18),
+                                        "per_category": {}})
+        rows = tmp_path / "rows.jsonl"
+        rows.write_text(chr(10).join(
+            json.dumps({"id": f"r{i}", "primary": primary}) for i in range(10)),
+            encoding="utf-8")
+        geometry = write("geo.json", {"overall": {"policy": {"contained_rate": contained}}})
+        gate = write("gate.json", {"gate_passed": gate_passed, "checks": {"x": gate_passed}})
+        out = tmp_path / "VERDICT.json"
+        subprocess.run([sys.executable, str(ROOT / "l3" / "tools" / "w2_verdict.py"),
+                        "--mode", "w3", "--vs-w1", str(vs_w1), "--vs-z1bis", str(vs_z1bis),
+                        "--policy-json", str(geometry), "--policy-rows", str(rows),
+                        "--geometry", str(geometry), "--gate", str(gate),
+                        "--min-primary", "0.3647", "--min-contained-rate", "0.609",
+                        "--start-primary", str(start_primary),
+                        "--out", str(out)], check=True, capture_output=True)
+        d = json.loads(out.read_text(encoding="utf-8"))
+        return d["verdict"], d["headline_arm"]
+
+    # nessun calo, vantaggio conservato, operativo >= partenza -> nuovo arm di punta
+    assert run((0.01, -0.01, 0.03), (0.05, 0.03, 0.07), 0.38, 0.65, True, 0.3747) ==         ("w2_becomes_candidate", "new")
+    # passa i gate ma operativo sotto la partenza -> resta la partenza in punta
+    assert run((0.01, -0.01, 0.03), (0.05, 0.03, 0.07), 0.370, 0.65, True, 0.3747) ==         ("w2_becomes_candidate", "start")
+    # calo compatibile con -0.05 vs partenza -> lettura non ok
+    assert run((-0.02, -0.06, 0.02), (0.05, 0.03, 0.07), 0.38, 0.65, True, 0.3747)[0] ==         "keep_w1_grpo_with_constraint"
+    # vantaggio su Z1-bis perso -> lettura non ok
+    assert run((0.01, -0.01, 0.03), (0.01, -0.01, 0.03), 0.38, 0.65, True, 0.3747)[0] ==         "keep_w1_grpo_with_constraint"
