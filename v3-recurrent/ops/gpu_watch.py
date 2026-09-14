@@ -93,13 +93,13 @@ def wsl(cmd: str, timeout: int = 120) -> tuple[int, str]:
 # ---- stock ---------------------------------------------------------------
 def vultr_stock() -> dict[str, list[str]]:
     req = urllib.request.Request(VULTR_PLANS_URL, headers={"User-Agent": "wavelet-v3-watch"})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with urllib.request.urlopen(req, timeout=10) as r:
         d = json.load(r)
     return {p["id"]: list(p.get("locations") or []) for p in d.get("plans", [])}
 
 
 def do_stock() -> list[str]:
-    rc, out = run([DOCTL, "compute", "size", "list", "-o", "json"], 60)
+    rc, out = run([DOCTL, "compute", "size", "list", "-o", "json"], 25)
     if rc != 0:
         raise RuntimeError(f"doctl size list rc={rc}: {out[:200]}")
     for s in json.loads(out):
