@@ -1,0 +1,1443 @@
+{
+  "format": "l3_selector_geometry_v1",
+  "inputs": {
+    "config": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_w2.yaml",
+    "policy_rows": "/root/l3/w2_20260913T133901Z/operational/val520_policy.jsonl"
+  },
+  "mirror_checked_rows": 235,
+  "overall": {
+    "oracle_matched": {
+      "channel_hit_rate": 1.0,
+      "contained_rate": 1.0,
+      "mean_width": 2116.3390557939915,
+      "n": 235,
+      "overlap_rate": 1.0,
+      "position_mean": 0.4938061369917962,
+      "position_median": 0.5,
+      "scored": 233,
+      "states": {
+        "contained": 233,
+        "no_action": 2
+      }
+    },
+    "policy": {
+      "channel_hit_rate": 0.9957081545064378,
+      "contained_rate": 0.6394849785407726,
+      "mean_width": 2176.3390557939915,
+      "miss_distance_median_widths": 0.3425751879699248,
+      "n": 235,
+      "overlap_rate": 0.6781115879828327,
+      "position_mean": 0.7546409006208052,
+      "position_median": 0.6295166015625,
+      "scored": 233,
+      "states": {
+        "contained": 149,
+        "no_gold": 2,
+        "outside": 74,
+        "partial": 9,
+        "wrong_channel": 1
+      }
+    },
+    "policy_wide_x2": {
+      "channel_hit_rate": 0.9957081545064378,
+      "contained_rate": 0.8240343347639485,
+      "mean_width": 4222.892703862661,
+      "miss_distance_median_widths": 0.53564453125,
+      "n": 235,
+      "overlap_rate": 0.8412017167381974,
+      "position_mean": 0.6230466007913928,
+      "position_median": 0.56585693359375,
+      "scored": 233,
+      "states": {
+        "contained": 192,
+        "no_gold": 2,
+        "outside": 36,
+        "partial": 4,
+        "wrong_channel": 1
+      }
+    },
+    "policy_wide_x4": {
+      "channel_hit_rate": 0.9957081545064378,
+      "contained_rate": 0.9055793991416309,
+      "mean_width": 8094.523605150214,
+      "miss_distance_median_widths": 1.63330078125,
+      "n": 235,
+      "overlap_rate": 0.9055793991416309,
+      "position_mean": 0.5605739798474094,
+      "position_median": 0.546600341796875,
+      "scored": 233,
+      "states": {
+        "contained": 211,
+        "no_gold": 2,
+        "outside": 21,
+        "wrong_channel": 1
+      }
+    },
+    "policy_wide_x8": {
+      "channel_hit_rate": 0.9957081545064378,
+      "contained_rate": 0.9356223175965666,
+      "mean_width": 14917.218884120171,
+      "miss_distance_median_widths": 1.317491340285514,
+      "n": 235,
+      "overlap_rate": 0.9356223175965666,
+      "position_mean": 0.5280217091106789,
+      "position_median": 0.5333251953125,
+      "scored": 233,
+      "states": {
+        "contained": 218,
+        "no_gold": 2,
+        "outside": 14,
+        "wrong_channel": 1
+      }
+    },
+    "wavelet_in_policy_channel": {
+      "channel_hit_rate": 0.9957081545064378,
+      "contained_rate": 0.7725321888412017,
+      "mean_width": 2166.8884120171674,
+      "miss_distance_median_widths": 2.10888671875,
+      "n": 235,
+      "overlap_rate": 0.8583690987124464,
+      "position_mean": 0.6988570271416505,
+      "position_median": 0.5836181640625,
+      "scored": 233,
+      "states": {
+        "contained": 180,
+        "no_gold": 2,
+        "outside": 32,
+        "partial": 20,
+        "wrong_channel": 1
+      }
+    },
+    "wavelet_matched": {
+      "channel_hit_rate": 0.8927038626609443,
+      "contained_rate": 0.6738197424892703,
+      "mean_width": 2166.892703862661,
+      "miss_distance_median_widths": 2.2568359375,
+      "n": 235,
+      "overlap_rate": 0.759656652360515,
+      "position_mean": 0.9807843239781514,
+      "position_median": 0.5771484375,
+      "scored": 233,
+      "states": {
+        "contained": 157,
+        "no_gold": 2,
+        "outside": 31,
+        "partial": 20,
+        "wrong_channel": 25
+      }
+    },
+    "wavelet_native": {
+      "channel_hit_rate": 0.8927038626609443,
+      "contained_rate": 0.7896995708154506,
+      "mean_width": 7905.785407725322,
+      "miss_distance_median_widths": 2.0244140625,
+      "n": 235,
+      "overlap_rate": 0.7896995708154506,
+      "position_mean": 0.5903994234598201,
+      "position_median": 0.50408935546875,
+      "scored": 233,
+      "states": {
+        "contained": 184,
+        "no_gold": 2,
+        "outside": 24,
+        "wrong_channel": 25
+      }
+    },
+    "wavelet_wide_x2": {
+      "channel_hit_rate": 0.8927038626609443,
+      "contained_rate": 0.7639484978540773,
+      "mean_width": 4123.017167381974,
+      "miss_distance_median_widths": 2.0380859375,
+      "n": 235,
+      "overlap_rate": 0.7639484978540773,
+      "position_mean": 0.7531704678760585,
+      "position_median": 0.54644775390625,
+      "scored": 233,
+      "states": {
+        "contained": 178,
+        "no_gold": 2,
+        "outside": 30,
+        "wrong_channel": 25
+      }
+    },
+    "wavelet_wide_x4": {
+      "channel_hit_rate": 0.8927038626609443,
+      "contained_rate": 0.776824034334764,
+      "mean_width": 7878.600858369099,
+      "miss_distance_median_widths": 1.326171875,
+      "n": 235,
+      "overlap_rate": 0.776824034334764,
+      "position_mean": 0.6305587427496933,
+      "position_median": 0.527618408203125,
+      "scored": 233,
+      "states": {
+        "contained": 181,
+        "no_gold": 2,
+        "outside": 27,
+        "wrong_channel": 25
+      }
+    },
+    "wavelet_wide_x8": {
+      "channel_hit_rate": 0.8927038626609443,
+      "contained_rate": 0.8111587982832618,
+      "mean_width": 14593.476394849786,
+      "miss_distance_median_widths": 0.8858506944444444,
+      "n": 235,
+      "overlap_rate": 0.8111587982832618,
+      "position_mean": 0.5709266882304608,
+      "position_median": 0.515045166015625,
+      "scored": 233,
+      "states": {
+        "contained": 189,
+        "no_gold": 2,
+        "outside": 19,
+        "wrong_channel": 25
+      }
+    }
+  },
+  "per_band": {
+    "131072": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 2416.27397260274,
+        "n": 73,
+        "overlap_rate": 1.0,
+        "position_mean": 0.49105631443210557,
+        "position_median": 0.5,
+        "scored": 73,
+        "states": {
+          "contained": 73
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.4657534246575342,
+        "mean_width": 2574.1643835616437,
+        "miss_distance_median_widths": 0.40966796875,
+        "n": 73,
+        "overlap_rate": 0.5068493150684932,
+        "position_mean": 1.0287299299238626,
+        "position_median": 0.5853271484375,
+        "scored": 73,
+        "states": {
+          "contained": 34,
+          "outside": 36,
+          "partial": 3
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.7534246575342466,
+        "mean_width": 4954.191780821918,
+        "miss_distance_median_widths": 0.2183837890625,
+        "n": 73,
+        "overlap_rate": 0.7808219178082192,
+        "position_mean": 0.7573653563365396,
+        "position_median": 0.54266357421875,
+        "scored": 73,
+        "states": {
+          "contained": 55,
+          "outside": 16,
+          "partial": 2
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9041095890410958,
+        "mean_width": 9585.986301369863,
+        "miss_distance_median_widths": 7.55126953125,
+        "n": 73,
+        "overlap_rate": 0.9041095890410958,
+        "position_mean": 0.6177192932098887,
+        "position_median": 0.5399169921875,
+        "scored": 73,
+        "states": {
+          "contained": 66,
+          "outside": 7
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9178082191780822,
+        "mean_width": 18511.780821917808,
+        "miss_distance_median_widths": 3.885040283203125,
+        "n": 73,
+        "overlap_rate": 0.9178082191780822,
+        "position_mean": 0.5478867734209721,
+        "position_median": 0.5054625249003984,
+        "scored": 73,
+        "states": {
+          "contained": 67,
+          "outside": 6
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8356164383561644,
+        "mean_width": 2574.123287671233,
+        "miss_distance_median_widths": 0.0,
+        "n": 73,
+        "overlap_rate": 0.9315068493150684,
+        "position_mean": 1.1737467679603606,
+        "position_median": 0.673828125,
+        "scored": 73,
+        "states": {
+          "contained": 61,
+          "outside": 5,
+          "partial": 7
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 0.8082191780821918,
+        "contained_rate": 0.6301369863013698,
+        "mean_width": 2574.1369863013697,
+        "miss_distance_median_widths": 0.0,
+        "n": 73,
+        "overlap_rate": 0.726027397260274,
+        "position_mean": 2.2102682552194723,
+        "position_median": 0.7041015625,
+        "scored": 73,
+        "states": {
+          "contained": 46,
+          "outside": 6,
+          "partial": 7,
+          "wrong_channel": 14
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 0.8082191780821918,
+        "contained_rate": 0.7397260273972602,
+        "mean_width": 15458.191780821919,
+        "miss_distance_median_widths": 3.41827392578125,
+        "n": 73,
+        "overlap_rate": 0.7397260273972602,
+        "position_mean": 0.7113152408452909,
+        "position_median": 0.513031005859375,
+        "scored": 73,
+        "states": {
+          "contained": 54,
+          "outside": 5,
+          "wrong_channel": 14
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 0.8082191780821918,
+        "contained_rate": 0.726027397260274,
+        "mean_width": 4891.109589041096,
+        "miss_distance_median_widths": 12.1807861328125,
+        "n": 73,
+        "overlap_rate": 0.726027397260274,
+        "position_mean": 1.4232711749974023,
+        "position_median": 0.6007080078125,
+        "scored": 73,
+        "states": {
+          "contained": 53,
+          "outside": 6,
+          "wrong_channel": 14
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 0.8082191780821918,
+        "contained_rate": 0.726027397260274,
+        "mean_width": 9525.054794520547,
+        "miss_distance_median_widths": 5.84039306640625,
+        "n": 73,
+        "overlap_rate": 0.726027397260274,
+        "position_mean": 0.9812631449562513,
+        "position_median": 0.551025390625,
+        "scored": 73,
+        "states": {
+          "contained": 53,
+          "outside": 6,
+          "wrong_channel": 14
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 0.8082191780821918,
+        "contained_rate": 0.7534246575342466,
+        "mean_width": 18479.08219178082,
+        "miss_distance_median_widths": 4.36647203233507,
+        "n": 73,
+        "overlap_rate": 0.7534246575342466,
+        "position_mean": 0.735705614852793,
+        "position_median": 0.5255126953125,
+        "scored": 73,
+        "states": {
+          "contained": 55,
+          "outside": 4,
+          "wrong_channel": 14
+        }
+      }
+    },
+    "16384": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 1695.8695652173913,
+        "n": 46,
+        "overlap_rate": 1.0,
+        "position_mean": 0.48810237180304733,
+        "position_median": 0.5,
+        "scored": 46,
+        "states": {
+          "contained": 46
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8478260869565217,
+        "mean_width": 1737.5652173913043,
+        "miss_distance_median_widths": 0.7236328125,
+        "n": 46,
+        "overlap_rate": 0.8478260869565217,
+        "position_mean": 0.259033495327596,
+        "position_median": 0.5869140625,
+        "scored": 46,
+        "states": {
+          "contained": 39,
+          "outside": 7
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8913043478260869,
+        "mean_width": 3269.0,
+        "miss_distance_median_widths": 0.95654296875,
+        "n": 46,
+        "overlap_rate": 0.9130434782608695,
+        "position_mean": 0.37952222795832663,
+        "position_median": 0.5474533715395881,
+        "scored": 46,
+        "states": {
+          "contained": 41,
+          "outside": 4,
+          "partial": 1
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9347826086956522,
+        "mean_width": 5980.847826086957,
+        "miss_distance_median_widths": 0.66552734375,
+        "n": 46,
+        "overlap_rate": 0.9347826086956522,
+        "position_mean": 0.44431519346686793,
+        "position_median": 0.52685546875,
+        "scored": 46,
+        "states": {
+          "contained": 43,
+          "outside": 3
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9565217391304348,
+        "mean_width": 9746.173913043478,
+        "miss_distance_median_widths": 0.40447998046875,
+        "n": 46,
+        "overlap_rate": 0.9565217391304348,
+        "position_mean": 0.46888844173319283,
+        "position_median": 0.521539306640625,
+        "scored": 46,
+        "states": {
+          "contained": 44,
+          "outside": 2
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.782608695652174,
+        "mean_width": 1693.1739130434783,
+        "miss_distance_median_widths": 0.0,
+        "n": 46,
+        "overlap_rate": 0.9130434782608695,
+        "position_mean": 0.16412111653528366,
+        "position_median": 0.5202229817708333,
+        "scored": 46,
+        "states": {
+          "contained": 36,
+          "outside": 4,
+          "partial": 6
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.782608695652174,
+        "mean_width": 1693.1739130434783,
+        "miss_distance_median_widths": 0.0,
+        "n": 46,
+        "overlap_rate": 0.9130434782608695,
+        "position_mean": 0.16412111653528366,
+        "position_median": 0.5202229817708333,
+        "scored": 46,
+        "states": {
+          "contained": 36,
+          "outside": 4,
+          "partial": 6
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8913043478260869,
+        "mean_width": 1995.1304347826087,
+        "miss_distance_median_widths": 5.16357421875,
+        "n": 46,
+        "overlap_rate": 0.8913043478260869,
+        "position_mean": 0.27418676535948955,
+        "position_median": 0.477783203125,
+        "scored": 46,
+        "states": {
+          "contained": 41,
+          "outside": 5
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9130434782608695,
+        "mean_width": 3196.3260869565215,
+        "miss_distance_median_widths": 2.0308837890625,
+        "n": 46,
+        "overlap_rate": 0.9130434782608695,
+        "position_mean": 0.2786685232793827,
+        "position_median": 0.54595947265625,
+        "scored": 46,
+        "states": {
+          "contained": 42,
+          "outside": 4
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9130434782608695,
+        "mean_width": 5891.108695652174,
+        "miss_distance_median_widths": 0.76544189453125,
+        "n": 46,
+        "overlap_rate": 0.9130434782608695,
+        "position_mean": 0.370442226881808,
+        "position_median": 0.5133579799107143,
+        "scored": 46,
+        "states": {
+          "contained": 42,
+          "outside": 4
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9347826086956522,
+        "mean_width": 9637.54347826087,
+        "miss_distance_median_widths": 0.1590576171875,
+        "n": 46,
+        "overlap_rate": 0.9347826086956522,
+        "position_mean": 0.43488111731141993,
+        "position_median": 0.518792724609375,
+        "scored": 46,
+        "states": {
+          "contained": 43,
+          "outside": 3
+        }
+      }
+    },
+    "32768": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 1991.1571428571428,
+        "n": 71,
+        "overlap_rate": 1.0,
+        "position_mean": 0.4964589578586377,
+        "position_median": 0.5,
+        "scored": 70,
+        "states": {
+          "contained": 70,
+          "no_action": 1
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 0.9857142857142858,
+        "contained_rate": 0.7428571428571429,
+        "mean_width": 1998.8142857142857,
+        "miss_distance_median_widths": 0.0927734375,
+        "n": 71,
+        "overlap_rate": 0.7857142857142857,
+        "position_mean": 0.9520691235437019,
+        "position_median": 0.673828125,
+        "scored": 70,
+        "states": {
+          "contained": 52,
+          "no_gold": 1,
+          "outside": 14,
+          "partial": 3,
+          "wrong_channel": 1
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 0.9857142857142858,
+        "contained_rate": 0.9,
+        "mean_width": 3903.542857142857,
+        "miss_distance_median_widths": 0.5181855486767758,
+        "n": 71,
+        "overlap_rate": 0.9,
+        "position_mean": 0.719066246521054,
+        "position_median": 0.5862357669122572,
+        "scored": 70,
+        "states": {
+          "contained": 63,
+          "no_gold": 1,
+          "outside": 6,
+          "wrong_channel": 1
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 0.9857142857142858,
+        "contained_rate": 0.9428571428571428,
+        "mean_width": 7492.785714285715,
+        "miss_distance_median_widths": 0.413818359375,
+        "n": 71,
+        "overlap_rate": 0.9428571428571428,
+        "position_mean": 0.6082237957135499,
+        "position_median": 0.5606689453125,
+        "scored": 70,
+        "states": {
+          "contained": 66,
+          "no_gold": 1,
+          "outside": 3,
+          "wrong_channel": 1
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 0.9857142857142858,
+        "contained_rate": 0.9714285714285714,
+        "mean_width": 13698.457142857143,
+        "miss_distance_median_widths": 1.329440688383528,
+        "n": 71,
+        "overlap_rate": 0.9714285714285714,
+        "position_mean": 0.5482397623655029,
+        "position_median": 0.52899169921875,
+        "scored": 70,
+        "states": {
+          "contained": 68,
+          "no_gold": 1,
+          "outside": 1,
+          "wrong_channel": 1
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 0.9857142857142858,
+        "contained_rate": 0.7285714285714285,
+        "mean_width": 1996.5714285714287,
+        "miss_distance_median_widths": 2.745849609375,
+        "n": 71,
+        "overlap_rate": 0.7857142857142857,
+        "position_mean": 0.3240720781269355,
+        "position_median": 0.552734375,
+        "scored": 70,
+        "states": {
+          "contained": 51,
+          "no_gold": 1,
+          "outside": 14,
+          "partial": 4,
+          "wrong_channel": 1
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 0.8428571428571429,
+        "contained_rate": 0.6142857142857143,
+        "mean_width": 1996.5714285714287,
+        "miss_distance_median_widths": 2.745849609375,
+        "n": 71,
+        "overlap_rate": 0.6714285714285714,
+        "position_mean": 0.3306266014323483,
+        "position_median": 0.4794921875,
+        "scored": 70,
+        "states": {
+          "contained": 43,
+          "no_gold": 1,
+          "outside": 12,
+          "partial": 4,
+          "wrong_channel": 11
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 0.8428571428571429,
+        "contained_rate": 0.7285714285714285,
+        "mean_width": 3865.6,
+        "miss_distance_median_widths": 1.8826904296875,
+        "n": 71,
+        "overlap_rate": 0.7285714285714285,
+        "position_mean": 0.49851573862556053,
+        "position_median": 0.4993489583333333,
+        "scored": 70,
+        "states": {
+          "contained": 51,
+          "no_gold": 1,
+          "outside": 8,
+          "wrong_channel": 11
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 0.8428571428571429,
+        "contained_rate": 0.6714285714285714,
+        "mean_width": 3743.157142857143,
+        "miss_distance_median_widths": 1.5030517578125,
+        "n": 71,
+        "overlap_rate": 0.6714285714285714,
+        "position_mean": 0.4208203268118104,
+        "position_median": 0.47119140625,
+        "scored": 70,
+        "states": {
+          "contained": 47,
+          "no_gold": 1,
+          "outside": 12,
+          "wrong_channel": 11
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 0.8428571428571429,
+        "contained_rate": 0.7,
+        "mean_width": 7065.857142857143,
+        "miss_distance_median_widths": 0.60089111328125,
+        "n": 71,
+        "overlap_rate": 0.7,
+        "position_mean": 0.46185303421320684,
+        "position_median": 0.49595424107142855,
+        "scored": 70,
+        "states": {
+          "contained": 49,
+          "no_gold": 1,
+          "outside": 10,
+          "wrong_channel": 11
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 0.8428571428571429,
+        "contained_rate": 0.7714285714285715,
+        "mean_width": 13038.342857142858,
+        "miss_distance_median_widths": 0.1099853515625,
+        "n": 71,
+        "overlap_rate": 0.7714285714285715,
+        "position_mean": 0.4795794433256423,
+        "position_median": 0.4927978515625,
+        "scored": 70,
+        "states": {
+          "contained": 54,
+          "no_gold": 1,
+          "outside": 5,
+          "wrong_channel": 11
+        }
+      }
+    },
+    "65536": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 2257.4545454545455,
+        "n": 45,
+        "overlap_rate": 1.0,
+        "position_mean": 0.5001109730113636,
+        "position_median": 0.5,
+        "scored": 44,
+        "states": {
+          "contained": 44,
+          "no_action": 1
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.5454545454545454,
+        "mean_width": 2257.4545454545455,
+        "miss_distance_median_widths": 0.63037109375,
+        "n": 45,
+        "overlap_rate": 0.6136363636363636,
+        "position_mean": 0.5084339488636364,
+        "position_median": 0.719970703125,
+        "scored": 44,
+        "states": {
+          "contained": 24,
+          "no_gold": 1,
+          "outside": 17,
+          "partial": 3
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.75,
+        "mean_width": 4514.909090909091,
+        "miss_distance_median_widths": 1.11962890625,
+        "n": 45,
+        "overlap_rate": 0.7727272727272727,
+        "position_mean": 0.5042169744318182,
+        "position_median": 0.6099853515625,
+        "scored": 44,
+        "states": {
+          "contained": 33,
+          "no_gold": 1,
+          "outside": 10,
+          "partial": 1
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8181818181818182,
+        "mean_width": 8787.113636363636,
+        "miss_distance_median_widths": 0.7352294921875,
+        "n": 45,
+        "overlap_rate": 0.8181818181818182,
+        "position_mean": 0.5125844117401417,
+        "position_median": 0.570404052734375,
+        "scored": 44,
+        "states": {
+          "contained": 36,
+          "no_gold": 1,
+          "outside": 8
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8863636363636364,
+        "mean_width": 16298.545454545454,
+        "miss_distance_median_widths": 1.3055419921875,
+        "n": 45,
+        "overlap_rate": 0.8863636363636364,
+        "position_mean": 0.52517932115909,
+        "position_median": 0.5507049560546875,
+        "scored": 44,
+        "states": {
+          "contained": 39,
+          "no_gold": 1,
+          "outside": 5
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.7272727272727273,
+        "mean_width": 2257.4545454545455,
+        "miss_distance_median_widths": 7.4267578125,
+        "n": 45,
+        "overlap_rate": 0.7954545454545454,
+        "position_mean": 1.0577448064630681,
+        "position_median": 0.6148681640625,
+        "scored": 44,
+        "states": {
+          "contained": 32,
+          "no_gold": 1,
+          "outside": 9,
+          "partial": 3
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.7272727272727273,
+        "mean_width": 2257.4545454545455,
+        "miss_distance_median_widths": 7.4267578125,
+        "n": 45,
+        "overlap_rate": 0.7954545454545454,
+        "position_mean": 1.0577448064630681,
+        "position_median": 0.6148681640625,
+        "scored": 44,
+        "states": {
+          "contained": 32,
+          "no_gold": 1,
+          "outside": 9,
+          "partial": 3
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8636363636363636,
+        "mean_width": 7982.545454545455,
+        "miss_distance_median_widths": 1.2520751953125,
+        "n": 45,
+        "overlap_rate": 0.8636363636363636,
+        "position_mean": 0.8820559337346779,
+        "position_median": 0.514678955078125,
+        "scored": 44,
+        "states": {
+          "contained": 38,
+          "no_gold": 1,
+          "outside": 6
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8181818181818182,
+        "mean_width": 4421.818181818182,
+        "miss_distance_median_widths": 5.215494791666666,
+        "n": 45,
+        "overlap_rate": 0.8181818181818182,
+        "position_mean": 0.7963478781960227,
+        "position_median": 0.55743408203125,
+        "scored": 44,
+        "states": {
+          "contained": 36,
+          "no_gold": 1,
+          "outside": 8
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8409090909090909,
+        "mean_width": 8517.818181818182,
+        "miss_distance_median_widths": 2.63671875,
+        "n": 45,
+        "overlap_rate": 0.8409090909090909,
+        "position_mean": 0.6584550337357954,
+        "position_median": 0.52996826171875,
+        "scored": 44,
+        "states": {
+          "contained": 37,
+          "no_gold": 1,
+          "outside": 7
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8409090909090909,
+        "mean_width": 15802.181818181818,
+        "miss_distance_median_widths": 1.068359375,
+        "n": 45,
+        "overlap_rate": 0.8409090909090909,
+        "position_mean": 0.6146909391609737,
+        "position_median": 0.5164337158203125,
+        "scored": 44,
+        "states": {
+          "contained": 37,
+          "no_gold": 1,
+          "outside": 7
+        }
+      }
+    }
+  },
+  "per_category": {
+    "classify_with_evidence": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 2053.9363636363637,
+        "n": 110,
+        "overlap_rate": 1.0,
+        "position_mean": 0.49985308891589225,
+        "position_median": 0.5,
+        "scored": 110,
+        "states": {
+          "contained": 110
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.6363636363636364,
+        "mean_width": 2067.5636363636363,
+        "miss_distance_median_widths": 0.755615234375,
+        "n": 110,
+        "overlap_rate": 0.6909090909090909,
+        "position_mean": 1.2201340302123629,
+        "position_median": 0.63623046875,
+        "scored": 110,
+        "states": {
+          "contained": 70,
+          "outside": 34,
+          "partial": 6
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.7727272727272727,
+        "mean_width": 4059.0454545454545,
+        "miss_distance_median_widths": 1.6748046875,
+        "n": 110,
+        "overlap_rate": 0.7818181818181819,
+        "position_mean": 0.8594667543915091,
+        "position_median": 0.568115234375,
+        "scored": 110,
+        "states": {
+          "contained": 85,
+          "outside": 24,
+          "partial": 1
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8363636363636363,
+        "mean_width": 7778.272727272727,
+        "miss_distance_median_widths": 1.7928466796875,
+        "n": 110,
+        "overlap_rate": 0.8363636363636363,
+        "position_mean": 0.6861126650148583,
+        "position_median": 0.55645751953125,
+        "scored": 110,
+        "states": {
+          "contained": 92,
+          "outside": 18
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8818181818181818,
+        "mean_width": 14127.363636363636,
+        "miss_distance_median_widths": 1.3055419921875,
+        "n": 110,
+        "overlap_rate": 0.8818181818181818,
+        "position_mean": 0.5983937407578701,
+        "position_median": 0.54083251953125,
+        "scored": 110,
+        "states": {
+          "contained": 97,
+          "outside": 13
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.7,
+        "mean_width": 2058.090909090909,
+        "miss_distance_median_widths": 2.2568359375,
+        "n": 110,
+        "overlap_rate": 0.8181818181818182,
+        "position_mean": 0.9669162299728706,
+        "position_median": 0.5751953125,
+        "scored": 110,
+        "states": {
+          "contained": 77,
+          "outside": 20,
+          "partial": 13
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.7,
+        "mean_width": 2058.090909090909,
+        "miss_distance_median_widths": 2.2568359375,
+        "n": 110,
+        "overlap_rate": 0.8181818181818182,
+        "position_mean": 0.9669162299728706,
+        "position_median": 0.5751953125,
+        "scored": 110,
+        "states": {
+          "contained": 77,
+          "outside": 20,
+          "partial": 13
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8454545454545455,
+        "mean_width": 6987.636363636364,
+        "miss_distance_median_widths": 2.126708984375,
+        "n": 110,
+        "overlap_rate": 0.8454545454545455,
+        "position_mean": 0.5621364658660468,
+        "position_median": 0.510498046875,
+        "scored": 110,
+        "states": {
+          "contained": 93,
+          "outside": 17
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8272727272727273,
+        "mean_width": 3967.009090909091,
+        "miss_distance_median_widths": 2.13623046875,
+        "n": 110,
+        "overlap_rate": 0.8272727272727273,
+        "position_mean": 0.7441126169134256,
+        "position_median": 0.54595947265625,
+        "scored": 110,
+        "states": {
+          "contained": 91,
+          "outside": 19
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8454545454545455,
+        "mean_width": 7570.572727272727,
+        "miss_distance_median_widths": 1.326171875,
+        "n": 110,
+        "overlap_rate": 0.8454545454545455,
+        "position_mean": 0.6319576363822305,
+        "position_median": 0.5281851632254464,
+        "scored": 110,
+        "states": {
+          "contained": 93,
+          "outside": 17
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8909090909090909,
+        "mean_width": 13786.281818181818,
+        "miss_distance_median_widths": 0.7148980034722222,
+        "n": 110,
+        "overlap_rate": 0.8909090909090909,
+        "position_mean": 0.5857533087324989,
+        "position_median": 0.517822265625,
+        "scored": 110,
+        "states": {
+          "contained": 98,
+          "outside": 12
+        }
+      }
+    },
+    "localize": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 2210.175,
+        "n": 82,
+        "overlap_rate": 1.0,
+        "position_mean": 0.49214731279130053,
+        "position_median": 0.5,
+        "scored": 80,
+        "states": {
+          "contained": 80,
+          "no_action": 2
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.6875,
+        "mean_width": 2307.3375,
+        "miss_distance_median_widths": 0.12884333821376281,
+        "n": 82,
+        "overlap_rate": 0.725,
+        "position_mean": 0.6791151515563029,
+        "position_median": 0.610595703125,
+        "scored": 80,
+        "states": {
+          "contained": 55,
+          "no_gold": 2,
+          "outside": 22,
+          "partial": 3
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9,
+        "mean_width": 4426.6875,
+        "miss_distance_median_widths": 0.0335693359375,
+        "n": 82,
+        "overlap_rate": 0.925,
+        "position_mean": 0.5809450320487357,
+        "position_median": 0.5552978515625,
+        "scored": 80,
+        "states": {
+          "contained": 72,
+          "no_gold": 2,
+          "outside": 6,
+          "partial": 2
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.9875,
+        "mean_width": 8436.9,
+        "miss_distance_median_widths": 0.00390625,
+        "n": 82,
+        "overlap_rate": 0.9875,
+        "position_mean": 0.5329975497647563,
+        "position_median": 0.53192138671875,
+        "scored": 80,
+        "states": {
+          "contained": 79,
+          "no_gold": 2,
+          "outside": 1
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 15481.3125,
+        "n": 82,
+        "overlap_rate": 1.0,
+        "position_mean": 0.5051951966306709,
+        "position_median": 0.5218678023601684,
+        "scored": 80,
+        "states": {
+          "contained": 80,
+          "no_gold": 2
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8,
+        "mean_width": 2292.85,
+        "miss_distance_median_widths": 2.619140625,
+        "n": 82,
+        "overlap_rate": 0.875,
+        "position_mean": 0.4339221021611698,
+        "position_median": 0.5126953125,
+        "scored": 80,
+        "states": {
+          "contained": 64,
+          "no_gold": 2,
+          "outside": 10,
+          "partial": 6
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8,
+        "mean_width": 2292.85,
+        "miss_distance_median_widths": 2.619140625,
+        "n": 82,
+        "overlap_rate": 0.875,
+        "position_mean": 0.4339221021611698,
+        "position_median": 0.5126953125,
+        "scored": 80,
+        "states": {
+          "contained": 64,
+          "no_gold": 2,
+          "outside": 10,
+          "partial": 6
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.925,
+        "mean_width": 7478.4,
+        "miss_distance_median_widths": 1.00323486328125,
+        "n": 82,
+        "overlap_rate": 0.925,
+        "position_mean": 0.5666603646207986,
+        "position_median": 0.4889984130859375,
+        "scored": 80,
+        "states": {
+          "contained": 74,
+          "no_gold": 2,
+          "outside": 6
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.875,
+        "mean_width": 4311.35,
+        "miss_distance_median_widths": 1.8575032552083335,
+        "n": 82,
+        "overlap_rate": 0.875,
+        "position_mean": 0.4855347062371284,
+        "position_median": 0.50177001953125,
+        "scored": 80,
+        "states": {
+          "contained": 70,
+          "no_gold": 2,
+          "outside": 10
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.8875,
+        "mean_width": 8186.6875,
+        "miss_distance_median_widths": 0.75732421875,
+        "n": 82,
+        "overlap_rate": 0.8875,
+        "position_mean": 0.489484150131304,
+        "position_median": 0.500885009765625,
+        "scored": 80,
+        "states": {
+          "contained": 71,
+          "no_gold": 2,
+          "outside": 9
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 0.925,
+        "mean_width": 15178.1625,
+        "miss_distance_median_widths": 0.784332275390625,
+        "n": 82,
+        "overlap_rate": 0.925,
+        "position_mean": 0.4832845384198669,
+        "position_median": 0.5006561279296875,
+        "scored": 80,
+        "states": {
+          "contained": 74,
+          "no_gold": 2,
+          "outside": 6
+        }
+      }
+    },
+    "localize_all_channels": {
+      "oracle_matched": {
+        "channel_hit_rate": 1.0,
+        "contained_rate": 1.0,
+        "mean_width": 2101.3953488372094,
+        "n": 43,
+        "overlap_rate": 1.0,
+        "position_mean": 0.4814233747682866,
+        "position_median": 0.5,
+        "scored": 43,
+        "states": {
+          "contained": 43
+        }
+      },
+      "policy": {
+        "channel_hit_rate": 0.9767441860465116,
+        "contained_rate": 0.5581395348837209,
+        "mean_width": 2210.8837209302324,
+        "miss_distance_median_widths": 0.3761215783599624,
+        "n": 43,
+        "overlap_rate": 0.5581395348837209,
+        "position_mean": -0.32064920247231804,
+        "position_median": 0.6668701171875,
+        "scored": 43,
+        "states": {
+          "contained": 24,
+          "outside": 18,
+          "wrong_channel": 1
+        }
+      },
+      "policy_wide_x2": {
+        "channel_hit_rate": 0.9767441860465116,
+        "contained_rate": 0.813953488372093,
+        "mean_width": 4262.883720930233,
+        "miss_distance_median_widths": 0.29296875,
+        "n": 43,
+        "overlap_rate": 0.8372093023255814,
+        "position_mean": 0.08404442468186368,
+        "position_median": 0.58343505859375,
+        "scored": 43,
+        "states": {
+          "contained": 35,
+          "outside": 6,
+          "partial": 1,
+          "wrong_channel": 1
+        }
+      },
+      "policy_wide_x4": {
+        "channel_hit_rate": 0.9767441860465116,
+        "contained_rate": 0.9302325581395349,
+        "mean_width": 8266.558139534884,
+        "miss_distance_median_widths": 5.03582763671875,
+        "n": 43,
+        "overlap_rate": 0.9302325581395349,
+        "position_mean": 0.28430871885200093,
+        "position_median": 0.544189453125,
+        "scored": 43,
+        "states": {
+          "contained": 40,
+          "outside": 2,
+          "wrong_channel": 1
+        }
+      },
+      "policy_wide_x8": {
+        "channel_hit_rate": 0.9767441860465116,
+        "contained_rate": 0.9534883720930233,
+        "mean_width": 15888.302325581395,
+        "miss_distance_median_widths": 4.71319580078125,
+        "n": 43,
+        "overlap_rate": 0.9534883720930233,
+        "position_mean": 0.38719307856805024,
+        "position_median": 0.5290374755859375,
+        "scored": 43,
+        "states": {
+          "contained": 41,
+          "outside": 1,
+          "wrong_channel": 1
+        }
+      },
+      "wavelet_in_policy_channel": {
+        "channel_hit_rate": 0.9767441860465116,
+        "contained_rate": 0.9069767441860465,
+        "mean_width": 2210.860465116279,
+        "miss_distance_median_widths": 0.076171875,
+        "n": 43,
+        "overlap_rate": 0.9302325581395349,
+        "position_mean": 0.5014351625465137,
+        "position_median": 0.6873779296875,
+        "scored": 43,
+        "states": {
+          "contained": 39,
+          "outside": 2,
+          "partial": 1,
+          "wrong_channel": 1
+        }
+      },
+      "wavelet_matched": {
+        "channel_hit_rate": 0.4186046511627907,
+        "contained_rate": 0.37209302325581395,
+        "mean_width": 2210.8837209302324,
+        "miss_distance_median_widths": 25.0703125,
+        "n": 43,
+        "overlap_rate": 0.3953488372093023,
+        "position_mean": 3.496032550974785,
+        "position_median": 0.7481129581766917,
+        "scored": 43,
+        "states": {
+          "contained": 16,
+          "outside": 1,
+          "partial": 1,
+          "wrong_channel": 25
+        }
+      },
+      "wavelet_native": {
+        "channel_hit_rate": 0.4186046511627907,
+        "contained_rate": 0.3953488372093023,
+        "mean_width": 11049.67441860465,
+        "miss_distance_median_widths": 5.830078125,
+        "n": 43,
+        "overlap_rate": 0.3953488372093023,
+        "position_mean": 0.8686244258174189,
+        "position_median": 0.52386474609375,
+        "scored": 43,
+        "states": {
+          "contained": 17,
+          "outside": 1,
+          "wrong_channel": 25
+        }
+      },
+      "wavelet_wide_x2": {
+        "channel_hit_rate": 0.4186046511627907,
+        "contained_rate": 0.3953488372093023,
+        "mean_width": 4171.720930232558,
+        "miss_distance_median_widths": 24.8203125,
+        "n": 43,
+        "overlap_rate": 0.3953488372093023,
+        "position_mean": 1.9980162754873925,
+        "position_median": 0.6240564790883458,
+        "scored": 43,
+        "states": {
+          "contained": 17,
+          "outside": 1,
+          "wrong_channel": 25
+        }
+      },
+      "wavelet_wide_x4": {
+        "channel_hit_rate": 0.4186046511627907,
+        "contained_rate": 0.3953488372093023,
+        "mean_width": 8093.395348837209,
+        "miss_distance_median_widths": 12.16015625,
+        "n": 43,
+        "overlap_rate": 0.3953488372093023,
+        "position_mean": 1.2490081377436963,
+        "position_median": 0.5620282395441729,
+        "scored": 43,
+        "states": {
+          "contained": 17,
+          "outside": 1,
+          "wrong_channel": 25
+        }
+      },
+      "wavelet_wide_x8": {
+        "channel_hit_rate": 0.4186046511627907,
+        "contained_rate": 0.3953488372093023,
+        "mean_width": 15570.60465116279,
+        "miss_distance_median_widths": 5.830078125,
+        "n": 43,
+        "overlap_rate": 0.3953488372093023,
+        "position_mean": 0.8698402287650896,
+        "position_median": 0.5310141197720865,
+        "scored": 43,
+        "states": {
+          "contained": 17,
+          "outside": 1,
+          "wrong_channel": 25
+        }
+      }
+    }
+  },
+  "rows": 235,
+  "runtime": {
+    "peak_rss_mib": 1401.5,
+    "seconds": 37.7
+  }
+}

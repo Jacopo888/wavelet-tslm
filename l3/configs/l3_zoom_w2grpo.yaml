@@ -25,12 +25,12 @@ rl:
   format_penalty: 0.0
   max_grad_norm: 1.0
   trainable: lora
-  steps: 150
+  steps: 200  # invariante del kit; il tetto effettivo e' nel driver
   checkpoint_every: 25
   seed: 20260914
   peak_limit_mib: 22528
   action_max_new_tokens: 500
-  pool_seed: 20260914
+  pool_seed: 20260911  # invariante del kit (validate_l3_config)
   pool_size: 200
   pool_per_category: 50
   resample_every: 100

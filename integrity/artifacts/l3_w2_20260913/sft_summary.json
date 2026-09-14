@@ -1,0 +1,476 @@
+{
+  "action_sources": {
+    "direct": 1719,
+    "replay": 673,
+    "zoom": 2096
+  },
+  "action_sources_by_category": {
+    "classify_with_evidence": {
+      "replay": 171,
+      "zoom": 971
+    },
+    "lead_lag_with_magnitude": {
+      "direct": 468,
+      "replay": 83
+    },
+    "localize": {
+      "direct": 180,
+      "replay": 168,
+      "zoom": 772
+    },
+    "localize_all_channels": {
+      "direct": 118,
+      "replay": 83,
+      "zoom": 353
+    },
+    "measure_magnitude": {
+      "direct": 953,
+      "replay": 168
+    }
+  },
+  "checkpoint": "/root/l3/w2_20260913T133901Z/sft/train/vz1bis_epoch_1_end.pt",
+  "checkpoint_sha256": "9f48ca99490b1dd8b8fb9b8a075495e2be38dfb7ea2da7df51dfe6a55e629964",
+  "composed_tensor_count": 42,
+  "coverage": {
+    "classify_with_evidence": 1142,
+    "lead_lag_with_magnitude": 551,
+    "localize": 1120,
+    "localize_all_channels": 554,
+    "measure_magnitude": 1121
+  },
+  "direct_rate": 0.3830213903743315,
+  "episodes": 4488,
+  "heuristic_rate": null,
+  "loss_mean": 0.34408520943138515,
+  "optimized_tensor_count": 32,
+  "peak_mem_mib": 12017.65283203125,
+  "replay_rate": 0.1499554367201426,
+  "seconds": 25584.187741029993,
+  "segments": 6584,
+  "status": "DONE",
+  "steps": 4488,
+  "supervised_tokens": 236532,
+  "trace_summary": {
+    "declared_category_quotas": {
+      "classify_with_evidence": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "non_replay_route": "zoom_if_positive",
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "lead_lag_with_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "non_replay_route": "direct",
+        "replay_fraction": 0.15
+      },
+      "localize": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "non_replay_route": "zoom_if_positive",
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "localize_all_channels": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "non_replay_route": "zoom_if_positive",
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "measure_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "non_replay_route": "direct",
+        "replay_fraction": 0.15
+      }
+    },
+    "observed_category_quotas": {
+      "classify_with_evidence": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "replay_fraction": 0.14973730297723292,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "lead_lag_with_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "replay_fraction": 0.15063520871143377
+      },
+      "localize": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "replay_fraction": 0.15,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "localize_all_channels": {
+        "direct_fraction_of_non_replay_negatives": 1.0,
+        "replay_fraction": 0.14981949458483754,
+        "zoom_fraction_of_non_replay_positives": 1.0
+      },
+      "measure_magnitude": {
+        "direct_fraction_of_non_replay": 1.0,
+        "replay_fraction": 0.14986619090098127
+      }
+    },
+    "position_distribution": {
+      "classify_with_evidence/L128k": {
+        "centered": 7,
+        "centered_fraction": 0.028925619834710745,
+        "histogram_counts": [
+          16,
+          20,
+          21,
+          34,
+          28,
+          32,
+          27,
+          25,
+          24,
+          15
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5058013663804235,
+        "n": 242,
+        "std": 0.25925765203155104
+      },
+      "classify_with_evidence/L16k": {
+        "centered": 11,
+        "centered_fraction": 0.046610169491525424,
+        "histogram_counts": [
+          11,
+          23,
+          24,
+          23,
+          15,
+          24,
+          32,
+          28,
+          32,
+          24
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5479638051178496,
+        "n": 236,
+        "std": 0.27186932341759273
+      },
+      "classify_with_evidence/L32k": {
+        "centered": 10,
+        "centered_fraction": 0.04132231404958678,
+        "histogram_counts": [
+          11,
+          21,
+          22,
+          33,
+          35,
+          27,
+          26,
+          21,
+          27,
+          19
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5150787101304235,
+        "n": 242,
+        "std": 0.2520359201121725
+      },
+      "classify_with_evidence/L64k": {
+        "centered": 8,
+        "centered_fraction": 0.03187250996015936,
+        "histogram_counts": [
+          10,
+          20,
+          23,
+          32,
+          36,
+          35,
+          24,
+          23,
+          28,
+          20
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5236636461964641,
+        "n": 251,
+        "std": 0.2539968211038944
+      },
+      "localize/L128k": {
+        "centered": 7,
+        "centered_fraction": 0.03867403314917127,
+        "histogram_counts": [
+          10,
+          14,
+          12,
+          19,
+          23,
+          33,
+          18,
+          22,
+          23,
+          7
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5265620953470304,
+        "n": 181,
+        "std": 0.24635390971599067
+      },
+      "localize/L16k": {
+        "centered": 5,
+        "centered_fraction": 0.024875621890547265,
+        "histogram_counts": [
+          16,
+          20,
+          19,
+          23,
+          23,
+          26,
+          17,
+          18,
+          25,
+          14
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5008897164567786,
+        "n": 201,
+        "std": 0.2737043383203211
+      },
+      "localize/L32k": {
+        "centered": 6,
+        "centered_fraction": 0.030612244897959183,
+        "histogram_counts": [
+          9,
+          20,
+          23,
+          24,
+          15,
+          26,
+          29,
+          22,
+          23,
+          5
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5024252132493623,
+        "n": 196,
+        "std": 0.248734448010625
+      },
+      "localize/L64k": {
+        "centered": 3,
+        "centered_fraction": 0.015463917525773196,
+        "histogram_counts": [
+          12,
+          15,
+          19,
+          21,
+          24,
+          20,
+          28,
+          28,
+          16,
+          11
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5172251278592139,
+        "n": 194,
+        "std": 0.24889003136354557
+      },
+      "localize_all_channels/L128k": {
+        "centered": 5,
+        "centered_fraction": 0.027624309392265192,
+        "histogram_counts": [
+          14,
+          13,
+          20,
+          18,
+          27,
+          26,
+          22,
+          22,
+          12,
+          7
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.485718447859116,
+        "n": 181,
+        "std": 0.24143827001813192
+      },
+      "localize_all_channels/L32k": {
+        "centered": 0,
+        "centered_fraction": 0.0,
+        "histogram_counts": [
+          7,
+          18,
+          25,
+          13,
+          18,
+          16,
+          23,
+          22,
+          12,
+          18
+        ],
+        "histogram_edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.3,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "mean": 0.5194567303324855,
+        "n": 172,
+        "std": 0.26692084772184527
+      }
+    },
+    "pseudo_recovery_count": 0,
+    "rows": 4488,
+    "source_counts": {
+      "classify_with_evidence": {
+        "replay": 171,
+        "zoom": 971
+      },
+      "lead_lag_with_magnitude": {
+        "direct": 468,
+        "replay": 83
+      },
+      "localize": {
+        "direct": 180,
+        "replay": 168,
+        "zoom": 772
+      },
+      "localize_all_channels": {
+        "direct": 118,
+        "replay": 83,
+        "zoom": 353
+      },
+      "measure_magnitude": {
+        "direct": 953,
+        "replay": 168
+      }
+    },
+    "window_counts": {
+      "classify_with_evidence": {
+        "1024": 330,
+        "2048": 321,
+        "4096": 320
+      },
+      "localize": {
+        "1024": 262,
+        "2048": 255,
+        "4096": 255
+      },
+      "localize_all_channels": {
+        "1024": 120,
+        "2048": 117,
+        "4096": 116
+      }
+    }
+  },
+  "zoom_rate": 0.46702317290552586
+}

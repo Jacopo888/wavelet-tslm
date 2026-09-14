@@ -353,3 +353,57 @@ multicanale con replay di crop percettivi (è l'unica categoria dove il calo sup
 soglia); pilot GRPO da `vw1` con il multicanale sotto osservazione nel criterio di
 selezione; o un ulteriore ampliamento se si vuole chiudere il confine aggregato.
 Config GRPO pronta e non lanciata. Test 800 non toccato. GPU libera.
+
+## 10. W2 — il recupero è riuscito, e ha superato il punto di partenza (14/09)
+
+Run `/root/l3/w2_20260913T133901Z`, artefatti in `integrity/artifacts/l3_w2_20260913/`.
+Intervento unico: metà delle righe multicanale con azione (176, quota a conteggio
+esatto) insegna un **crop percettivo** — finestra che contiene il gold con start
+uniforme — invece delle coordinate del selettore. Tutto il resto invariato, solo
+LoRA da `vw1`, 1 epoca: 4.488 passi, 7,11 h, loss 0,3441, picco 12.018 MiB.
+Checkpoint `vw2_epoch_1_end.pt`, sha
+`9f48ca99490b1dd8b8fb9b8a075495e2be38dfb7ea2da7df51dfe6a55e629964`, copia in
+`~/l3_offnode/w2_20260913/`.
+
+### Obiettivo 1 — lettura, sui 208 crop fissi × 3 offset a finestre identiche
+
+| confronto | valore | CI95 |
+|---|---:|---|
+| multicanale, W2 − W1 | **+0,0653** | [+0,0148; +0,1213] |
+| classify, W2 − W1 | +0,0578 | [+0,0256; +0,0914] |
+| localize, W2 − W1 | +0,0773 | [+0,0411; +0,1134] |
+| **aggregato, W2 − Z1-bis** | **+0,0371** | [+0,0140; +0,0598] |
+| contenuto, W2 vero − miglior controllo | +0,1834 | [+0,1530; +0,2143] |
+
+Il criterio dichiarato chiedeva che il multicanale migliorasse su W1 e che
+l'aggregato contro Z1-bis non fosse più compatibile con un calo rilevante. **Il
+risultato va oltre**: non solo il −0,030 di W1 è recuperato, l'aggregato è ora
+**positivo** con intervallo che esclude lo zero, cioè W2 legge gli stessi crop
+**meglio** del riferimento pre-W1. Il guadagno è in tutte e tre le categorie, non solo
+in quella trattata, e il beneficio dal contenuto sale a +0,183.
+
+### Obiettivo 2 — puntamento e operativo
+
+`primary` su val520 **0,3747** (W1 0,3551; Z1-bis 0,3426; `va1` 0,3105), contenimento
+**63,9 %** (W1 60,5 %), gate operativo superato, 0 azioni invalide, 0 risposte vuote,
+falsi negativi 10,4 %, falsi positivi 3,7 %. Rotte: classify 100 %, localize 62 %,
+multicanale 60 %, magnitudo e lead_lag 0 %.
+
+Appaiato contro `va1`: classify **+0,0935**, localize **+0,1092**, multicanale
+**+0,0667**, magnitudo +0,005, lead_lag +0,043. Contro `W1`: localize **+0,0553**,
+classify +0,0341, multicanale +0,0056, lead_lag −0,0169.
+
+Contenimento per banda: 84,8 % a L=16k, 74,3 % a 32k, 54,5 % a 65k, **46,6 % a 131k**
+(W1: 74,5 / 71,0 / 59,1 / 42,5) — migliora agli estremi, cede un po' a 65k.
+
+### Verdetto e conseguenza
+
+`w2_becomes_candidate`: entrambi gli obiettivi soddisfatti, quindi **W2 sostituisce
+W1 come candidato** e il pilot GRPO parte da lui, come dichiarato prima del run.
+
+Due letture da tenere separate. Sostenuto: *aggiungere crop percettivi alle tracce di
+selezione recupera la lettura e migliora anche il puntamento e il risultato
+operativo*. Non sostenuto: che l'intervento fosse specifico del multicanale — il
+guadagno di lettura è ampio su tutte le categorie, quindi il meccanismo non è «ho
+curato il multicanale» ma «il replay percettivo fa bene in generale». Il multicanale
+resta la banda più debole in geometria (46,6 % a 131k).
