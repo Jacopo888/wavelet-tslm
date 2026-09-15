@@ -580,3 +580,54 @@ localize (+0,055 [+0,016; +0,096]), non sul multicanale (+0,006).
 
 Test 800 letto una sola volta per braccio; nessuna decisione di disegno è stata
 presa dopo averlo visto. GPU libera.
+
+## 13. Confronto con TimeRLM sullo stesso split di test (15/09)
+
+Fonte: TimeRLM, tabella 1 ([arXiv 2608.03391](https://arxiv.org/html/2608.03391v1#S4.T1)),
+letta il 15/09. La tabella riporta **200 esempi per categoria** (100 per multicanale e
+lead_lag): sono gli stessi conteggi del nostro test 800, quindi la **popolazione
+coincide**. I nostri numeri vengono da `integrity/artifacts/l3_w3_20260914/test800/`.
+
+| categoria (n) | TSLM SFT pubblicati | Classical+GBT | **`vw2` (nostro)** | `vw3` (nostro) | TimeRLM 4B **RL** | TimeRLM 4B senza RL | TimeRLM GPT-5.5 d1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| localize (200) | 0,003-0,008 | 0,160 | 0,356 | 0,360 | **0,538** | 0,205 | 0,656 |
+| classify (200) | 0,000-0,001 | 0,022 | 0,184 | 0,198 | **0,364** | 0,119 | 0,745 |
+| measure_magnitude (200) | 0,078-0,092 | **0,685** | **0,592** | 0,576 | 0,510 | 0,272 | 0,554 |
+| localize_all_channels (100) | 0,230 | **0,549** | **0,343** | **0,395** | 0,244 | 0,003 | 0,551 |
+| lead_lag (100) | 0,333-0,350 | 0,108 | 0,210 | 0,329 | **0,687** | 0,398 | 0,978 |
+| **aggregato pesato** | 0,094 | 0,299 | **0,352** | **0,374** | **0,469** | 0,199 | 0,680 |
+
+(Il backbone dei TSLM SFT pubblicati e dei TimeRLM 4B è lo stesso nostro,
+Qwen3.5-4B. Il null di lead_lag — «sempre independent» — vale 0,350.)
+
+### Cosa dice, e cosa non dice
+
+Sostenuto: *a parità di backbone e sullo stesso split, un solo zoom interno alla
+rappresentazione porta localize da 0,005 (TSLM SFT pubblicati) a 0,356, cioè circa
+due terzi della distanza dall'agente con strumenti addestrato in RL (0,538), e
+**supera** quell'agente sulla localizzazione multicanale (0,343 e 0,395 contro 0,244)
+e sulla magnitudo (0,592 contro 0,510), senza eseguire codice, con la sola LoRA e in
+un passaggio più uno zoom.*
+
+Da dichiarare insieme, sempre: **l'agente RL di TimeRLM è ancora avanti in
+aggregato**, 0,469 contro 0,352, e lo è su localize, classify e soprattutto lead_lag
+(0,687 contro 0,210-0,329, dove noi stiamo **sotto** il null di 0,350). Il nostro
+sistema batte invece di molto il loro stesso agente **senza** RL (0,199) e ogni TSLM
+SFT pubblicato (aggregato 0,094). Gli aggregati pesati sono ricalcolati coi conteggi
+200/200/200/100/100 e riproducono esattamente i nostri 0,3521 e 0,3740 misurati.
+
+Non è un confronto appaiato: delle loro esecuzioni abbiamo le medie di tabella, non le
+righe, quindi le differenze sono fra medie sulla stessa popolazione e su 100-200
+esempi gli intervalli sono ampi (±0,05-0,09). La classe computazionale è diversa e va
+detta, perché è il contenuto del confronto: il loro agente fa più turni, esegue
+codice e legge la serie grezza a piena risoluzione; il nostro fa un passaggio
+dell'encoder più un crop da 256 token.
+
+### Sui due RL, che non sono la stessa cosa
+
+Il loro guadagno viene dall'RL **sull'uso degli strumenti**: 0,205 → 0,538 su localize
+fra il 4B agentico senza e con RL. Il nostro pilot GRPO agisce su una **singola azione
+interna**, parte da una policy che già zooma bene dopo l'SFT, e in 150 passi non ha
+mosso nulla di misurabile (§11). Le due cose non si confrontano: cambiano spazio
+d'azione, punto di partenza e budget. Nel nostro caso la leva sono state le **tracce**,
+nel loro il **reward**.
