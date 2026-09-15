@@ -1,0 +1,92 @@
+{
+  "format": "l3_w2_verdict_v1",
+  "mode": "w3",
+  "verdict": "keep_w1_reading_only",
+  "headline_arm": "start",
+  "note": "lettura recuperata ma operativo peggiorato: si tiene W1, il recupero resta informativo",
+  "reading": {
+    "multichannel_vs_w1": {
+      "n": 48,
+      "mean": 0.06666666666666667,
+      "ci95": [
+        0.008564814814814815,
+        0.12662037037037036
+      ],
+      "crops_per_id": 3.0
+    },
+    "aggregate_vs_z1bis": {
+      "n": 208,
+      "mean": 0.08241938153157449,
+      "ci95": [
+        0.05881490889284244,
+        0.10583309119894911
+      ],
+      "crops_per_id": 3.0
+    },
+    "per_category_vs_w1": {
+      "classify_with_evidence": {
+        "n": 80,
+        "mean": 0.0363550734716628,
+        "ci95": [
+          0.0075122140180719195,
+          0.06665019489445069
+        ],
+        "crops_per_id": 3.0
+      },
+      "localize": {
+        "n": 80,
+        "mean": 0.041575253775243924,
+        "ci95": [
+          0.007251573580087331,
+          0.07645539063043778
+        ],
+        "crops_per_id": 3.0
+      },
+      "localize_all_channels": {
+        "n": 48,
+        "mean": 0.06666666666666667,
+        "ci95": [
+          0.008564814814814815,
+          0.12662037037037036
+        ],
+        "crops_per_id": 3.0
+      }
+    },
+    "content_vs_z1bis_reference": {
+      "n": 208,
+      "mean": 0.22297221582250693,
+      "ci95": [
+        0.1901304042245454,
+        0.2555367905458333
+      ],
+      "crops_per_id": 3.0,
+      "condition_means": {
+        "offcenter_true": 0.28658590809783285,
+        "offcenter_swap": 0.05680392623962955,
+        "offcenter_zero": 0.05124330682985677
+      }
+    },
+    "checks": {
+      "aggregate_no_relevant_decline_vs_start": true,
+      "aggregate_gain_vs_z1bis_kept": true
+    }
+  },
+  "operational": {
+    "primary": 0.39297871410134744,
+    "contained_rate": 0.5916666666666667,
+    "gate_passed": true,
+    "gate_failed_checks": [],
+    "checks": {
+      "primary_at_least_threshold": true,
+      "contained_rate_at_least_threshold": false,
+      "operational_gate_passed": true
+    }
+  },
+  "criteria": {
+    "min_primary": 0.3647,
+    "min_contained_rate": 0.609,
+    "min_aggregate_reading": -0.03,
+    "reading_ci_floor": -0.05,
+    "declared_in": "l3/PROTOCOL-L3.md, W2 recupero mirato"
+  }
+}

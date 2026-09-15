@@ -1,0 +1,461 @@
+{
+  "behavior": {
+    "action_count": 247,
+    "action_rate": 0.475,
+    "direct_count": 273,
+    "direct_rate": 0.525,
+    "empty_final_count": 0,
+    "empty_final_rate": 0.0,
+    "false_negative_count_on_positives": 20,
+    "false_negative_rate_on_positives": 0.07692307692307693,
+    "false_positive_count_on_negatives": 7,
+    "false_positive_rate_on_negatives": 0.12962962962962962,
+    "invalid_action_count": 0,
+    "invalid_action_rate": 0.0,
+    "negative_action_count": 7,
+    "negative_action_rate": 0.12962962962962962,
+    "negative_rows": 54,
+    "per_category_route": {
+      "classify_with_evidence": {
+        "action_count": 110,
+        "action_rate": 1.0,
+        "direct_count": 0,
+        "direct_rate": 0.0,
+        "rows": 110
+      },
+      "lead_lag_with_magnitude": {
+        "action_count": 0,
+        "action_rate": 0.0,
+        "direct_count": 75,
+        "direct_rate": 1.0,
+        "rows": 75
+      },
+      "localize": {
+        "action_count": 93,
+        "action_rate": 0.7045454545454546,
+        "direct_count": 39,
+        "direct_rate": 0.29545454545454547,
+        "rows": 132
+      },
+      "localize_all_channels": {
+        "action_count": 44,
+        "action_rate": 0.6111111111111112,
+        "direct_count": 28,
+        "direct_rate": 0.3888888888888889,
+        "rows": 72
+      },
+      "measure_magnitude": {
+        "action_count": 0,
+        "action_rate": 0.0,
+        "direct_count": 131,
+        "direct_rate": 1.0,
+        "rows": 131
+      }
+    },
+    "positive_direct_count": 20,
+    "positive_direct_rate": 0.07692307692307693,
+    "positive_rows": 260,
+    "rows": 520,
+    "unparsable_anomaly_predictions": 0
+  },
+  "checks": {
+    "coverage": true,
+    "empty_rate": true,
+    "false_negative_rate_on_positives": true,
+    "false_positive_rate_on_negatives": true,
+    "invalid_action_rate": true,
+    "max_action_rate": true,
+    "min_action_rate": true,
+    "primary_vs_va1/classify_with_evidence": true,
+    "primary_vs_va1/lead_lag_with_magnitude": true,
+    "primary_vs_va1/localize": true,
+    "primary_vs_va1/localize_all_channels": true,
+    "primary_vs_va1/measure_magnitude": true,
+    "primary_vs_va1/overall": true
+  },
+  "format": "l3_z1bis_operational_gate_v1",
+  "gate_passed": true,
+  "inputs": {
+    "candidate": "/root/l3/w3_20260914T201743Z/operational/val520_policy.jsonl",
+    "config": "/root/timerlm/sft/tslm/l3/configs/l3_zoom_w3.yaml",
+    "previous_vz1_reference": "/root/l3/w2_20260913T133901Z/operational/val520_policy.jsonl",
+    "va1_reference": "/root/l3/zoom_20260911c/Z0/val520_no_zoom.jsonl"
+  },
+  "paired_vs_previous_vz1": {
+    "bootstrap": {
+      "ci": 0.95,
+      "resamples": 10000,
+      "seed": 20261015
+    },
+    "coverage": {
+      "candidate": 520,
+      "reference": 520
+    },
+    "format": "l3_paired_eval_v1",
+    "pairing": "exact ordered (id, category, ground_truth)",
+    "per_category": {
+      "classify_with_evidence": {
+        "candidate": {
+          "ci95": [
+            0.1536579292274396,
+            0.26605796640280677
+          ],
+          "mean": 0.20908483362170685,
+          "n": 110
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            -0.022281045265845057,
+            0.0744448457103618
+          ],
+          "mean": 0.025329285599474935,
+          "n": 110
+        },
+        "n": 110,
+        "reference": {
+          "ci95": [
+            0.1338234300187016,
+            0.2375556395799984
+          ],
+          "mean": 0.1837555480222319,
+          "n": 110
+        }
+      },
+      "lead_lag_with_magnitude": {
+        "candidate": {
+          "ci95": [
+            0.2398291015625,
+            0.4533333333333333
+          ],
+          "mean": 0.34649576822916667,
+          "n": 75
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            0.005055338541666667,
+            0.13417643229166668
+          ],
+          "mean": 0.06508015950520833,
+          "n": 75
+        },
+        "n": 75,
+        "reference": {
+          "ci95": [
+            0.18245198567708334,
+            0.3849267578125
+          ],
+          "mean": 0.2814156087239583,
+          "n": 75
+        }
+      },
+      "localize": {
+        "candidate": {
+          "ci95": [
+            0.29929245736638777,
+            0.43501220785866235
+          ],
+          "mean": 0.36586932350657203,
+          "n": 132
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            -0.03413080360085216,
+            0.05975872505808871
+          ],
+          "mean": 0.012906557125337236,
+          "n": 132
+        },
+        "n": 132,
+        "reference": {
+          "ci95": [
+            0.28567009097698354,
+            0.4234245533561679
+          ],
+          "mean": 0.3529627663812348,
+          "n": 132
+        }
+      },
+      "localize_all_channels": {
+        "candidate": {
+          "ci95": [
+            0.3226851851851852,
+            0.5287037037037038
+          ],
+          "mean": 0.42453703703703705,
+          "n": 72
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            -0.08009259259259259,
+            0.07777777777777778
+          ],
+          "mean": -0.00046296296296296363,
+          "n": 72
+        },
+        "n": 72,
+        "reference": {
+          "ci95": [
+            0.3171296296296296,
+            0.5337962962962962
+          ],
+          "mean": 0.42500000000000004,
+          "n": 72
+        }
+      },
+      "measure_magnitude": {
+        "candidate": {
+          "ci95": [
+            0.5277914132011443,
+            0.6377733599444606
+          ],
+          "mean": 0.5839770965464979,
+          "n": 131
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            -0.03368981579509371,
+            0.03610245579551933
+          ],
+          "mean": 0.0013512366271949236,
+          "n": 131
+        },
+        "n": 131,
+        "reference": {
+          "ci95": [
+            0.5247438285371153,
+            0.6391606613454329
+          ],
+          "mean": 0.5826258599193029,
+          "n": 131
+        }
+      }
+    },
+    "primary": {
+      "candidate": {
+        "ci95": [
+          0.3587699004553718,
+          0.4278325215515477
+        ],
+        "mean": 0.39297871410134744,
+        "n": 520
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          -0.0051698506757970955,
+          0.041406285216994666
+        ],
+        "mean": 0.018297264585012664,
+        "n": 520
+      },
+      "n": 520,
+      "reference": {
+        "ci95": [
+          0.3409153484430712,
+          0.41049939919084155
+        ],
+        "mean": 0.37468144951633475,
+        "n": 520
+      }
+    },
+    "split": "val"
+  },
+  "paired_vs_va1": {
+    "bootstrap": {
+      "ci": 0.95,
+      "resamples": 10000,
+      "seed": 20260915
+    },
+    "coverage": {
+      "candidate": 520,
+      "reference": 520
+    },
+    "format": "l3_paired_eval_v1",
+    "pairing": "exact ordered (id, category, ground_truth)",
+    "per_category": {
+      "classify_with_evidence": {
+        "candidate": {
+          "ci95": [
+            0.15418351733501384,
+            0.26682159124187627
+          ],
+          "mean": 0.20908483362170685,
+          "n": 110
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            0.0714974929350844,
+            0.16923803573354032
+          ],
+          "mean": 0.1188643387619044,
+          "n": 110
+        },
+        "n": 110,
+        "reference": {
+          "ci95": [
+            0.05434820813562218,
+            0.12988631431457479
+          ],
+          "mean": 0.09022049485980242,
+          "n": 110
+        }
+      },
+      "lead_lag_with_magnitude": {
+        "candidate": {
+          "ci95": [
+            0.24,
+            0.4533333333333333
+          ],
+          "mean": 0.34649576822916667,
+          "n": 75
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            0.018689778645833332,
+            0.20056803385416666
+          ],
+          "mean": 0.10837809244791667,
+          "n": 75
+        },
+        "n": 75,
+        "reference": {
+          "ci95": [
+            0.14804117838541667,
+            0.337685546875
+          ],
+          "mean": 0.23811767578125,
+          "n": 75
+        }
+      },
+      "localize": {
+        "candidate": {
+          "ci95": [
+            0.3005473066970251,
+            0.4356632336964501
+          ],
+          "mean": 0.36586932350657203,
+          "n": 132
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            0.06916700562953568,
+            0.17536986492918072
+          ],
+          "mean": 0.12210117620938035,
+          "n": 132
+        },
+        "n": 132,
+        "reference": {
+          "ci95": [
+            0.17720035079163385,
+            0.31445990650950695
+          ],
+          "mean": 0.24376814729719173,
+          "n": 132
+        }
+      },
+      "localize_all_channels": {
+        "candidate": {
+          "ci95": [
+            0.3212962962962963,
+            0.5268518518518518
+          ],
+          "mean": 0.42453703703703705,
+          "n": 72
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            -0.00787037037037037,
+            0.1388888888888889
+          ],
+          "mean": 0.06620370370370371,
+          "n": 72
+        },
+        "n": 72,
+        "reference": {
+          "ci95": [
+            0.25092592592592594,
+            0.4694444444444444
+          ],
+          "mean": 0.35833333333333334,
+          "n": 72
+        }
+      },
+      "measure_magnitude": {
+        "candidate": {
+          "ci95": [
+            0.5280499980487362,
+            0.6386604290608086
+          ],
+          "mean": 0.5839770965464979,
+          "n": 131
+        },
+        "candidate_minus_reference": {
+          "ci95": [
+            -0.02006051980476837,
+            0.03113071288794489
+          ],
+          "mean": 0.006218018080468261,
+          "n": 131
+        },
+        "n": 131,
+        "reference": {
+          "ci95": [
+            0.5205080619625162,
+            0.6339045100767918
+          ],
+          "mean": 0.5777590784660296,
+          "n": 131
+        }
+      }
+    },
+    "primary": {
+      "candidate": {
+        "ci95": [
+          0.35812303033042053,
+          0.42823762120671877
+        ],
+        "mean": 0.39297871410134744,
+        "n": 520
+      },
+      "candidate_minus_reference": {
+        "ci95": [
+          0.05749296341150545,
+          0.10745620172568848
+        ],
+        "mean": 0.08250387786971049,
+        "n": 520
+      },
+      "n": 520,
+      "reference": {
+        "ci95": [
+          0.27567760708563255,
+          0.34604920160005886
+        ],
+        "mean": 0.3104748362316369,
+        "n": 520
+      }
+    },
+    "split": "val"
+  },
+  "status": "DONE",
+  "thresholds": {
+    "bootstrap_resamples": 10000,
+    "compare_vs_previous_vz1": true,
+    "expected_rows": 520,
+    "max_action_rate": 0.6,
+    "max_empty_rate": 0.02,
+    "max_false_negative_rate_on_positives": 0.15,
+    "max_false_positive_rate_on_negatives": 0.15,
+    "max_invalid_action_rate": 0.02,
+    "min_action_rate": 0.2,
+    "min_delta_vs_va1": {
+      "classify_with_evidence": 0.0,
+      "lead_lag_with_magnitude": -0.02,
+      "localize": 0.0,
+      "localize_all_channels": 0.0,
+      "measure_magnitude": -0.02,
+      "overall": 0.0
+    },
+    "seed": 20260915
+  }
+}

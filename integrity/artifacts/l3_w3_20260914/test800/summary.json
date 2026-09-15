@@ -1,0 +1,42 @@
+{
+  "status": "DONE",
+  "headline_arm": "vw2",
+  "arms": {
+    "vz1bis": {
+      "primary": 0.3343331165365854,
+      "zoom_rate": 0.52,
+      "zoom_invalid": 0,
+      "per_category": {
+        "classify_with_evidence": 0.1270784626461887,
+        "lead_lag_with_magnitude": 0.333731689453125,
+        "localize": 0.3006413030378491,
+        "localize_all_channels": 0.33766666666666667,
+        "measure_magnitude": 0.5739135224024079
+      }
+    },
+    "vw2": {
+      "primary": 0.35209688228320873,
+      "zoom_rate": 0.51,
+      "zoom_invalid": 0,
+      "per_category": {
+        "classify_with_evidence": 0.18400831595818498,
+        "lead_lag_with_magnitude": 0.20978668212890625,
+        "localize": 0.35574483449040883,
+        "localize_all_channels": 0.34333333333333327,
+        "measure_magnitude": 0.5920743709531213
+      }
+    },
+    "vw3": {
+      "primary": 0.37394718583105946,
+      "zoom_rate": 0.53625,
+      "zoom_invalid": 0,
+      "per_category": {
+        "classify_with_evidence": 0.19764849664552592,
+        "lead_lag_with_magnitude": 0.3293951416015625,
+        "localize": 0.3598753128318858,
+        "localize_all_channels": 0.395,
+        "measure_magnitude": 0.576067363046045
+      }
+    }
+  }
+}

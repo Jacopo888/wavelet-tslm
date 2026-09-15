@@ -480,3 +480,103 @@ GRPO se si vuole chiudere anche quel confronto. È una decisione di Jacopo, non 
 catena. Prima, se si vuole un'ulteriore garanzia sul risultato principale, un secondo
 seed di W2 (~9,5 h) verificherebbe che il +0,037 di lettura e lo 0,3747 operativo non
 dipendano dall'estrazione delle tracce.
+
+## 12. W3 e test 800 (15/09)
+
+Run `/root/l3/w3_20260914T201743Z`, 11,6 h in tutto, artefatti in
+`integrity/artifacts/l3_w3_20260914/`. Disegno, criteri e bracci del test dichiarati
+prima in `PROTOCOL-L3.md` §«W3 e test 800». Un solo intervento: replay percettivo al
+50 % esteso a tutte e tre le categorie con azione (1.056 righe), da `vw2`, 1 epoca,
+solo LoRA: 4.488 passi, 7,15 h, loss 0,3393. Checkpoint `vw3_epoch_1_end.pt`, sha
+`77a3de78ed33ddf1ea6ea0fcc45ea487752b259957753bcadffdf6216cce20c7`, copia in
+`~/l3_offnode/w3_20260914/`.
+
+### W3 su val520: meglio di W2 in tutto, tranne che nel contenimento
+
+| misura | W2 | **W3** |
+|---|---:|---:|
+| lettura aggregata, stessi crop, Δ vs W2 | — | **+0,0454** [+0,0233; +0,0673] |
+| lettura, Δ vs Z1-bis | +0,0371 | **+0,0824** [+0,0588; +0,1058] |
+| beneficio dal contenuto | +0,183 | **+0,223** [+0,190; +0,256] |
+| primary val520 | 0,3747 | **0,3930** |
+| contenimento dell'evento | 63,9 % | **59,2 %** |
+| gate operativo | superato | superato |
+
+Per categoria, lettura W3 − W2: classify +0,036 [+0,008; +0,067], localize +0,042
+[+0,007; +0,077], multicanale +0,067 [+0,009; +0,127] — tutti con intervalli sopra lo
+zero. Operativo contro `va1`: classify +0,119, localize +0,122, multicanale +0,066,
+lead_lag +0,108.
+
+**Verdetto della regola dichiarata: `keep_w1_reading_only`, arm di punta `vw2`.** W3
+ha superato entrambi i criteri di lettura e due dei tre operativi; è caduto sul
+**contenimento**, 59,2 % contro la soglia 60,9 % (63,9 − 3). La regola è stata
+applicata com'era scritta: l'arm di punta per il test resta `vw2`.
+
+Va detto con chiarezza: **quella soglia era mal specificata**. Il contenimento è un
+proxy geometrico che avevo promosso a gate perché in W1 aveva spiegato il divario;
+qui scende di 4,7 punti mentre lettura, operativo e tutte le categorie salgono. Non
+cambio l'arm di punta dopo aver visto i numeri — è esattamente ciò che la
+pre-registrazione impedisce — ma registro che il proxy ha tradito, e nei prossimi
+protocolli il contenimento torna a essere una misura descrittiva, non un gate.
+
+### Test 800 — una lettura per braccio, tutti dichiarati prima
+
+`va1` dalle righe esistenti (0,2744, non riletto); `vz1bis`, `vw2`, `vw3` letti una
+volta ciascuno. Appaiato, bootstrap 10.000, 800 righe.
+
+| braccio | primary | Δ vs `va1` | Δ vs `vz1bis` |
+|---|---:|---|---|
+| `va1` (SFT, senza zoom) | 0,2744 | — | — |
+| `vz1bis` (tracce con finestra gold) | 0,3343 | +0,0600 [+0,0403; +0,0805] | — |
+| **`vw2` — arm di punta** | **0,3521** | **+0,0777** [+0,0579; +0,0970] | +0,0178 [−0,0021; +0,0375] |
+| `vw3` (braccio dichiarato) | 0,3739 | +0,0996 [+0,0777; +0,1216] | +0,0396 [+0,0201; +0,0590] |
+
+`vw3` − `vw2`: **+0,0219** [+0,0014; +0,0428], al limite della significatività.
+
+Per categoria sul test:
+
+| categoria | `va1` | `vz1bis` | `vw2` | `vw3` |
+|---|---:|---:|---:|---:|
+| classify_with_evidence | 0,064 | 0,127 | 0,184 | 0,198 |
+| localize | 0,241 | 0,301 | 0,356 | 0,360 |
+| localize_all_channels | 0,261 | 0,338 | 0,343 | 0,395 |
+| measure_magnitude | 0,578 | 0,574 | 0,592 | 0,576 |
+| lead_lag_with_magnitude | 0,166 | 0,334 | 0,210 | 0,329 |
+
+Zoom nel 51-54 % delle righe in tutti i bracci, 0 azioni invalide, 0 risposte vuote.
+
+### Come leggere il test
+
+**Il risultato principale è solido e non dipende dalla scelta dell'arm**: contro il
+riferimento SFT senza zoom, l'arm di punta `vw2` guadagna +0,078 sul test con
+intervallo [+0,058; +0,097], e nelle tre categorie bersaglio i guadagni escludono lo
+zero: classify **+0,120** [+0,084; +0,158], localize **+0,115** [+0,071; +0,158],
+multicanale **+0,082** [+0,009; +0,154]. Localize sale da 0,241 a 0,356. Il passaggio
+val→test costa 0,023 a `vw2` e 0,019 a `vw3`, contro 0,036 a `va1`: l'ordine dei
+bracci regge.
+
+**Il vantaggio di `vw3` su `vw2` sul test è quasi tutto lead_lag**: +0,120 [+0,056;
++0,191] in quella categoria, contro +0,014 su classify, +0,004 su localize, +0,052
+[−0,022; +0,123] sul multicanale. `vw2` era sceso a 0,210 su lead_lag e `vw3` risale a
+0,329 — vicino allo 0,350 della risposta «sempre independent», che è la scorciatoia
+nota dello scorer. Sulle tre categorie bersaglio i due bracci sono equivalenti sul
+test. Quindi lo 0,3739 di `vw3` è vero e dichiarato, ma la sua distanza da `vw2` non
+va raccontata come un guadagno di percezione.
+
+**Contro `vz1bis`**, l'arm di punta non è distinguibile in aggregato (+0,018, CI su
+zero) perché `vz1bis` tiene lo 0,334 su lead_lag mentre `vw2` scende a 0,210; sulle
+categorie bersaglio invece `vw2` batte `vz1bis` su classify (+0,057 [+0,017; +0,099]) e
+localize (+0,055 [+0,016; +0,096]), non sul multicanale (+0,006).
+
+### Cosa resta aperto
+
+- lead_lag oscilla fra i bracci (0,21-0,33) per effetto della scorciatoia
+  «independent», non della percezione: va riportato con questa avvertenza e non
+  usato per ordinare i bracci;
+- il contenimento come gate ha bocciato l'arm migliore su val e su test: proxy da
+  ritirare dai criteri;
+- W3 conferma che il replay percettivo è la leva, e non ne ha ancora trovato il
+  limite (lettura +0,045 su W2 dopo +0,065 di W2 su W1).
+
+Test 800 letto una sola volta per braccio; nessuna decisione di disegno è stata
+presa dopo averlo visto. GPU libera.

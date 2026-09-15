@@ -1,0 +1,460 @@
+{
+  "declared_category_quotas": {
+    "classify_with_evidence": {
+      "direct_fraction_of_non_replay_negatives": 1.0,
+      "non_replay_route": "zoom_if_positive",
+      "replay_fraction": 0.15,
+      "zoom_fraction_of_non_replay_positives": 1.0
+    },
+    "lead_lag_with_magnitude": {
+      "direct_fraction_of_non_replay": 1.0,
+      "non_replay_route": "direct",
+      "replay_fraction": 0.15
+    },
+    "localize": {
+      "direct_fraction_of_non_replay_negatives": 1.0,
+      "non_replay_route": "zoom_if_positive",
+      "replay_fraction": 0.15,
+      "zoom_fraction_of_non_replay_positives": 1.0
+    },
+    "localize_all_channels": {
+      "direct_fraction_of_non_replay_negatives": 1.0,
+      "non_replay_route": "zoom_if_positive",
+      "replay_fraction": 0.15,
+      "zoom_fraction_of_non_replay_positives": 1.0
+    },
+    "measure_magnitude": {
+      "direct_fraction_of_non_replay": 1.0,
+      "non_replay_route": "direct",
+      "replay_fraction": 0.15
+    }
+  },
+  "format": "l3_zoom_z1bis_trace_manifest_v1",
+  "observed_category_quotas": {
+    "classify_with_evidence": {
+      "direct_fraction_of_non_replay_negatives": 1.0,
+      "replay_fraction": 0.14973730297723292,
+      "zoom_fraction_of_non_replay_positives": 1.0
+    },
+    "lead_lag_with_magnitude": {
+      "direct_fraction_of_non_replay": 1.0,
+      "replay_fraction": 0.15063520871143377
+    },
+    "localize": {
+      "direct_fraction_of_non_replay_negatives": 1.0,
+      "replay_fraction": 0.15,
+      "zoom_fraction_of_non_replay_positives": 1.0
+    },
+    "localize_all_channels": {
+      "direct_fraction_of_non_replay_negatives": 1.0,
+      "replay_fraction": 0.14981949458483754,
+      "zoom_fraction_of_non_replay_positives": 1.0
+    },
+    "measure_magnitude": {
+      "direct_fraction_of_non_replay": 1.0,
+      "replay_fraction": 0.14986619090098127
+    }
+  },
+  "planner_elapsed_seconds": 40.911491848004516,
+  "planner_peak_rss_mib": 2621.3,
+  "position_distribution": {
+    "classify_with_evidence/L128k": {
+      "centered": 12,
+      "centered_fraction": 0.047244094488188976,
+      "histogram_counts": [
+        12,
+        28,
+        25,
+        28,
+        38,
+        35,
+        25,
+        24,
+        27,
+        12
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.49750813161294294,
+      "n": 254,
+      "std": 0.2479110717808698
+    },
+    "classify_with_evidence/L16k": {
+      "centered": 4,
+      "centered_fraction": 0.01652892561983471,
+      "histogram_counts": [
+        17,
+        24,
+        25,
+        35,
+        27,
+        23,
+        28,
+        26,
+        24,
+        13
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.48876801798166325,
+      "n": 242,
+      "std": 0.2592167839720316
+    },
+    "classify_with_evidence/L32k": {
+      "centered": 12,
+      "centered_fraction": 0.05194805194805195,
+      "histogram_counts": [
+        10,
+        21,
+        21,
+        32,
+        27,
+        31,
+        21,
+        21,
+        29,
+        18
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.5205358199742965,
+      "n": 231,
+      "std": 0.2577909096058377
+    },
+    "classify_with_evidence/L64k": {
+      "centered": 4,
+      "centered_fraction": 0.01639344262295082,
+      "histogram_counts": [
+        17,
+        21,
+        19,
+        24,
+        38,
+        35,
+        22,
+        24,
+        26,
+        18
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.5117687788165983,
+      "n": 244,
+      "std": 0.25706420679076264
+    },
+    "localize/L128k": {
+      "centered": 6,
+      "centered_fraction": 0.03278688524590164,
+      "histogram_counts": [
+        7,
+        16,
+        19,
+        28,
+        31,
+        17,
+        23,
+        16,
+        15,
+        11
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.49830102138831966,
+      "n": 183,
+      "std": 0.24324828548627386
+    },
+    "localize/L16k": {
+      "centered": 2,
+      "centered_fraction": 0.010050251256281407,
+      "histogram_counts": [
+        14,
+        19,
+        22,
+        19,
+        16,
+        15,
+        25,
+        22,
+        28,
+        19
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.5329491696765075,
+      "n": 199,
+      "std": 0.28311085348326204
+    },
+    "localize/L32k": {
+      "centered": 8,
+      "centered_fraction": 0.03940886699507389,
+      "histogram_counts": [
+        17,
+        29,
+        21,
+        21,
+        29,
+        29,
+        13,
+        19,
+        21,
+        4
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.44840695235529554,
+      "n": 203,
+      "std": 0.25372777308125966
+    },
+    "localize/L64k": {
+      "centered": 4,
+      "centered_fraction": 0.020618556701030927,
+      "histogram_counts": [
+        14,
+        21,
+        11,
+        34,
+        24,
+        19,
+        18,
+        28,
+        12,
+        13
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.4889696258859536,
+      "n": 194,
+      "std": 0.2556114711079756
+    },
+    "localize_all_channels/L128k": {
+      "centered": 5,
+      "centered_fraction": 0.02717391304347826,
+      "histogram_counts": [
+        5,
+        25,
+        14,
+        25,
+        32,
+        19,
+        19,
+        16,
+        16,
+        13
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.49303535793138586,
+      "n": 184,
+      "std": 0.24985468496282126
+    },
+    "localize_all_channels/L32k": {
+      "centered": 1,
+      "centered_fraction": 0.005681818181818182,
+      "histogram_counts": [
+        12,
+        16,
+        14,
+        24,
+        21,
+        16,
+        30,
+        16,
+        19,
+        8
+      ],
+      "histogram_edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "mean": 0.5034928755326704,
+      "n": 176,
+      "std": 0.25417085606780193
+    }
+  },
+  "pseudo_recovery_count": 0,
+  "rows": 4488,
+  "seed": 20260915,
+  "source_counts": {
+    "classify_with_evidence": {
+      "replay": 171,
+      "zoom": 971
+    },
+    "lead_lag_with_magnitude": {
+      "direct": 468,
+      "replay": 83
+    },
+    "localize": {
+      "direct": 173,
+      "replay": 168,
+      "zoom": 779
+    },
+    "localize_all_channels": {
+      "direct": 111,
+      "replay": 83,
+      "zoom": 360
+    },
+    "measure_magnitude": {
+      "direct": 953,
+      "replay": 168
+    }
+  },
+  "status": "DONE",
+  "traces_sha256": "a299c3f3e9504aea8e21e4d24078f7fd3ad41f709f63501b792204b017e6eb5c",
+  "train_sha256": "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d",
+  "w1": {
+    "candidate_buckets": 4,
+    "declared_window_sizes": [
+      1024,
+      2048,
+      4096
+    ],
+    "draws_per_candidate": 3,
+    "gold_fallback_rate": 0.11005692599620494,
+    "origin_counts": {
+      "direct": 1705,
+      "gold_fallback": 116,
+      "perceptual_replay": 1056,
+      "replay": 673,
+      "wavelet_rank_1": 851,
+      "wavelet_rank_2": 52,
+      "wavelet_rank_3": 21,
+      "wavelet_rank_4": 14
+    },
+    "perceptual_replay_declared": {
+      "categories": [
+        "classify_with_evidence",
+        "localize",
+        "localize_all_channels"
+      ],
+      "fraction": 0.5
+    },
+    "perceptual_replay_rows": 1056,
+    "wavelet_rate": 0.889943074003795,
+    "zoom_rows": 1054
+  },
+  "window_counts": {
+    "classify_with_evidence": {
+      "1024": 330,
+      "2048": 321,
+      "4096": 320
+    },
+    "localize": {
+      "1024": 265,
+      "2048": 257,
+      "4096": 257
+    },
+    "localize_all_channels": {
+      "1024": 122,
+      "2048": 119,
+      "4096": 119
+    }
+  }
+}
