@@ -631,3 +631,69 @@ interna**, parte da una policy che già zooma bene dopo l'SFT, e in 150 passi no
 mosso nulla di misurabile (§11). Le due cose non si confrontano: cambiano spazio
 d'azione, punto di partenza e budget. Nel nostro caso la leva sono state le **tracce**,
 nel loro il **reward**.
+
+## 14. Il punteggio di localize scomposto: rilevare l'assenza contro puntare (16/09)
+
+Nato da un dubbio posto da Jacopo: *i risultati di `va1` mandati all'ETH erano solo
+la distribuzione del dataset appresa?* La risposta si misura, e la misura cambia
+come va presentato il numero. Strumento: `l3/tools/decompose_localize.py`, solo CPU
+sulle righe già archiviate.
+
+Il `primary` di localize è `iou_or_correct_empty`: sulle 39 righe **senza** anomalia
+vale 1 se il modello risponde «assente», sulle 161 **con** anomalia vale l'IoU. Sono
+due capacità diverse sommate in un numero.
+
+| braccio (test, 200 righe) | totale | contributo assenti | contributo presenti | IoU sulle presenti | IoU≥0,3 | IoU≥0,5 |
+|---|---:|---:|---:|---:|---:|---:|
+| `va1` | 0,2410 | **0,1650** | 0,0760 | 0,0944 | 14,3 % | 8,1 % |
+| `vz1bis` | 0,3006 | 0,1750 | 0,1256 | 0,1561 | 24,8 % | 14,9 % |
+| `vw2` | 0,3557 | 0,1900 | 0,1657 | 0,2059 | 31,7 % | 21,7 % |
+| `vw3` | 0,3599 | 0,1600 | **0,1999** | **0,2483** | 36,6 % | 26,7 % |
+
+### Cosa si può ottenere senza leggere il segnale
+
+- posizione dell'anomalia nel test: centro normalizzato **uniforme** (media 0,482,
+  sd 0,286 contro 0,289 dell'uniforme; istogramma in decimi 18/17/17/8/24/20/15/14/11/17),
+  larghezza mediana **0,29 %** della serie. Non esiste un intervallo «tipico» da
+  indovinare;
+- rispondere sempre «assente»: **0,1950** sul totale, 0 sulle presenti;
+- miglior intervallo costante, cercato *sugli stessi dati* e quindi limite superiore
+  ottimistico: **IoU 0,0157** sulle presenti;
+- presenza perfetta più intervallo costante: **0,2077** sul totale.
+
+### Conseguenze, in due direzioni
+
+**Contro l'ipotesi «era solo distribuzione»**: il puntamento di `va1` sulle righe con
+anomalia vale 0,0944, **sei volte** il miglior intervallo costante, e il 14,3 % delle
+righe raggiunge IoU ≥ 0,3, cosa che un predittore fisso non ottiene mai. Le posizioni
+sono uniformi, quindi non c'è una distribuzione spaziale da sfruttare. Inoltre i TSLM
+SFT pubblicati sullo stesso backbone e sullo stesso budget stanno a 0,003-0,008: se
+bastasse il prior del dataset, ci arriverebbero anche loro.
+
+**A sostegno di una lettura più prudente del titolo**: il 68 % dello 0,241 di `va1`
+viene dalle 39 righe senza anomalia (0,165 su 0,241), e in assoluto il suo
+puntamento è debole. «`va1` localizza 0,241» è quindi una frase che mescola due
+capacità, e il confronto con lo 0,195 di «sempre assente» va dichiarato. È un limite
+che questa scomposizione rende visibile e che prima non avevamo riportato.
+
+**Il dato buono, e più solido dell'aggregato**: il progresso dei tre livelli sta
+quasi tutto nella componente che una scorciatoia non può falsificare. Il contributo
+delle righe assenti resta fermo fra 0,16 e 0,19 — è saturo — mentre l'IoU sulle righe
+con anomalia passa da **0,094 a 0,248** (×2,6) e la frazione localizzata a IoU ≥ 0,5
+da **8,1 % a 26,7 %** (×3,3).
+
+### Avvertenza sul confronto con TimeRLM
+
+Il loro `Loc(IoU)` 0,538 è calcolato sulle stesse 200 righe, quindi contiene la stessa
+mescolanza fra presenza e puntamento. Non avendo le loro righe non possiamo
+scomporlo: il confronto §13 resta valido fra numeri omogenei, ma nessuna delle due
+parti è un IoU puro.
+
+### Nota sull'audit di ieri, per evitare un'attribuzione sbagliata
+
+I valori 0,479 / 0,482 / 0,473 del gate a pesi fissi (§2-bis di
+`RISULTATI-L4-ZOOM.md`) **non riguardano la risposta a passaggio singolo di `va1`**:
+misuravano il secondo turno di `vz1` con un crop dell'oracle il cui header dichiarava
+le coordinate, e mostrarono che a contare era l'header, non il contenuto del crop. È
+una proprietà delle tracce Z1, corretta poi in Z1-bis. Nel passaggio singolo di `va1`
+non esiste alcun header con coordinate: non c'è nulla da cui trapelare la posizione.
