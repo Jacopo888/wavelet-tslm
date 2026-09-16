@@ -697,3 +697,104 @@ misuravano il secondo turno di `vz1` con un crop dell'oracle il cui header dichi
 le coordinate, e mostrarono che a contare era l'header, non il contenuto del crop. È
 una proprietà delle tracce Z1, corretta poi in Z1-bis. Nel passaggio singolo di `va1`
 non esiste alcun header con coordinate: non c'è nulla da cui trapelare la posizione.
+
+## 15. Cosa ottiene una scorciatoia, categoria per categoria; audit delle due mail (16/09)
+
+Nato da una seconda domanda di Jacopo, dopo che l'agente dell'ablazione RoPE ha
+scomposto `va1` sulla validazione: *i risultati mandati all'ETH sono falsati?* La §14
+copriva solo localize. Qui la stessa scomposizione si estende al multicanale, e per le
+altre categorie si misura cosa otterrebbe una risposta costante. Strumento:
+`l3/tools/decompose_localize.py` (ora con `--category localize_all_channels` e
+`--paired`, bootstrap appaiato sulle sole righe con anomalia). Tutto su CPU dalle
+righe archiviate del test 800.
+
+Prima una verifica: i numeri dell'agente dell'ablazione sono giusti. Sulla validazione
+`va1` fa localize 0,2438 = 0,197 dalle righe assenti + 0,047 dalle presenti (IoU
+0,0606), multicanale 0,3583 = 0,333 dalle vuote + 0,025 dalle presenti (F1 0,0375,
+4 match veri su 48 righe). «Nessuno dei due modelli localizza mai un'anomalia
+multicanale» è quasi esatto sulla validazione (4 match) e non lo è sul test (10).
+
+### Multicanale: il null «lista vuota» vale 0,230 e l'agente RL di TimeRLM sta lì
+
+Il `primary` di `localize_all_channels` è un F1 su coppie (canale, intervallo); sulle
+23 righe con lista vuota vale 1 se il modello risponde con la lista vuota.
+
+| braccio (test, 100 righe) | totale | da vuote | da presenti | hit vuote | F1 sulle presenti | match veri | righe con ≥1 match |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `va1` | 0,2613 | **0,2100** | 0,0513 | 91,3 % | 0,0667 | 10 | 9 / 77 |
+| `vz1bis` | 0,3377 | 0,2100 | 0,1277 | 91,3 % | 0,1658 | 23 | 22 / 77 |
+| `vw2` | 0,3433 | 0,2200 | 0,1233 | 95,7 % | 0,1602 | 20 | 20 / 77 |
+| `vw3` | 0,3950 | 0,2000 | **0,1950** | 87,0 % | **0,2532** | 32 | 30 / 77 |
+
+Rispondere sempre «lista vuota» vale **0,230**. `va1` sta a +0,031 sopra quel null:
+l'80 % del suo 0,261 è rilevazione dell'assenza. Il progresso dei tre livelli sta
+invece quasi tutto nelle righe con anomalia, appaiato con `va1` sulle sole 77
+righe presenti: `vz1bis` +0,099 [+0,024; +0,177], `vw2` +0,094 [+0,010; +0,181],
+`vw3` **+0,187 [+0,091; +0,282]**. Tutti sopra lo zero; il contributo delle vuote non
+si muove (0,20-0,22).
+
+Per il confronto §13: l'agente RL 4B di TimeRLM riporta **0,244** su questa categoria,
+cioè il null più 0,014, e il suo 4B senza RL 0,003 (non risponde mai «vuota»). Non
+avendo le loro righe non sappiamo quanta della loro cifra sia puntamento, ma il loro
+totale è indistinguibile da «sempre vuota». La frase «lo supera sulla localizzazione
+multicanale» resta vera sul metrica ufficiale e va accompagnata dal null: 0,343 e
+0,395 contro 0,244, con 0,230 raggiungibile senza leggere il segnale.
+
+### Localize, appaiato sulle sole righe con anomalia
+
+Complemento alla §14: le differenze rispetto a `va1` ristrette alle 161 righe presenti
+sono `vz1bis` +0,062 [+0,012; +0,112], `vw2` +0,112 [+0,065; +0,158], `vw3` +0,154
+[+0,103; +0,205]. Sono le stesse conclusioni del confronto su 200 righe, senza la
+componente di presenza.
+
+### Le altre tre categorie: cosa vale una risposta costante
+
+- **measure_magnitude**: `primary` = max(0, 1 − 2·errore relativo). Le magnitudo del
+  test coprono due ordini di grandezza (quantili 10/50/90: 1,5 / 12,7 / 68,9 sigma).
+  La miglior costante, cercata sui dati stessi, vale **0,145**; `va1` fa 0,578 (errore
+  ≤ 10 % sul 36 % delle righe, ≤ 25 % sul 64 %). Nessuna componente di assenza:
+  la lettura della magnitudo è genuina e i quattro bracci sono equivalenti (0,574-0,592).
+- **classify_with_evidence**: `primary` = (classe corretta) × IoU. Classe
+  maggioritaria 25,5 % per intervallo costante 0,016 → **0,004**. `va1` 0,064 con
+  classe corretta nel 77,5 % e IoU 0,077; `vw2` 0,184 (76,0 %, IoU 0,214); `vw3`
+  0,198 (79,5 %, IoU 0,223). Il guadagno dei livelli è tutto nell'IoU: la
+  classificazione era già lì dopo l'SFT.
+- **lead_lag**: null «sempre independent» 0,350, dichiarato nella mail del 04/09; tutti
+  i nostri bracci stanno sotto o intorno al null.
+
+### Audit delle due mail inviate (29/08 e 04/09), a fronte di questi numeri
+
+Nessun numero è falsato: sono le medie del metrica ufficiale sul test 800, calcolate
+dallo scorer del benchmark, le stesse che TimeRLM riporta in tabella 1. Ciò che va
+corretto è l'interpretazione di tre frasi.
+
+1. *«Localization goes from ~0 into the classical baseline's league»* (29/08, `va1`
+   0,241 contro classico 0,160). Vero sul metrica, ma «sempre assente» vale 0,195 su
+   questo split: il classico sta **sotto** quel null e `va1` lo supera di 0,046. Il
+   puntamento vero di `va1` è IoU 0,094 sulle righe con anomalia, sei volte la
+   costante migliore (0,016) e quindi non nullo, ma debole. La frase onesta è: *`va1`
+   impara a dire «assente» e punta poco; i TSLM SFT pubblicati (0,003-0,008) non fanno
+   né l'una né l'altra cosa*.
+2. *«That points at the representation, not the training or the paradigm, as the
+   bottleneck»* (29/08). Col senno di poi è troppo forte: la rappresentazione ha
+   spostato l'IoU sulle presenti da ~0 a 0,094, ma la parte grande (0,094 → 0,248) è
+   arrivata con lo zoom, cioè con un secondo passaggio. Rappresentazione **e**
+   paradigma, non l'una contro l'altro.
+3. *«measure_magnitude now surpassing the multi-turn TimeRLM agent (0.554) in a single
+   feedforward pass»* (04/09). Regge: nessuna componente di assenza, costante migliore
+   0,145, `va1` 0,578.
+
+Nella tabella del 04/09 compariva anche `all_channels` 0,261 senza alcuna frase: è il
+null più 0,031. L'aggregato 0,2744 di `va1` contiene 0,0675 di rilevazione
+dell'assenza (0,165 × 200/800 + 0,210 × 100/800), cioè il **25 %**; il resto è
+magnitudo (0,145 dell'aggregato) e puntamento.
+
+### Cosa cambia per la prossima mail
+
+Sostituire ogni aggregato di localize e multicanale con la componente che una
+scorciatoia non può falsificare, e dichiarare i null dello split: *on rows that
+contain an anomaly, mean IoU 0.094 → 0.206 (`vw2`) / 0.248 (`vw3`), fraction at
+IoU ≥ 0.5 8 % → 22-27 %; on multichannel, F1 on rows with anomalies 0.067 → 0.160 /
+0.253, with the always-empty baseline at 0.230 on this split*. Una riga di
+correzione alla nota del 29/08 sul metrica composito di localize costa poco e
+mostra il metodo.
