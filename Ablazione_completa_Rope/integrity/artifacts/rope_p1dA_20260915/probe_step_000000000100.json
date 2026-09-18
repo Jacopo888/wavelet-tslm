@@ -1,0 +1,578 @@
+{
+  "checkpoint": "/workspace/runs/p1-dA/checkpoints/step_000000000100",
+  "optimizer_step": 100,
+  "rows": 24,
+  "seed": 5,
+  "min_advantage": 0.1,
+  "ce_mean": {
+    "TRUE": 1.977850263317426,
+    "SUBSTITUTED": 1.9788643171389897,
+    "ZEROED": 2.0311215768257775
+  },
+  "bootstrap": {
+    "both": {
+      "mean": -0.015425940354665121,
+      "ci95_lower": -0.04131679187218348,
+      "ci95_upper": 0.010316582644979148,
+      "n": 24,
+      "resamples": 10000
+    },
+    "vs_substituted": {
+      "mean": 0.0010140538215637207,
+      "ci95_lower": -0.01987377628684044,
+      "ci95_upper": 0.021348324914773276,
+      "n": 24,
+      "resamples": 10000
+    },
+    "vs_zeroed": {
+      "mean": 0.053271313508351646,
+      "ci95_lower": 0.009809044748544694,
+      "ci95_upper": 0.09818884121874968,
+      "n": 24,
+      "resamples": 10000
+    }
+  },
+  "generated_accuracy_mean": {
+    "TRUE": 0.0,
+    "SUBSTITUTED": 0.0,
+    "ZEROED": 0.0
+  },
+  "criteria": {
+    "advantage_ge_min": false,
+    "ci95_lower_gt_zero_vs_substituted": false,
+    "ci95_lower_gt_zero_vs_zeroed": true,
+    "generated_accuracy_true_above_controls": false
+  },
+  "verdict": "FAIL",
+  "seconds": 1664.5,
+  "records": [
+    {
+      "recording_id": "aed2f57307ecff8d",
+      "category": "localize",
+      "row": 18,
+      "donor_row": 45,
+      "teacher_reading": "top ch_00:51,22,57; peak ch_00:54.",
+      "ce": {
+        "TRUE": 2.246030569076538,
+        "SUBSTITUTED": 2.224921464920044,
+        "ZEROED": 2.168140411376953
+      },
+      "generated": {
+        "TRUE": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, channels: ch_00) and a \"Global view\" of 256 signal tokens ordered by time.\n    *   The \"G",
+        "SUBSTITUTED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, channels: ch_00), statistics (median, scale, min, max, valid count), and a \"Global view\" ",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "a817b347cae6a26f",
+      "category": "localize",
+      "row": 21,
+      "donor_row": 35,
+      "teacher_reading": "top ch_00:23,3,43; peak ch_00:60.",
+      "ce": {
+        "TRUE": 2.422027349472046,
+        "SUBSTITUTED": 2.376380205154419,
+        "ZEROED": 2.4142191410064697
+      },
+      "generated": {
+        "TRUE": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I'm being given a very limited view of the data - only 256 signal tokens are shown in the \"Global",
+        "SUBSTITUTED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, channels: ch_00) and a global view of 256 signal tokens ordered by time.\n    *   Task: De",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains what appears to be corrupted or placeholder text"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "3afd5d84f49ffae2",
+      "category": "measure_magnitude",
+      "row": 59,
+      "donor_row": 85,
+      "teacher_reading": "top ch_00:47,26,38; peak ch_00:47.",
+      "ce": {
+        "TRUE": 1.8955169916152954,
+        "SUBSTITUTED": 1.9487028121948242,
+        "ZEROED": 1.975144863128662
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data:**\n- Recording: L=16384 sample",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data:**\n- Recording: L=16384 sample",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, looking at the provided data, I notice something "
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "b85ce070d0de7386",
+      "category": "localize",
+      "row": 98,
+      "donor_row": 189,
+      "teacher_reading": "top ch_00:40,51,57; peak ch_00:36.",
+      "ce": {
+        "TRUE": 1.9500316381454468,
+        "SUBSTITUTED": 1.9845000505447388,
+        "ZEROED": 2.1348936557769775
+      },
+      "generated": {
+        "TRUE": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00), statistics (median, scale, min, max, valid count), and a \"Global view\" ",
+        "SUBSTITUTED": "The user wants me to analyze a time series signal based on the provided recording information and global view.\n\n**Input Data:**\n- **Recording:** L=32768 samples, dt=1.\n- **Channel:** ch_00.\n- **Statis",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains garbled/corrupted text that appears to be placeh"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "fb0c68f28c1f6efb",
+      "category": "localize",
+      "row": 105,
+      "donor_row": 122,
+      "teacher_reading": "top ch_00:28,23,26; peak ch_00:35.",
+      "ce": {
+        "TRUE": 2.080064296722412,
+        "SUBSTITUTED": 2.07204270362854,
+        "ZEROED": 2.12446928024292
+      },
+      "generated": {
+        "TRUE": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00) and a \"Global view\" of 256 signal tokens ordered by time.\n    *   Task: ",
+        "SUBSTITUTED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00), statistics (median, scale, min, max, valid count), and a \"Reading grid\"",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains what appears to be corrupted or placeholder text"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "d718661868688a9d",
+      "category": "localize",
+      "row": 108,
+      "donor_row": 170,
+      "teacher_reading": "top ch_00:59,14,25; peak ch_00:59.",
+      "ce": {
+        "TRUE": 1.7621502876281738,
+        "SUBSTITUTED": 1.812598705291748,
+        "ZEROED": 1.9478212594985962
+      },
+      "generated": {
+        "TRUE": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00) and a \"Global view\" of 256 signal tokens ordered by time.\n    *   The \"G",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and determine if there is an anomaly.\nI need to output a single JSON object with keys \"present\", \"start\", and \"end\".\nIf \"present\" is false, \"start\"",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains garbled/corrupted text that appears to be placeh"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "1ea243997c92633d",
+      "category": "localize",
+      "row": 130,
+      "donor_row": 155,
+      "teacher_reading": "top ch_00:0,40,25; peak ch_00:0.",
+      "ce": {
+        "TRUE": 1.6440823078155518,
+        "SUBSTITUTED": 1.6847862005233765,
+        "ZEROED": 1.9387378692626953
+      },
+      "generated": {
+        "TRUE": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00), statistics (median, scale, min, max, valid count), and a \"Global view\" ",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and determine if there is an anomaly.\nI need to output a single JSON object with keys \"present\", \"start\", and \"end\".\nIf \"present\" is false, \"start\"",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains what appears to be corrupted or placeholder text"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "26e44ce9d36f67b2",
+      "category": "classify_with_evidence",
+      "row": 145,
+      "donor_row": 148,
+      "teacher_reading": "top ch_00:52,3,9; peak ch_00:52.",
+      "ce": {
+        "TRUE": 1.9227879047393799,
+        "SUBSTITUTED": 1.8501596450805664,
+        "ZEROED": 1.9329843521118164
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and identify an anomaly.\nThe recording has 32768 samples, dt=1.\nChannel ch_00 statistics: median 0.007, scale 1.05, min -6.742, max 3.685.\nThe data",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and identify an anomaly.\nThe recording has 32768 samples, dt=1.\nChannel ch_00 statistics: median 0.007, scale 1.05, min -6.742, max 3.685.\nThe \"Glo",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "5b38216f6f80e04f",
+      "category": "measure_magnitude",
+      "row": 168,
+      "donor_row": 129,
+      "teacher_reading": "top ch_00:13,30,57; peak ch_00:13.",
+      "ce": {
+        "TRUE": 1.8689274787902832,
+        "SUBSTITUTED": 1.8895283937454224,
+        "ZEROED": 1.9133716821670532
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, looking at the provided information:\n\n1. The reco"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "f39cc108d856978b",
+      "category": "measure_magnitude",
+      "row": 197,
+      "donor_row": 115,
+      "teacher_reading": "top ch_00:38,63,62; peak ch_00:38.",
+      "ce": {
+        "TRUE": 2.106844186782837,
+        "SUBSTITUTED": 2.0128135681152344,
+        "ZEROED": 2.041543960571289
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "SUBSTITUTED": "The user is asking me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation.\n\nHowever, I need to look at what information",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, I notice that the \"Global view\" section contains "
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "edb0d7552460169f",
+      "category": "classify_with_evidence",
+      "row": 248,
+      "donor_row": 211,
+      "teacher_reading": "top ch_00:56,14,37; peak ch_00:60.",
+      "ce": {
+        "TRUE": 2.1127851009368896,
+        "SUBSTITUTED": 2.0233285427093506,
+        "ZEROED": 2.27417254447937
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series signal based on the provided global view and metadata.\nI need to identify an anomaly type (\"Level Shift\", \"Transient Spike\", \"Change in Variance\", \"Change in",
+        "SUBSTITUTED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=65536 samples, dt=1, ch_00) and a \"Global view\" of 256 signal tokens ordered by time.\n    *   Task: Identify t",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=65536 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "7ccb3b77e68f8c0b",
+      "category": "classify_with_evidence",
+      "row": 251,
+      "donor_row": 269,
+      "teacher_reading": "top ch_00:27,46,44; peak ch_00:27.",
+      "ce": {
+        "TRUE": 1.9673532247543335,
+        "SUBSTITUTED": 2.0029847621917725,
+        "ZEROED": 2.0515363216400146
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and identify an anomaly.\nThe recording has 65536 samples.\nThe channel is `ch_00`.\nThe global view shows 256 signal tokens ordered by time.\nThe toke",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and identify an anomaly.\nThe recording has 65536 samples.\nThe channel is `ch_00`.\nThe statistics are: median -0.122, scale 0.9103, min -6.892, max ",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=65536 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "fb6830c0ad3f84e7",
+      "category": "measure_magnitude",
+      "row": 270,
+      "donor_row": 220,
+      "teacher_reading": "top ch_00:46,12,9; peak ch_00:46.",
+      "ce": {
+        "TRUE": 2.0210580825805664,
+        "SUBSTITUTED": 2.1229710578918457,
+        "ZEROED": 2.2034995555877686
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, looking at the provided information, I notice som"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "3ff1ee3733bcd74e",
+      "category": "measure_magnitude",
+      "row": 282,
+      "donor_row": 203,
+      "teacher_reading": "top ch_00:7,45,4; peak ch_00:5.",
+      "ce": {
+        "TRUE": 2.1441938877105713,
+        "SUBSTITUTED": 2.230039358139038,
+        "ZEROED": 2.3623881340026855
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, I'm looking at the provided information and I not"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "fe659a78e14e3321",
+      "category": "classify_with_evidence",
+      "row": 317,
+      "donor_row": 358,
+      "teacher_reading": "top ch_00:41,33,58; peak ch_00:63.",
+      "ce": {
+        "TRUE": 2.2738149166107178,
+        "SUBSTITUTED": 2.2854321002960205,
+        "ZEROED": 2.4098522663116455
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and identify an anomaly.\nHowever, the provided \"Global view\" of the signal tokens is completely garbled and unreadable. It consists of the string \"",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and identify an anomaly.\nThe recording has 131,072 samples.\nThe channel is `ch_00`.\nThe statistics are: median -0.929, scale 3.01, min -5.507, max ",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=131072 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inp"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "81737db406ae3a63",
+      "category": "classify_with_evidence",
+      "row": 328,
+      "donor_row": 331,
+      "teacher_reading": "top ch_00:46,25,29; peak ch_00:46.",
+      "ce": {
+        "TRUE": 1.8021821975708008,
+        "SUBSTITUTED": 1.8039640188217163,
+        "ZEROED": 1.879470705986023
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series based on a provided recording and global view.\nThe recording has 131,072 samples.\nThe channel is `ch_00`.\nThe global view shows a sequence of tokens represen",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and identify an anomaly.\nI need to output a single JSON object with keys \"kind\", \"start\", and \"end\".\nThe recording has 131072 samples.\nThe channel ",
+        "ZEROED": "The user wants me to analyze a time series recording and identify an anomaly.\nHowever, the provided \"Global view\" text is completely garbled and unreadable. It looks like a corrupted string of charact"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "f54edada5b0bdcc4",
+      "category": "measure_magnitude",
+      "row": 350,
+      "donor_row": 285,
+      "teacher_reading": "top ch_00:62,61,39; peak ch_00:62.",
+      "ce": {
+        "TRUE": 2.121384859085083,
+        "SUBSTITUTED": 2.082231044769287,
+        "ZEROED": 2.1051130294799805
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording and report the peak deviation of an anomaly in units of the channel's baseline standard deviation (\u03c3).\n\n**Input Data Analysis:**\n1.  **Recording:**",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=131072 samples, dt=1, channels: ch_00), channel statistics (median, scale, min, max, valid count), grid readin"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "b946a76522d10c26",
+      "category": "localize_all_channels",
+      "row": 377,
+      "donor_row": 389,
+      "teacher_reading": "top ch_11:3,30,13; peak ch_11:63, ch_01:1.",
+      "ce": {
+        "TRUE": 2.6053829193115234,
+        "SUBSTITUTED": 2.6595308780670166,
+        "ZEROED": 2.501708507537842
+      },
+      "generated": {
+        "TRUE": "The user is asking me to analyze a time series recording with 16 channels and find anomalies. However, looking at the data provided, I notice something very strange:\n\n1. The recording metadata shows 3",
+        "SUBSTITUTED": "The user is asking me to analyze a time series recording with 16 channels and find anomalies. However, looking at the data provided, I notice something very strange:\n\n1. The recording metadata shows 3",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A time series recording with 16 channels (ch_00 to ch_15), 32768 samples, dt=1.\n    *   Task: Find anomalies across all channels.\n    *  "
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "7fb236e8519434a1",
+      "category": "localize_all_channels",
+      "row": 383,
+      "donor_row": 387,
+      "teacher_reading": "top ch_06:55,47,14; peak ch_06:42, ch_04:43.",
+      "ce": {
+        "TRUE": 2.545743942260742,
+        "SUBSTITUTED": 2.5130319595336914,
+        "ZEROED": 2.3728489875793457
+      },
+      "generated": {
+        "TRUE": "The user is asking me to analyze a time series recording with multiple channels and find anomalies. However, looking at the data provided, I need to understand what constitutes an \"anomaly\" in this co",
+        "SUBSTITUTED": "The user wants me to analyze a time series recording with 16 channels and 32768 samples.\nI need to find anomalies across all channels.\nThe input provides statistics for each channel (median, scale, mi",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A time series recording with 32768 samples, 16 channels (ch_00 to ch_15).\n    *   Task: Find anomalies across all channels.\n    *   Outpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "a6b880ee2b465c79",
+      "category": "localize_all_channels",
+      "row": 419,
+      "donor_row": 429,
+      "teacher_reading": "top ch_01:5, ch_10:36, ch_08:48; peak ch_01:5, ch_10:36.",
+      "ce": {
+        "TRUE": 1.7006558179855347,
+        "SUBSTITUTED": 1.701889991760254,
+        "ZEROED": 1.7315969467163086
+      },
+      "generated": {
+        "TRUE": "The user is asking me to analyze a time series recording with 16 channels and find anomalies. However, I need to look at what data is actually provided.\n\nLooking at the input, I see:\n1. Recording meta",
+        "SUBSTITUTED": "The user is asking me to analyze a time series recording with 16 channels and find anomalies. However, I need to look at what data is actually provided.\n\nLooking at the recording information:\n- L=1310",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A time series recording description (metadata) and a list of channels with statistics (median, scale, min, max, valid count, token count)"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "4fddb3fce838266e",
+      "category": "lead_lag_with_magnitude",
+      "row": 473,
+      "donor_row": 452,
+      "teacher_reading": "top B_ch_00:35, A_ch_00:40,10; peak A_ch_00:40, B_ch_00:35.",
+      "ce": {
+        "TRUE": 1.4021979570388794,
+        "SUBSTITUTED": 1.3422470092773438,
+        "ZEROED": 1.354504942893982
+      },
+      "generated": {
+        "TRUE": "The user wants to analyze two time series channels, `A_ch_00` and `B_ch_00`, based on the provided recording metadata and a global view of 512 signal tokens.\n\n**1. Analyze the Metadata:**\n*   **Total ",
+        "SUBSTITUTED": "The user wants to analyze two time series channels, `A_ch_00` and `B_ch_00`, based on the provided recording metadata and a \"Global view\" of 512 signal tokens.\n\nThe task is to determine if Channel A i",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=32768 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max,"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "6cd1359681c0070d",
+      "category": "lead_lag_with_magnitude",
+      "row": 480,
+      "donor_row": 451,
+      "teacher_reading": "top B_ch_00:9, A_ch_00:2,28; peak A_ch_00:2, B_ch_00:9.",
+      "ce": {
+        "TRUE": 1.6683906316757202,
+        "SUBSTITUTED": 1.6989103555679321,
+        "ZEROED": 1.6591368913650513
+      },
+      "generated": {
+        "TRUE": "The user wants to analyze two time series channels, `A_ch_00` and `B_ch_00`, based on the provided recording metadata and a \"Global view\" of 512 signal tokens.\n\nThe recording metadata states:\n- Total ",
+        "SUBSTITUTED": "The user wants me to analyze two time series channels, A_ch_00 and B_ch_00, based on the provided recording information and a global view of 512 signal tokens.\n\n**1. Analyze the Input Data:**\n*   **Re",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=32768 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max,"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "8e4c0174e5ffa3b5",
+      "category": "lead_lag_with_magnitude",
+      "row": 492,
+      "donor_row": 499,
+      "teacher_reading": "top A_ch_00:19, B_ch_00:44,62; peak A_ch_00:19, B_ch_00:44.",
+      "ce": {
+        "TRUE": 1.6410374641418457,
+        "SUBSTITUTED": 1.58293616771698,
+        "ZEROED": 1.6058952808380127
+      },
+      "generated": {
+        "TRUE": "The user wants me to analyze two time series channels, A_ch_00 and B_ch_00, based on the provided recording information and global view.\nI need to determine if Channel A is a leading or lagging indica",
+        "SUBSTITUTED": "The user wants me to analyze two time series channels, A_ch_00 and B_ch_00, based on the provided recording information and a global view of 512 signal tokens.\n\n**1. Analyze the Input Data:**\n*   **Re",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=131072 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "c972be9671ba5441",
+      "category": "lead_lag_with_magnitude",
+      "row": 516,
+      "donor_row": 501,
+      "teacher_reading": "top A_ch_00:0,50, B_ch_00:35; peak A_ch_00:0, B_ch_00:20.",
+      "ce": {
+        "TRUE": 1.5637623071670532,
+        "SUBSTITUTED": 1.5868126153945923,
+        "ZEROED": 1.6438672542572021
+      },
+      "generated": {
+        "TRUE": "The user wants to analyze two time series channels, `A_ch_00` and `B_ch_00`, based on the provided recording metadata and a global view of 512 signal tokens.\n\n**1. Analyze the Metadata:**\n*   **Total ",
+        "SUBSTITUTED": "The user wants to analyze two time series channels, `A_ch_00` and `B_ch_00`, based on the provided recording metadata and a \"Global view\" of 512 signal tokens.\n\n**1. Analyze the Input Data:**\n*   **Re",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=131072 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    }
+  ]
+}

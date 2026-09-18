@@ -1,0 +1,7 @@
+........................................................................ [ 69%]
+................................                                         [100%]
+=============================== warnings summary ===============================
+tests/test_templates.py::test_direct_sequence_supervises_only_the_final_answer
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+104 passed, 1 warning in 10.70s

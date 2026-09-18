@@ -29,7 +29,7 @@ if ! server_up; then
   log "server healthy after ${t}s"
 fi
 for arm in $ARMS; do
-  envs=(RLM_MAX_TOKENS=16384 RLM_MAX_OUTPUT=4096 RLM_MAX_TURNS=12 RLM_SUMMARIZE_AT_TOKENS=22000
+  envs=(RLM_MAX_TOKENS=16384 RLM_MAX_OUTPUT=4096 RLM_MAX_TURNS=15 RLM_SUMMARIZE_AT_TOKENS=22000
         RLM_PYTHON="$TIMERLM/rlm-harness/.venv/bin/python" OMP_NUM_THREADS=1 TIMERLM_NOTE_VARIANT=default)
   [ "$arm" = wavelet ] && envs+=(RLM_SKILLS=wavelet_zoom TIMERLM_NOTE_VARIANT=wavelet)
   out="$OUT/${arm}_${N}.jsonl"; rm -rf "$out" "${out%.jsonl}"

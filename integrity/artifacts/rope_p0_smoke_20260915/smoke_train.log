@@ -1,0 +1,10 @@
+[train 22:45:34] train 4488 rows {'classify_with_evidence': 1142, 'lead_lag_with_magnitude': 551, 'localize': 1120, 'localize_all_channels': 554, 'measure_magnitude': 1121}; val 520 rows
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/723 [00:00<?, ?it/s]Loading weights: 100%|██████████| 723/723 [00:00<00:00, 12324.56it/s]
+[train 22:45:42] trainable: frontend 7.32M, lora 3.15M; wrapped layers [3, 7, 11, 15, 19, 23, 27, 31]
+[train 22:45:42] fresh start
+[train 22:45:42] pass 0: 8 examples, resuming at cursor 0
+  attn = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[train 22:46:32] max optimizer steps reached (smoke); saving and stopping
+[train 22:46:33] checkpoint step_000000000002 saved (step 2, cursor 8)

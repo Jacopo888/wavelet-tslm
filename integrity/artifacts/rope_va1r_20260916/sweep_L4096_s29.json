@@ -1,0 +1,61 @@
+{
+  "config": "configs/va1r_mi300x.toml",
+  "meta_proj_fp32": false,
+  "checkpoint": null,
+  "n": 8,
+  "steps": 400,
+  "length": 4096,
+  "width": 137,
+  "amplitude": 8.0,
+  "lr": 0.0001,
+  "identical_prompt_prefix": true,
+  "history": [
+    {
+      "step": 100,
+      "loss": 0.16691796481609344,
+      "primary_true": 0.125,
+      "primary_substituted": 0.125,
+      "delta": 0.0,
+      "iou_true": 0.125,
+      "solved": 1
+    },
+    {
+      "step": 200,
+      "loss": 0.08569712936878204,
+      "primary_true": 0.125,
+      "primary_substituted": 0.125,
+      "delta": 0.0,
+      "iou_true": 0.125,
+      "solved": 1
+    },
+    {
+      "step": 300,
+      "loss": 0.04856688156723976,
+      "primary_true": 0.375,
+      "primary_substituted": 0.25,
+      "delta": 0.125,
+      "iou_true": 0.375,
+      "solved": 3
+    },
+    {
+      "step": 400,
+      "loss": 0.1532878577709198,
+      "primary_true": 0.875,
+      "primary_substituted": 0.0,
+      "delta": 0.875,
+      "iou_true": 0.875,
+      "solved": 7
+    }
+  ],
+  "best": {
+    "step": 400,
+    "loss": 0.1532878577709198,
+    "primary_true": 0.875,
+    "primary_substituted": 0.0,
+    "delta": 0.875,
+    "iou_true": 0.875,
+    "solved": 7
+  },
+  "verdict": "MEMORISED",
+  "seconds": 259.7
+}

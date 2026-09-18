@@ -1,0 +1,228 @@
+{
+  "checks": [
+    {
+      "check": "direct_forward_backward",
+      "pass": true,
+      "loss": 2.392202854156494,
+      "ce": {
+        "final": 2.3221824169158936
+      },
+      "aux": 0.7002043724060059,
+      "tokens": 553,
+      "signal_tokens": 256,
+      "seconds": 37.86,
+      "grads": {
+        "A_trunk": {
+          "params": 52032,
+          "grad_tensors": 28,
+          "nonzero_grad_elems": 51776
+        },
+        "D_trunk": {
+          "params": 103360,
+          "grad_tensors": 45,
+          "nonzero_grad_elems": 102712
+        },
+        "raw_trunk": {
+          "params": 34816,
+          "grad_tensors": 20,
+          "nonzero_grad_elems": 34560
+        },
+        "local_adapters": {
+          "params": 119168,
+          "grad_tensors": 0,
+          "nonzero_grad_elems": 0
+        },
+        "tokenizer_fusion": {
+          "params": 441024,
+          "grad_tensors": 18,
+          "nonzero_grad_elems": 430272
+        },
+        "aux_head": {
+          "params": 65,
+          "grad_tensors": 2,
+          "nonzero_grad_elems": 65
+        },
+        "mixer": {
+          "params": 5257216,
+          "grad_tensors": 36,
+          "nonzero_grad_elems": 5257216
+        },
+        "projector": {
+          "params": 7870464,
+          "grad_tensors": 6,
+          "nonzero_grad_elems": 7870464
+        },
+        "lora": {
+          "params": 3145728,
+          "grad_tensors": 64,
+          "nonzero_grad_elems": 1638400
+        }
+      },
+      "actions": [],
+      "peak_gib": 12.68
+    },
+    {
+      "check": "fixed_crop_forward_backward",
+      "pass": true,
+      "loss": 2.3039534091949463,
+      "ce": {
+        "final": 2.2393224239349365
+      },
+      "aux": 0.6463099718093872,
+      "tokens": 1680,
+      "signal_tokens": 971,
+      "seconds": 0.57,
+      "grads": {
+        "A_trunk": {
+          "params": 52032,
+          "grad_tensors": 28,
+          "nonzero_grad_elems": 52008
+        },
+        "D_trunk": {
+          "params": 103360,
+          "grad_tensors": 45,
+          "nonzero_grad_elems": 103076
+        },
+        "raw_trunk": {
+          "params": 34816,
+          "grad_tensors": 20,
+          "nonzero_grad_elems": 34795
+        },
+        "local_adapters": {
+          "params": 119168,
+          "grad_tensors": 52,
+          "nonzero_grad_elems": 119133
+        },
+        "tokenizer_fusion": {
+          "params": 441024,
+          "grad_tensors": 18,
+          "nonzero_grad_elems": 431567
+        },
+        "aux_head": {
+          "params": 65,
+          "grad_tensors": 2,
+          "nonzero_grad_elems": 65
+        },
+        "mixer": {
+          "params": 5257216,
+          "grad_tensors": 36,
+          "nonzero_grad_elems": 5254422
+        },
+        "projector": {
+          "params": 7870464,
+          "grad_tensors": 6,
+          "nonzero_grad_elems": 7865873
+        },
+        "lora": {
+          "params": 3145728,
+          "grad_tensors": 64,
+          "nonzero_grad_elems": 1638400
+        }
+      },
+      "actions": [
+        "{\"tool\":\"zoom\",\"channels\":[\"A_ch_00\"],\"start\":26562,\"end\":31390}"
+      ],
+      "peak_gib": 12.68
+    },
+    {
+      "check": "optimizer_step_updates_every_group",
+      "pass": true,
+      "max_abs_change": {
+        "A_trunk": 0.00010102987289428711,
+        "D_trunk": 0.00010275840759277344,
+        "raw_trunk": 0.00010102987289428711,
+        "local_adapters": 0.00010102987289428711,
+        "tokenizer_fusion": 0.00010192394256591797,
+        "aux_head": 0.0001001209020614624,
+        "mixer": 0.00010102987289428711,
+        "projector": 0.00010102987289428711,
+        "lora": 1.99999976757681e-05
+      }
+    },
+    {
+      "check": "ce_only_gradients_reach_perceptual_stack",
+      "pass": true,
+      "aux_weight_used": 0.0,
+      "loss": 2.3837716579437256,
+      "grads": {
+        "A_trunk": {
+          "params": 52032,
+          "grad_tensors": 28,
+          "nonzero_grad_elems": 51776
+        },
+        "D_trunk": {
+          "params": 103360,
+          "grad_tensors": 45,
+          "nonzero_grad_elems": 102709
+        },
+        "raw_trunk": {
+          "params": 34816,
+          "grad_tensors": 20,
+          "nonzero_grad_elems": 34560
+        },
+        "local_adapters": {
+          "params": 119168,
+          "grad_tensors": 0,
+          "nonzero_grad_elems": 0
+        },
+        "tokenizer_fusion": {
+          "params": 441024,
+          "grad_tensors": 18,
+          "nonzero_grad_elems": 429760
+        },
+        "aux_head": {
+          "params": 65,
+          "grad_tensors": 2,
+          "nonzero_grad_elems": 0
+        },
+        "mixer": {
+          "params": 5257216,
+          "grad_tensors": 36,
+          "nonzero_grad_elems": 5257216
+        },
+        "projector": {
+          "params": 7870464,
+          "grad_tensors": 6,
+          "nonzero_grad_elems": 7870464
+        },
+        "lora": {
+          "params": 3145728,
+          "grad_tensors": 64,
+          "nonzero_grad_elems": 3145728
+        }
+      }
+    },
+    {
+      "check": "soft_token_rms_matches_text_embeddings",
+      "pass": true,
+      "soft_rms": 0.01329591404646635,
+      "target_rms": 0.013028954155743122,
+      "out_scale": 0.06570977717638016
+    },
+    {
+      "check": "save_reload_restores_parameters_exactly",
+      "pass": true,
+      "perturbed_max_abs": 0.005310573615133762,
+      "restored_max_abs": 0.0
+    },
+    {
+      "check": "save_reload_same_loss",
+      "pass": true,
+      "loss_before": 2.0115771293640137,
+      "loss_before_repeat": 2.014925956726074,
+      "loss_after": 2.0115771293640137,
+      "run_to_run_abs": 0.003348827362060547,
+      "tolerance": 0.013395309448242188
+    },
+    {
+      "check": "generation_runs_and_terminates",
+      "pass": true,
+      "text": "{\"kind\": \"Level Shift\", \"start\": 16383, \"end\": 16384}",
+      "parsed": true,
+      "seconds": 3.51,
+      "prompt_tokens": 654,
+      "new_tokens": 28
+    }
+  ],
+  "verdict": "PASS"
+}

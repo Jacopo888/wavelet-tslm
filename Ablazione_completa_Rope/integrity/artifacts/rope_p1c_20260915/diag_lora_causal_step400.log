@@ -1,0 +1,4 @@
+lora_on: n=24 CE bins true 0.3037 zero 0.3029 (advantage of true -0.0008, rows better 11/24) | CE final true 0.3109 zero 0.3123 | mean |dlogit| at bin positions 0.2599
+   signal contribution at bin positions (|d o_proj input| / |o_proj input|) per wrapped layer: {3: 0.1744, 7: 0.2556, 11: 0.2144, 15: 0.2132, 19: 0.1735, 23: 0.1608, 27: 0.1443, 31: 0.13}
+lora_off: n=24 CE bins true 0.3037 zero 0.3029 (advantage of true -0.0009, rows better 12/24) | CE final true 0.3109 zero 0.3123 | mean |dlogit| at bin positions 0.2595
+   signal contribution at bin positions (|d o_proj input| / |o_proj input|) per wrapped layer: {3: 0.1744, 7: 0.2555, 11: 0.214, 15: 0.2129, 19: 0.1735, 23: 0.1608, 27: 0.1441, 31: 0.1299}

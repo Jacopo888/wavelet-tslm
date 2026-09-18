@@ -1,0 +1,224 @@
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+Current Triton version 3.2.0 is below the recommended 3.3.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/723 [00:00<?, ?it/s]Loading weights: 100%|██████████| 723/723 [00:00<00:00, 12356.04it/s]
+thinking=False (spec reading_segment=False)
+panel: 208 rows drawn from 208 candidates (categories=all, positives_only=False, ids_file=gate208_ids.txt)
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+/workspace/code/src/wavelet_rope/perceptual_rope.py:89: UserWarning: Using AOTriton backend for Flash Attention forward... (Triggered internally at /var/lib/jenkins/pytorch/aten/src/ATen/native/transformers/hip/flash_attn/flash_api.h:267.)
+  attn = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
+V0916 13:39:47.743000 35204 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles] Recompiling function flex_attention in /opt/conda/envs/py_3.12/lib/python3.12/site-packages/torch/nn/attention/flex_attention.py:1157
+V0916 13:39:47.743000 35204 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles]     triggered by the following guard failure(s):
+V0916 13:39:47.743000 35204 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles]     - 0/0: tensor 'L['block_mask'].q_indices' stride mismatch at index 3. expected 1, actual 6
+[ 1/208] localize                 real ce 1.107/p 0.00 empt ce 1.118/p 0.00 subs ce 1.119/p 0.00
+[ 2/208] localize                 real ce 1.179/p 0.00 empt ce 1.185/p 0.00 subs ce 1.186/p 0.00
+[ 3/208] localize                 real ce 1.200/p 0.00 empt ce 1.173/p 0.00 subs ce 1.185/p 0.00
+[ 4/208] localize                 real ce 1.140/p 0.00 empt ce 1.123/p 0.00 subs ce 1.136/p 0.00
+[ 5/208] localize                 real ce 0.980/p 0.00 empt ce 0.982/p 0.00 subs ce 0.994/p 0.00
+[ 6/208] localize                 real ce 1.197/p 0.00 empt ce 1.189/p 0.00 subs ce 1.194/p 0.00
+[ 7/208] localize                 real ce 1.093/p 0.00 empt ce 1.093/p 0.00 subs ce 1.108/p 0.00
+[ 8/208] localize                 real ce 1.059/p 0.00 empt ce 1.067/p 0.00 subs ce 1.051/p 0.00
+[ 9/208] localize                 real ce 1.299/p 0.00 empt ce 1.303/p 0.00 subs ce 1.284/p 0.00
+[10/208] localize                 real ce 0.994/p 0.00 empt ce 0.995/p 0.00 subs ce 0.988/p 0.00
+[11/208] localize                 real ce 1.202/p 0.00 empt ce 1.201/p 0.00 subs ce 1.212/p 0.00
+[12/208] localize                 real ce 1.011/p 0.00 empt ce 1.007/p 0.00 subs ce 1.036/p 0.00
+[13/208] localize                 real ce 1.150/p 0.00 empt ce 1.162/p 0.00 subs ce 1.155/p 0.00
+[14/208] localize                 real ce 1.018/p 0.00 empt ce 1.010/p 0.00 subs ce 1.021/p 0.00
+[15/208] localize                 real ce 1.147/p 0.00 empt ce 1.155/p 0.00 subs ce 1.160/p 0.00
+[16/208] classify_with_evidence   real ce 0.991/p 0.00 empt ce 0.994/p 0.00 subs ce 1.001/p 0.29
+[17/208] classify_with_evidence   real ce 1.187/p 0.00 empt ce 1.177/p 0.00 subs ce 1.165/p 0.00
+[18/208] classify_with_evidence   real ce 1.039/p 0.00 empt ce 1.054/p 0.00 subs ce 1.043/p 0.00
+[19/208] classify_with_evidence   real ce 1.087/p 0.40 empt ce 1.097/p 0.21 subs ce 1.099/p 0.39
+[20/208] classify_with_evidence   real ce 1.185/p 0.00 empt ce 1.171/p 0.00 subs ce 1.169/p 0.00
+[21/208] classify_with_evidence   real ce 1.129/p 0.00 empt ce 1.113/p 0.00 subs ce 1.121/p 0.00
+[22/208] classify_with_evidence   real ce 1.079/p 0.00 empt ce 1.093/p 0.00 subs ce 1.087/p 0.00
+[23/208] classify_with_evidence   real ce 1.155/p 0.00 empt ce 1.162/p 0.00 subs ce 1.190/p 0.00
+[24/208] classify_with_evidence   real ce 0.992/p 0.00 empt ce 0.999/p 0.00 subs ce 1.011/p 0.00
+[25/208] classify_with_evidence   real ce 1.136/p 0.00 empt ce 1.141/p 0.00 subs ce 1.143/p 0.00
+[26/208] classify_with_evidence   real ce 1.007/p 0.00 empt ce 1.002/p 0.00 subs ce 1.002/p 0.00
+[27/208] classify_with_evidence   real ce 1.117/p 0.00 empt ce 1.121/p 0.00 subs ce 1.110/p 0.00
+[28/208] classify_with_evidence   real ce 1.177/p 0.00 empt ce 1.184/p 0.00 subs ce 1.191/p 0.00
+[29/208] classify_with_evidence   real ce 1.153/p 0.00 empt ce 1.152/p 0.00 subs ce 1.149/p 0.00
+[30/208] classify_with_evidence   real ce 0.982/p 0.00 empt ce 0.971/p 0.00 subs ce 0.985/p 0.00
+[31/208] classify_with_evidence   real ce 1.136/p 0.00 empt ce 1.167/p 0.00 subs ce 1.131/p 0.00
+[32/208] classify_with_evidence   real ce 1.218/p 0.00 empt ce 1.217/p 0.00 subs ce 1.207/p 0.00
+[33/208] localize                 real ce 1.031/p 0.00 empt ce 1.017/p 0.00 subs ce 1.021/p 0.00
+[34/208] localize                 real ce 1.078/p 0.00 empt ce 1.080/p 0.00 subs ce 1.085/p 0.00
+[35/208] localize                 real ce 1.004/p 0.00 empt ce 1.002/p 0.00 subs ce 0.999/p 0.00
+[36/208] localize                 real ce 1.179/p 0.00 empt ce 1.146/p 0.00 subs ce 1.169/p 0.00
+[37/208] localize                 real ce 1.139/p 0.00 empt ce 1.148/p 0.00 subs ce 1.142/p 0.00
+[38/208] localize                 real ce 1.263/p 0.00 empt ce 1.266/p 0.00 subs ce 1.262/p 0.00
+[39/208] localize                 real ce 1.078/p 0.00 empt ce 1.082/p 0.00 subs ce 1.088/p 0.00
+[40/208] localize                 real ce 1.053/p 0.00 empt ce 1.055/p 0.00 subs ce 1.042/p 0.00
+[41/208] localize                 real ce 1.060/p 0.00 empt ce 1.059/p 0.00 subs ce 1.046/p 0.00
+[42/208] localize                 real ce 1.031/p 0.00 empt ce 1.034/p 0.00 subs ce 1.036/p 0.00
+[43/208] localize                 real ce 1.053/p 0.00 empt ce 1.045/p 0.00 subs ce 1.039/p 0.00
+[44/208] localize                 real ce 1.145/p 0.00 empt ce 1.152/p 0.00 subs ce 1.140/p 0.00
+[45/208] localize                 real ce 1.226/p 0.00 empt ce 1.213/p 0.00 subs ce 1.225/p 0.00
+[46/208] localize                 real ce 1.093/p 0.00 empt ce 1.088/p 0.00 subs ce 1.073/p 0.00
+[47/208] localize                 real ce 1.091/p 0.00 empt ce 1.080/p 0.00 subs ce 1.079/p 0.00
+[48/208] localize                 real ce 1.123/p 0.00 empt ce 1.128/p 0.00 subs ce 1.124/p 0.00
+[49/208] localize                 real ce 1.050/p 0.00 empt ce 1.051/p 0.00 subs ce 1.044/p 0.00
+[50/208] localize                 real ce 1.240/p 0.00 empt ce 1.228/p 0.00 subs ce 1.233/p 0.00
+[51/208] localize                 real ce 1.028/p 0.00 empt ce 1.042/p 0.00 subs ce 1.031/p 0.00
+[52/208] localize                 real ce 1.048/p 0.00 empt ce 1.060/p 0.00 subs ce 1.057/p 0.00
+[53/208] localize                 real ce 1.056/p 0.00 empt ce 1.057/p 0.00 subs ce 1.067/p 0.00
+[54/208] localize                 real ce 1.066/p 0.00 empt ce 1.056/p 0.00 subs ce 1.054/p 0.00
+[55/208] localize                 real ce 1.302/p 0.00 empt ce 1.296/p 0.00 subs ce 1.306/p 0.00
+[56/208] localize                 real ce 1.199/p 0.00 empt ce 1.194/p 0.00 subs ce 1.190/p 0.00
+[57/208] localize                 real ce 1.036/p 0.00 empt ce 1.041/p 0.00 subs ce 1.037/p 0.00
+[58/208] classify_with_evidence   real ce 1.055/p 0.00 empt ce 1.050/p 0.00 subs ce 1.055/p 0.00
+[59/208] classify_with_evidence   real ce 1.178/p 0.00 empt ce 1.167/p 0.00 subs ce 1.167/p 0.00
+[60/208] classify_with_evidence   real ce 1.314/p 0.00 empt ce 1.330/p 0.00 subs ce 1.328/p 0.00
+[61/208] classify_with_evidence   real ce 1.240/p 0.00 empt ce 1.236/p 0.00 subs ce 1.229/p 0.00
+[62/208] classify_with_evidence   real ce 1.244/p 0.00 empt ce 1.227/p 0.00 subs ce 1.228/p 0.00
+[63/208] classify_with_evidence   real ce 1.243/p 0.00 empt ce 1.254/p 0.00 subs ce 1.256/p 0.00
+[64/208] classify_with_evidence   real ce 1.038/p 0.00 empt ce 1.032/p 0.00 subs ce 1.046/p 0.00
+[65/208] classify_with_evidence   real ce 1.057/p 0.00 empt ce 1.052/p 0.00 subs ce 1.059/p 0.00
+[66/208] classify_with_evidence   real ce 1.073/p 0.00 empt ce 1.060/p 0.00 subs ce 1.070/p 0.00
+[67/208] classify_with_evidence   real ce 1.165/p 0.00 empt ce 1.162/p 0.00 subs ce 1.170/p 0.00
+[68/208] classify_with_evidence   real ce 1.045/p 0.00 empt ce 1.054/p 0.00 subs ce 1.035/p 0.00
+[69/208] classify_with_evidence   real ce 1.058/p 0.00 empt ce 1.042/p 0.00 subs ce 1.046/p 0.00
+[70/208] classify_with_evidence   real ce 1.044/p 0.00 empt ce 1.044/p 0.00 subs ce 1.042/p 0.00
+[71/208] classify_with_evidence   real ce 1.218/p 0.00 empt ce 1.225/p 0.00 subs ce 1.225/p 0.00
+[72/208] classify_with_evidence   real ce 1.210/p 0.00 empt ce 1.198/p 0.00 subs ce 1.204/p 0.00
+[73/208] classify_with_evidence   real ce 1.046/p 0.00 empt ce 1.041/p 0.00 subs ce 1.030/p 0.00
+[74/208] classify_with_evidence   real ce 1.030/p 0.00 empt ce 1.028/p 0.00 subs ce 1.034/p 0.00
+[75/208] classify_with_evidence   real ce 1.049/p 0.00 empt ce 1.046/p 0.00 subs ce 1.048/p 0.00
+[76/208] classify_with_evidence   real ce 1.049/p 0.00 empt ce 1.037/p 0.00 subs ce 1.045/p 0.00
+[77/208] classify_with_evidence   real ce 1.138/p 0.00 empt ce 1.146/p 0.00 subs ce 1.133/p 0.00
+[78/208] classify_with_evidence   real ce 1.079/p 0.00 empt ce 1.083/p 0.00 subs ce 1.080/p 0.00
+[79/208] classify_with_evidence   real ce 1.023/p 0.00 empt ce 1.031/p 0.00 subs ce 1.030/p 0.00
+[80/208] classify_with_evidence   real ce 1.223/p 0.00 empt ce 1.226/p 0.00 subs ce 1.236/p 0.00
+[81/208] localize                 real ce 1.070/p 0.00 empt ce 1.068/p 0.00 subs ce 1.065/p 0.00
+[82/208] localize                 real ce 1.117/p 0.00 empt ce 1.110/p 0.00 subs ce 1.108/p 0.00
+[83/208] localize                 real ce 1.127/p 0.00 empt ce 1.124/p 0.00 subs ce 1.143/p 0.00
+[84/208] localize                 real ce 1.135/p 0.00 empt ce 1.126/p 0.00 subs ce 1.127/p 0.00
+[85/208] localize                 real ce 1.076/p 0.00 empt ce 1.079/p 0.00 subs ce 1.076/p 0.00
+[86/208] localize                 real ce 1.136/p 0.00 empt ce 1.130/p 0.00 subs ce 1.134/p 0.00
+[87/208] localize                 real ce 1.121/p 0.00 empt ce 1.142/p 0.00 subs ce 1.132/p 0.00
+[88/208] localize                 real ce 1.105/p 0.00 empt ce 1.092/p 0.00 subs ce 1.110/p 0.00
+[89/208] localize                 real ce 1.119/p 0.00 empt ce 1.108/p 0.00 subs ce 1.118/p 0.00
+[90/208] localize                 real ce 1.131/p 0.00 empt ce 1.138/p 0.00 subs ce 1.141/p 0.00
+[91/208] localize                 real ce 1.114/p 0.00 empt ce 1.110/p 0.00 subs ce 1.111/p 0.00
+[92/208] localize                 real ce 1.170/p 0.00 empt ce 1.179/p 0.00 subs ce 1.185/p 0.00
+[93/208] localize                 real ce 1.131/p 0.00 empt ce 1.132/p 0.00 subs ce 1.138/p 0.00
+[94/208] localize                 real ce 1.071/p 0.00 empt ce 1.078/p 0.78 subs ce 1.075/p 0.00
+[95/208] localize                 real ce 1.062/p 0.00 empt ce 1.069/p 0.00 subs ce 1.062/p 0.00
+[96/208] localize                 real ce 1.102/p 0.00 empt ce 1.108/p 0.00 subs ce 1.104/p 0.00
+[97/208] localize                 real ce 1.107/p 0.00 empt ce 1.100/p 0.00 subs ce 1.101/p 0.00
+[98/208] localize                 real ce 1.025/p 0.00 empt ce 1.047/p 0.00 subs ce 1.033/p 0.00
+[99/208] localize                 real ce 1.069/p 0.00 empt ce 1.070/p 0.00 subs ce 1.073/p 0.00
+[100/208] localize                 real ce 1.076/p 0.00 empt ce 1.077/p 0.00 subs ce 1.078/p 0.00
+[101/208] localize                 real ce 1.082/p 0.00 empt ce 1.071/p 0.00 subs ce 1.061/p 0.00
+[102/208] classify_with_evidence   real ce 1.236/p 0.00 empt ce 1.244/p 0.00 subs ce 1.250/p 0.00
+[103/208] classify_with_evidence   real ce 1.347/p 0.00 empt ce 1.344/p 0.00 subs ce 1.337/p 0.00
+[104/208] classify_with_evidence   real ce 1.085/p 0.00 empt ce 1.080/p 0.00 subs ce 1.080/p 0.00
+[105/208] classify_with_evidence   real ce 1.111/p 0.00 empt ce 1.113/p 0.00 subs ce 1.118/p 0.00
+[106/208] classify_with_evidence   real ce 1.127/p 0.00 empt ce 1.121/p 0.00 subs ce 1.124/p 0.00
+[107/208] classify_with_evidence   real ce 1.136/p 0.00 empt ce 1.140/p 0.00 subs ce 1.137/p 0.00
+[108/208] classify_with_evidence   real ce 1.103/p 0.00 empt ce 1.106/p 0.00 subs ce 1.096/p 0.00
+[109/208] classify_with_evidence   real ce 1.185/p 0.00 empt ce 1.171/p 0.00 subs ce 1.178/p 0.00
+[110/208] classify_with_evidence   real ce 1.083/p 0.00 empt ce 1.090/p 0.00 subs ce 1.087/p 0.00
+[111/208] classify_with_evidence   real ce 1.099/p 0.00 empt ce 1.096/p 0.00 subs ce 1.093/p 0.00
+[112/208] classify_with_evidence   real ce 1.096/p 0.00 empt ce 1.087/p 0.00 subs ce 1.101/p 0.00
+[113/208] classify_with_evidence   real ce 1.065/p 0.00 empt ce 1.075/p 0.00 subs ce 1.072/p 0.00
+[114/208] classify_with_evidence   real ce 1.161/p 0.00 empt ce 1.169/p 0.00 subs ce 1.177/p 0.00
+[115/208] classify_with_evidence   real ce 1.036/p 0.00 empt ce 1.058/p 0.00 subs ce 1.044/p 0.00
+[116/208] classify_with_evidence   real ce 1.031/p 0.00 empt ce 1.037/p 0.00 subs ce 1.033/p 0.00
+[117/208] classify_with_evidence   real ce 1.199/p 0.00 empt ce 1.180/p 0.00 subs ce 1.201/p 0.00
+[118/208] localize                 real ce 1.030/p 0.00 empt ce 1.045/p 0.00 subs ce 1.034/p 0.00
+[119/208] localize                 real ce 1.078/p 0.00 empt ce 1.073/p 0.00 subs ce 1.067/p 0.00
+[120/208] localize                 real ce 0.970/p 0.00 empt ce 0.969/p 0.00 subs ce 0.969/p 0.00
+[121/208] localize                 real ce 1.109/p 0.00 empt ce 1.094/p 0.00 subs ce 1.111/p 0.00
+[122/208] localize                 real ce 1.058/p 0.00 empt ce 1.071/p 0.00 subs ce 1.075/p 0.00
+[123/208] localize                 real ce 1.091/p 0.00 empt ce 1.098/p 0.00 subs ce 1.084/p 0.00
+[124/208] localize                 real ce 1.132/p 0.00 empt ce 1.123/p 0.00 subs ce 1.125/p 0.00
+[125/208] localize                 real ce 1.032/p 0.00 empt ce 1.023/p 0.00 subs ce 1.038/p 0.00
+[126/208] localize                 real ce 1.047/p 0.00 empt ce 1.062/p 0.00 subs ce 1.056/p 0.00
+[127/208] localize                 real ce 1.091/p 0.00 empt ce 1.083/p 0.00 subs ce 1.078/p 0.00
+[128/208] localize                 real ce 1.111/p 0.00 empt ce 1.101/p 0.00 subs ce 1.097/p 0.00
+[129/208] localize                 real ce 0.949/p 0.00 empt ce 0.935/p 0.00 subs ce 0.936/p 0.00
+[130/208] localize                 real ce 1.085/p 0.00 empt ce 1.090/p 0.00 subs ce 1.097/p 0.00
+[131/208] localize                 real ce 1.077/p 0.00 empt ce 1.070/p 0.00 subs ce 1.074/p 0.00
+[132/208] localize                 real ce 1.082/p 0.00 empt ce 1.086/p 0.00 subs ce 1.081/p 0.00
+[133/208] localize                 real ce 1.079/p 0.00 empt ce 1.073/p 0.00 subs ce 1.071/p 0.00
+[134/208] localize                 real ce 1.029/p 0.00 empt ce 1.031/p 0.00 subs ce 1.026/p 0.00
+[135/208] localize                 real ce 1.030/p 0.00 empt ce 1.031/p 0.00 subs ce 1.046/p 0.00
+[136/208] localize                 real ce 1.097/p 0.00 empt ce 1.083/p 0.00 subs ce 1.094/p 0.00
+[137/208] classify_with_evidence   real ce 1.124/p 0.00 empt ce 1.125/p 0.00 subs ce 1.116/p 0.00
+[138/208] classify_with_evidence   real ce 0.960/p 0.00 empt ce 0.963/p 0.00 subs ce 0.958/p 0.00
+[139/208] classify_with_evidence   real ce 0.965/p 0.00 empt ce 0.964/p 0.00 subs ce 0.961/p 0.00
+[140/208] classify_with_evidence   real ce 1.088/p 0.00 empt ce 1.081/p 0.00 subs ce 1.083/p 0.00
+[141/208] classify_with_evidence   real ce 1.062/p 0.00 empt ce 1.068/p 0.00 subs ce 1.073/p 0.00
+[142/208] classify_with_evidence   real ce 1.060/p 0.00 empt ce 1.049/p 0.00 subs ce 1.060/p 0.00
+[143/208] classify_with_evidence   real ce 1.023/p 0.00 empt ce 1.038/p 0.00 subs ce 1.025/p 0.00
+[144/208] classify_with_evidence   real ce 1.106/p 0.00 empt ce 1.101/p 0.00 subs ce 1.114/p 0.00
+[145/208] classify_with_evidence   real ce 1.085/p 0.00 empt ce 1.084/p 0.00 subs ce 1.078/p 0.00
+[146/208] classify_with_evidence   real ce 1.119/p 0.00 empt ce 1.120/p 0.00 subs ce 1.107/p 0.00
+[147/208] classify_with_evidence   real ce 1.089/p 0.00 empt ce 1.087/p 0.00 subs ce 1.084/p 0.00
+[148/208] classify_with_evidence   real ce 0.976/p 0.00 empt ce 0.970/p 0.00 subs ce 0.965/p 0.00
+[149/208] classify_with_evidence   real ce 0.955/p 0.00 empt ce 0.938/p 0.00 subs ce 0.940/p 0.00
+[150/208] classify_with_evidence   real ce 0.942/p 0.00 empt ce 0.938/p 0.00 subs ce 0.942/p 0.00
+[151/208] classify_with_evidence   real ce 0.949/p 0.00 empt ce 0.953/p 0.00 subs ce 0.942/p 0.00
+[152/208] classify_with_evidence   real ce 0.960/p 0.00 empt ce 0.960/p 0.00 subs ce 0.955/p 0.00
+[153/208] classify_with_evidence   real ce 1.080/p 0.00 empt ce 1.084/p 0.00 subs ce 1.084/p 0.00
+[154/208] classify_with_evidence   real ce 1.088/p 0.00 empt ce 1.078/p 0.00 subs ce 1.080/p 0.00
+[155/208] classify_with_evidence   real ce 1.157/p 0.00 empt ce 1.160/p 0.00 subs ce 1.155/p 0.00
+[156/208] classify_with_evidence   real ce 1.150/p 0.00 empt ce 1.155/p 0.00 subs ce 1.139/p 0.00
+[157/208] classify_with_evidence   real ce 1.083/p 0.00 empt ce 1.079/p 0.00 subs ce 1.071/p 0.00
+[158/208] classify_with_evidence   real ce 1.096/p 0.00 empt ce 1.104/p 0.00 subs ce 1.088/p 0.00
+[159/208] classify_with_evidence   real ce 1.092/p 0.00 empt ce 1.081/p 0.00 subs ce 1.096/p 0.00
+[160/208] classify_with_evidence   real ce 1.046/p 0.00 empt ce 1.045/p 0.00 subs ce 1.047/p 0.00
+[161/208] localize_all_channels    real ce 1.070/p 0.00 empt ce 1.075/p 0.00 subs ce 1.074/p 0.00
+[162/208] localize_all_channels    real ce 1.058/p 0.00 empt ce 1.053/p 0.00 subs ce 1.055/p 0.00
+[163/208] localize_all_channels    real ce 1.267/p 0.00 empt ce 1.280/p 0.50 subs ce 1.268/p 0.50
+[164/208] localize_all_channels    real ce 1.273/p 0.00 empt ce 1.296/p 0.00 subs ce 1.262/p 0.00
+[165/208] localize_all_channels    real ce 1.294/p 0.00 empt ce 1.308/p 0.00 subs ce 1.293/p 0.00
+[166/208] localize_all_channels    real ce 1.219/p 0.00 empt ce 1.220/p 0.00 subs ce 1.228/p 0.00
+[167/208] localize_all_channels    real ce 1.162/p 0.00 empt ce 1.166/p 0.00 subs ce 1.170/p 0.00
+[168/208] localize_all_channels    real ce 1.218/p 0.00 empt ce 1.230/p 0.00 subs ce 1.216/p 0.00
+[169/208] localize_all_channels    real ce 1.363/p 0.00 empt ce 1.373/p 0.00 subs ce 1.368/p 0.00
+[170/208] localize_all_channels    real ce 1.121/p 0.00 empt ce 1.136/p 0.00 subs ce 1.128/p 0.00
+[171/208] localize_all_channels    real ce 1.330/p 0.00 empt ce 1.326/p 0.00 subs ce 1.325/p 0.00
+[172/208] localize_all_channels    real ce 1.120/p 0.00 empt ce 1.117/p 0.00 subs ce 1.117/p 0.00
+[173/208] localize_all_channels    real ce 0.732/p 0.00 empt ce 0.747/p 0.00 subs ce 0.734/p 0.00
+[174/208] localize_all_channels    real ce 0.968/p 0.00 empt ce 0.969/p 0.00 subs ce 0.951/p 0.00
+[175/208] localize_all_channels    real ce 1.381/p 0.00 empt ce 1.395/p 0.00 subs ce 1.391/p 0.00
+[176/208] localize_all_channels    real ce 1.165/p 0.00 empt ce 1.167/p 0.00 subs ce 1.160/p 0.00
+[177/208] localize_all_channels    real ce 1.034/p 0.00 empt ce 1.049/p 0.00 subs ce 1.034/p 0.00
+[178/208] localize_all_channels    real ce 1.201/p 0.00 empt ce 1.200/p 0.00 subs ce 1.195/p 0.00
+[179/208] localize_all_channels    real ce 1.180/p 0.00 empt ce 1.187/p 0.00 subs ce 1.175/p 0.00
+[180/208] localize_all_channels    real ce 1.301/p 0.00 empt ce 1.318/p 0.00 subs ce 1.302/p 0.00
+[181/208] localize_all_channels    real ce 1.364/p 0.00 empt ce 1.382/p 0.00 subs ce 1.362/p 0.00
+[182/208] localize_all_channels    real ce 1.362/p 0.00 empt ce 1.397/p 0.00 subs ce 1.363/p 0.00
+[183/208] localize_all_channels    real ce 1.189/p 0.00 empt ce 1.189/p 0.00 subs ce 1.198/p 0.00
+[184/208] localize_all_channels    real ce 1.362/p 0.00 empt ce 1.368/p 0.00 subs ce 1.360/p 0.00
+[185/208] localize_all_channels    real ce 1.170/p 0.00 empt ce 1.166/p 0.00 subs ce 1.179/p 0.00
+[186/208] localize_all_channels    real ce 1.319/p 0.00 empt ce 1.326/p 0.00 subs ce 1.314/p 0.00
+[187/208] localize_all_channels    real ce 1.012/p 0.00 empt ce 1.005/p 0.00 subs ce 1.018/p 0.00
+[188/208] localize_all_channels    real ce 1.263/p 0.00 empt ce 1.268/p 0.00 subs ce 1.251/p 0.00
+[189/208] localize_all_channels    real ce 1.084/p 0.00 empt ce 1.080/p 0.00 subs ce 1.088/p 0.00
+[190/208] localize_all_channels    real ce 1.165/p 0.00 empt ce 1.157/p 0.00 subs ce 1.166/p 0.00
+[191/208] localize_all_channels    real ce 0.813/p 0.00 empt ce 0.789/p 0.00 subs ce 0.801/p 0.00
+[192/208] localize_all_channels    real ce 0.923/p 0.00 empt ce 0.925/p 0.00 subs ce 0.929/p 0.00
+[193/208] localize_all_channels    real ce 0.886/p 0.00 empt ce 0.883/p 0.00 subs ce 0.878/p 0.00
+[194/208] localize_all_channels    real ce 1.185/p 0.00 empt ce 1.181/p 0.00 subs ce 1.192/p 0.00
+[195/208] localize_all_channels    real ce 1.104/p 0.00 empt ce 1.116/p 0.00 subs ce 1.099/p 0.00
+[196/208] localize_all_channels    real ce 0.942/p 0.00 empt ce 0.951/p 0.00 subs ce 0.946/p 0.00
+[197/208] localize_all_channels    real ce 1.177/p 0.00 empt ce 1.173/p 0.00 subs ce 1.179/p 0.00
+[198/208] localize_all_channels    real ce 1.077/p 0.00 empt ce 1.076/p 0.00 subs ce 1.077/p 0.00
+[199/208] localize_all_channels    real ce 1.202/p 0.00 empt ce 1.196/p 0.00 subs ce 1.206/p 0.00
+[200/208] localize_all_channels    real ce 0.944/p 0.00 empt ce 0.956/p 0.00 subs ce 0.945/p 0.00
+[201/208] localize_all_channels    real ce 1.120/p 0.00 empt ce 1.108/p 0.00 subs ce 1.111/p 0.00
+[202/208] localize_all_channels    real ce 1.123/p 0.00 empt ce 1.124/p 0.00 subs ce 1.128/p 0.00
+[203/208] localize_all_channels    real ce 1.194/p 0.00 empt ce 1.187/p 0.00 subs ce 1.203/p 0.00
+[204/208] localize_all_channels    real ce 1.075/p 0.00 empt ce 1.077/p 0.00 subs ce 1.080/p 0.00
+[205/208] localize_all_channels    real ce 1.078/p 0.00 empt ce 1.086/p 0.00 subs ce 1.085/p 0.00
+[206/208] localize_all_channels    real ce 0.891/p 0.00 empt ce 0.884/p 0.00 subs ce 0.887/p 0.00
+[207/208] localize_all_channels    real ce 1.197/p 0.00 empt ce 1.193/p 0.00 subs ce 1.204/p 0.00
+[208/208] localize_all_channels    real ce 1.067/p 0.00 empt ce 1.063/p 0.00 subs ce 1.062/p 0.00
+CONTENT_GATE step 13464 on ('localize', 'classify_with_evidence', 'localize_all_channels'): primary real-substituted -0.0037 CI95 [-0.0100; +0.0001] n=208 | threshold +0.05 with CI above zero -> FAIL
+ORACLE_PROBE step 13464: ce {'real': 1.107976947266322, 'empty': 1.108270957492865, 'substituted': 1.107647781761793} | primary {'real': 0.0019361294813783501, 'empty': 0.007154629224941726, 'substituted': 0.00568575251114109} | criteria {'ci95_lower_gt_zero_permuted_minus_oracle': False, 'ci95_lower_gt_zero_empty_minus_oracle': False, 'primary_oracle_gt_permuted': False, 'primary_oracle_gt_empty': False} | VERDICT NOT_RUN | content {'primary_real_minus_substituted': -0.0037496230297627406, 'primary_real_minus_empty': -0.005218499743563375, 'ce_substituted_minus_real': -0.000329165504528926, 'ce_empty_minus_real': 0.0002940102265431331} (2217.6s)

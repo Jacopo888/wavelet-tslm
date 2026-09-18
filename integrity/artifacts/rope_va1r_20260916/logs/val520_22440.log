@@ -1,0 +1,24 @@
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+Current Triton version 3.2.0 is below the recommended 3.3.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/723 [00:00<?, ?it/s]Loading weights: 100%|██████████| 723/723 [00:00<00:00, 13316.13it/s]
+validating 520 rows of the validation split, thinking=False
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+/workspace/code/src/wavelet_rope/perceptual_rope.py:89: UserWarning: Using AOTriton backend for Flash Attention forward... (Triggered internally at /var/lib/jenkins/pytorch/aten/src/ATen/native/transformers/hip/flash_attn/flash_api.h:267.)
+  attn = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
+V0916 20:40:24.991000 35723 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles] Recompiling function flex_attention in /opt/conda/envs/py_3.12/lib/python3.12/site-packages/torch/nn/attention/flex_attention.py:1157
+V0916 20:40:24.991000 35723 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles]     triggered by the following guard failure(s):
+V0916 20:40:24.991000 35723 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles]     - 0/0: tensor 'L['block_mask'].q_indices' stride mismatch at index 3. expected 1, actual 6
+  50/520 rows, running primary 0.1036
+  100/520 rows, running primary 0.3415
+  150/520 rows, running primary 0.2610
+  200/520 rows, running primary 0.3298
+  250/520 rows, running primary 0.3000
+  300/520 rows, running primary 0.3274
+  350/520 rows, running primary 0.3076
+  400/520 rows, running primary 0.3341
+  450/520 rows, running primary 0.3303
+  500/520 rows, running primary 0.3260
+VALIDATE_FULL step 22440: primary 0.3174 {'localize': 0.1811, 'classify_with_evidence': 0.0024, 'measure_magnitude': 0.7669, 'localize_all_channels': 0.2917, 'lead_lag_with_magnitude': 0.2584} invalid 0/520 (1332.7s)

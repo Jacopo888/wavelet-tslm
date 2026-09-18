@@ -1,0 +1,27 @@
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+Current Triton version 3.2.0 is below the recommended 3.3.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/723 [00:00<?, ?it/s]Loading weights: 100%|██████████| 723/723 [00:00<00:00, 12262.56it/s]
+260 recordings with a window, probing layers 0,8,16,24,31,final
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+/workspace/code/src/wavelet_rope/perceptual_rope.py:89: UserWarning: Using AOTriton backend for Flash Attention forward... (Triggered internally at /var/lib/jenkins/pytorch/aten/src/ATen/native/transformers/hip/flash_attn/flash_api.h:267.)
+  attn = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
+  25/260
+  50/260
+  75/260
+  100/260
+  125/260
+  150/260
+  175/260
+  200/260
+  225/260
+  250/260
+  layer 0      pearson +0.000 (null +0.000)  errore mediano 0.2115 di L
+  layer 8      pearson -0.114 (null -0.138)  errore mediano 0.2172 di L
+  layer 16     pearson -0.006 (null -0.043)  errore mediano 0.2356 di L
+  layer 24     pearson +0.080 (null -0.156)  errore mediano 0.1562 di L
+  layer 31     pearson +0.036 (null -0.171)  errore mediano 0.2006 di L
+  layer final  pearson +0.073 (null -0.162)  errore mediano 0.1909 di L
+EMBED_PROBE step 22440: miglior layer 24 pearson +0.080 contro null -0.156 (147.2s)

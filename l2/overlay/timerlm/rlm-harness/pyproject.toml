@@ -1,0 +1,52 @@
+[project]
+name = "rlm"
+version = "0.1.0"
+description = "A minimalistic CLI agent for true recursion."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "openai>=1.0",
+    "ipykernel",
+    "jupyter_client",
+    "nest_asyncio",
+    "tyro",
+    # <2: mcp 2.x renamed streamablehttp_client -> streamable_http_client (rlm/mcp.py
+    # imports the old name); verified mcp 1.28.1 OK, 2.1.1 broken (L2 kit, 2026-09-03).
+    "mcp>=1.0,<2",
+    # Base toolkit pre-installed into the rlm tool venv so the agent's
+    # ipython kernel can import them without pip-installing mid-rollout.
+    "requests",
+    "httpx",
+    "pyyaml",
+    "tomli",
+    "python-dotenv",
+    "pandas",
+    "numpy",
+    "scipy",
+    "beautifulsoup4",
+    "lxml",
+    "pydantic",
+]
+
+[project.scripts]
+rlm = "rlm.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff",
+    "pre-commit",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rlm"]

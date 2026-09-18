@@ -4,7 +4,7 @@ Protocollo, deviazioni, pin e rischi: `PROTOCOL-L2.md`. File:
 
 - `node_l2_env.sh` — ambiente: prime-rl al pin `c5afcaa2e` (venv proprio in `~/timerlm/prime-rl/.venv`), pacchetti TimeRLM editable, venv rlm-harness, overlay wavelet (`overlay/timerlm/`), dati pinnati come cartelle `data.parquet`, snapshot Qwen3.5-2B a revisione fissa, asserzioni GPU/stack, `~/L2_ENV_MANIFEST.json`. Mai tocca `~/venv` (L1).
 - `configs/` — `inference_l2.toml` (server standalone), `l2_pilot_code.toml`, `l2_pilot_wavelet.toml` (identici salvo skill/nomi: test), `l2_smoke.toml` (overlay 2 step).
-- `node_l2_smoke.sh [a b c d]` — gate misurato prima di spendere GPU (vedi PROTOCOL §4).
+- `node_l2_smoke.sh [a b c d e]` — gate misurato prima di spendere GPU; `e` è il rescue gate da 5 step che impedisce un nuovo reward collapse (vedi PROTOCOL §4).
 - `node_l2_run.sh <code|wavelet>` — driver a due fasi fail-closed, coverage per step; riavvia il server da base a inizio braccio per non condividere adapter o prefix cache.
 - `node_l2_eval.sh <code|wavelet|base> [--skill]` — eval finale sul test ufficiale (800).
 - `l2_monitor.py` — riga `[L2-Coverage]` per step dai rollout salvati dal pin (`<run>/run_default/rollouts/step_N/train_rollouts.jsonl`: categoria, reward, forced-final, gruppi a varianza zero, tool call, chiamate `wavelet_zoom`, token) + la riga `Step N | …` di `logs/orchestrator.log`.
@@ -18,7 +18,8 @@ Protocollo, deviazioni, pin e rischi: `PROTOCOL-L2.md`. File:
 # dal PC (WSL): spedire il kit (l2/ intero) in ~/l2/kit e l'overlay in ~/l2/kit/overlay
 # (scratchpad/node_l2_env_launch.sh e node_l2_smoke_launch.sh lo fanno)
 bash ~/l2/kit/l2/node_l2_env.sh            # -> L2_ENV_OK, ~/L2_ENV_MANIFEST.json
-bash ~/l2/kit/l2/node_l2_smoke.sh a b c d  # -> ~/l2/smoke/*.json, SMOKE_OK
+bash ~/l2/kit/l2/node_l2_smoke.sh a b c d  # gate hardware iniziale
+bash ~/l2/kit/l2/node_l2_smoke.sh e        # gate reward: 5 step wavelet, necessario al pilot
 bash ~/l2/kit/l2/node_l2_run.sh wavelet    # -> ~/l2/runs/wavelet/{DONE,coverage_final.txt,weights/step_60}
 bash ~/l2/kit/l2/node_l2_run.sh code       # solo dopo DONE di wavelet; non eseguirli insieme sulla stessa GPU
 bash ~/l2/kit/l2/node_l2_eval.sh code; bash ~/l2/kit/l2/node_l2_eval.sh wavelet

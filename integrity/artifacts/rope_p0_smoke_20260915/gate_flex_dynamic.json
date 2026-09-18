@@ -1,0 +1,99 @@
+{
+  "args": {
+    "snapshot": "/scratch/hf/hub/models--Qwen--Qwen3.5-4B/snapshots/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "backend": "FLEX_PAD512",
+    "pad_to": 512,
+    "report": "/workspace/runs/p0-wildcard-gate/gate_flex_dynamic.json",
+    "long_tokens": 4096,
+    "flex_dynamic": 1
+  },
+  "checks": [
+    {
+      "check": "load",
+      "pass": true,
+      "wrapped": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31
+      ],
+      "lora_tensors": 64,
+      "seconds": 6.8,
+      "visual_dropped": true
+    },
+    {
+      "check": "pure_text_native_equivalence_lambda1.0",
+      "pass": false,
+      "max_abs": 7.625,
+      "mean_abs": 0.0622,
+      "native_abs_mean": 2.174,
+      "argmax_agreement": 0.9653,
+      "tokens": 144
+    },
+    {
+      "check": "pure_text_native_equivalence_lambda0.0",
+      "pass": false,
+      "max_abs": 7.625,
+      "mean_abs": 0.0622,
+      "native_abs_mean": 2.174,
+      "argmax_agreement": 0.9653,
+      "tokens": 144
+    },
+    {
+      "check": "mixed_sequence_backend_vs_math",
+      "pass": true,
+      "max_abs": 2.5312,
+      "mean_abs": 0.03164,
+      "argmax_agreement": 0.9887,
+      "tokens": 444
+    },
+    {
+      "check": "cache_vs_recompute_generation",
+      "pass": true,
+      "cached": [
+        2014,
+        60826,
+        50548,
+        3274,
+        369,
+        279,
+        1817,
+        314,
+        64289,
+        286,
+        279,
+        3050
+      ],
+      "recomputed": [
+        2014,
+        60826,
+        50548,
+        3274,
+        369,
+        279,
+        1817,
+        314,
+        64289,
+        286,
+        279,
+        3050
+      ],
+      "max_logit_abs_diff": 0.25,
+      "decoded": "An anomaly localization task is the process of pinpointing the specific"
+    },
+    {
+      "check": "long_sequence_forward_backward",
+      "pass": true,
+      "tokens": 3996,
+      "seconds": 17.12,
+      "peak_gib": 64.11,
+      "lora_grad_tensors": 64,
+      "lora_grad_norm": 15.608846
+    }
+  ],
+  "verdict": "FAIL"
+}

@@ -1,0 +1,47 @@
+{
+  "checkpoint": "/workspace/runs/p1-dA/checkpoints/step_000000000300",
+  "optimizer_step": 300,
+  "n_recordings": 80,
+  "n_train_recordings": 56,
+  "n_bins": 64,
+  "seed": 13,
+  "probes": {
+    "H0": {
+      "position_r2": -1.8308473411233597,
+      "position_r2_train": 0.9996994808212581,
+      "position_pearson_val": 0.5835473120373286,
+      "position_median_error_bins": 14.721747819132872,
+      "top_bin_balanced_accuracy": 0.5190382267578993,
+      "top_bin_base_rate": 0.05109219527363184,
+      "n_tokens_train": 14336,
+      "n_tokens_val": 51456,
+      "dim": 512,
+      "ridge_lambda": 1.0
+    },
+    "Z": {
+      "position_r2": -5.952372544795272,
+      "position_r2_train": 0.999034373515113,
+      "position_pearson_val": 0.49229665759276153,
+      "position_median_error_bins": 37.171835411504645,
+      "top_bin_balanced_accuracy": 0.5322210328556705,
+      "top_bin_base_rate": 0.05109219527363184,
+      "n_tokens_train": 14336,
+      "n_tokens_val": 51456,
+      "dim": 512,
+      "ridge_lambda": 1.0
+    },
+    "SOFT": {
+      "position_r2": -4.6941485306591115,
+      "position_r2_train": 0.9988445663990272,
+      "position_pearson_val": 0.46892957726211937,
+      "position_median_error_bins": 29.209026638296805,
+      "top_bin_balanced_accuracy": 0.536721454902184,
+      "top_bin_base_rate": 0.05109219527363184,
+      "n_tokens_train": 14336,
+      "n_tokens_val": 51456,
+      "dim": 2560,
+      "ridge_lambda": 1.0
+    }
+  },
+  "seconds": 40.7
+}

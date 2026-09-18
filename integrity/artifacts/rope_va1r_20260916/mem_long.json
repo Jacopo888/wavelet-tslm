@@ -1,0 +1,97 @@
+{
+  "config": "configs/va1r_mi300x.toml",
+  "meta_proj_fp32": false,
+  "checkpoint": null,
+  "n": 24,
+  "steps": 2000,
+  "length": 131072,
+  "width": 137,
+  "amplitude": 8.0,
+  "lr": 0.0003,
+  "identical_prompt_prefix": true,
+  "history": [
+    {
+      "step": 250,
+      "loss": 0.2564079463481903,
+      "primary_true": 0.0,
+      "primary_substituted": 0.0,
+      "delta": 0.0,
+      "iou_true": 0.0,
+      "solved": 0
+    },
+    {
+      "step": 500,
+      "loss": 0.2554946541786194,
+      "primary_true": 0.0,
+      "primary_substituted": 0.0,
+      "delta": 0.0,
+      "iou_true": 0.0,
+      "solved": 0
+    },
+    {
+      "step": 750,
+      "loss": 0.18438111245632172,
+      "primary_true": 0.0,
+      "primary_substituted": 0.0,
+      "delta": 0.0,
+      "iou_true": 0.0,
+      "solved": 0
+    },
+    {
+      "step": 1000,
+      "loss": 0.0998794212937355,
+      "primary_true": 0.08333333333333333,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.041666666666666664,
+      "iou_true": 0.08333333333333333,
+      "solved": 2
+    },
+    {
+      "step": 1250,
+      "loss": 0.1177896037697792,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.0,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    },
+    {
+      "step": 1500,
+      "loss": 0.08967337757349014,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.0,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    },
+    {
+      "step": 1750,
+      "loss": 0.0971132144331932,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.0,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    },
+    {
+      "step": 2000,
+      "loss": 0.0886799767613411,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.0,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    }
+  ],
+  "best": {
+    "step": 1000,
+    "loss": 0.0998794212937355,
+    "primary_true": 0.08333333333333333,
+    "primary_substituted": 0.041666666666666664,
+    "delta": 0.041666666666666664,
+    "iou_true": 0.08333333333333333,
+    "solved": 2
+  },
+  "verdict": "NOT MEMORISED",
+  "seconds": 1462.2
+}

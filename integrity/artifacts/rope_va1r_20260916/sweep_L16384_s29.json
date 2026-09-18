@@ -1,0 +1,61 @@
+{
+  "config": "configs/va1r_mi300x.toml",
+  "meta_proj_fp32": false,
+  "checkpoint": null,
+  "n": 8,
+  "steps": 400,
+  "length": 16384,
+  "width": 137,
+  "amplitude": 8.0,
+  "lr": 0.0001,
+  "identical_prompt_prefix": true,
+  "history": [
+    {
+      "step": 100,
+      "loss": 0.07990719377994537,
+      "primary_true": 0.125,
+      "primary_substituted": 0.125,
+      "delta": 0.0,
+      "iou_true": 0.125,
+      "solved": 1
+    },
+    {
+      "step": 200,
+      "loss": 0.056086424738168716,
+      "primary_true": 0.5,
+      "primary_substituted": 0.125,
+      "delta": 0.375,
+      "iou_true": 0.5,
+      "solved": 4
+    },
+    {
+      "step": 300,
+      "loss": 0.013056142255663872,
+      "primary_true": 0.75,
+      "primary_substituted": 0.0,
+      "delta": 0.75,
+      "iou_true": 0.75,
+      "solved": 6
+    },
+    {
+      "step": 400,
+      "loss": 0.09897970408201218,
+      "primary_true": 1.0,
+      "primary_substituted": 0.0,
+      "delta": 1.0,
+      "iou_true": 1.0,
+      "solved": 8
+    }
+  ],
+  "best": {
+    "step": 400,
+    "loss": 0.09897970408201218,
+    "primary_true": 1.0,
+    "primary_substituted": 0.0,
+    "delta": 1.0,
+    "iou_true": 1.0,
+    "solved": 8
+  },
+  "verdict": "MEMORISED",
+  "seconds": 272.1
+}

@@ -1,0 +1,3 @@
+
+# Local Python environment used by delegated coding agents (Codex sandbox cannot see the system install)
+.venv-luna/

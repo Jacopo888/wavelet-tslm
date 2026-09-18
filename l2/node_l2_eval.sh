@@ -7,7 +7,7 @@
 #     --skill      : wavelet protocol (RLM_SKILLS=wavelet_zoom + the wavelet note sentence);
 #                    default = paper protocol. For arm `wavelet` --skill is implied.
 # The harness budget replays the TRAINING-TIME budget (RLM_MAX_TOKENS=16384, RLM_MAX_OUTPUT=4096,
-# RLM_MAX_TURNS=12, summarize 22000) — a declared deviation from the paper's eval (24k/8192/15/45k).
+# RLM_MAX_TURNS=15, summarize 22000) — completion/output/context budgets remain below paper eval.
 # Output: ~/l2/eval/<tag>/{test800.jsonl, workspaces/, summary.json, DONE|FAILED}. DONE only with
 # 800/800 rows; errors/timeouts are counted, never hidden (they score 0 like the protocol says).
 set -euo pipefail
@@ -46,6 +46,9 @@ else
   # lacks them (prime-rl writes weights for /update_weights, not always a full HF folder)
   for f in "$SNAP"/*.json "$SNAP"/tokenizer* "$SNAP"/merges.txt "$SNAP"/vocab.json "$SNAP"/*.jinja; do [ -e "$f" ] && ln -sf "$f" "$MODEL_DIR/"; done
   for f in "$W"/*; do ln -sfn "$f" "$MODEL_DIR/$(basename "$f")"; done   # run files win
+  # A merged checkpoint is one monolithic file. A stale shard index copied from the
+  # base snapshot makes vLLM ignore it and look for base-model shard filenames.
+  [ -f "$W/model.safetensors" ] && rm -f "$MODEL_DIR/model.safetensors.index.json"
   ls "$MODEL_DIR"/*.safetensors >/dev/null 2>&1 || fail "no safetensors in $W"
 fi
 log "serving $MODEL_DIR"
@@ -68,14 +71,14 @@ curl -sf "$BASE_URL/models" | grep -q "$MODEL_DIR" || fail "server does not list
 log "server healthy after ${t}s"
 
 # ------------------------------------------------------------------ rollouts (resumable)
-ENVS=(RLM_MAX_TOKENS=16384 RLM_MAX_OUTPUT=4096 RLM_MAX_TURNS=12 RLM_SUMMARIZE_AT_TOKENS=22000
+ENVS=(RLM_MAX_TOKENS=16384 RLM_MAX_OUTPUT=4096 RLM_MAX_TURNS=15 RLM_SUMMARIZE_AT_TOKENS=22000
       RLM_PYTHON="$TIMERLM/rlm-harness/.venv/bin/python" OMP_NUM_THREADS=1 TIMERLM_NOTE_VARIANT=default)
 [ $SKILL = 1 ] && ENVS+=(RLM_SKILLS=wavelet_zoom TIMERLM_NOTE_VARIANT=wavelet)
 log "protocol env: ${ENVS[*]}"
 ( cd "$PR" && timeout "$((WALL_H*3600))" env "${ENVS[@]}" "$VENV_PY" "$TIMERLM/scripts/eval_v1_rlm.py" \
     --dataset anomalyxl --repo-or-path "$L2/data/test" --eval-size 800 \
     --base-url "$BASE_URL" --api-key x --model "$MODEL_DIR" --concurrency "$CONC" \
-    --out "$OUT/test800.jsonl" ) > "$OUT/rollouts.log" 2>&1 || { tail -30 "$OUT/rollouts.log"; fail "eval rollouts exited non-zero (timeout ${WALL_H}h or crash)"; }
+    --out "$OUT/test800.jsonl" ) > "$OUT/rollouts.log" 2>&1 || { rc=$?; tail -30 "$OUT/rollouts.log"; fail "eval rollouts exited $rc (timeout ${WALL_H}h or crash)"; }
 tmux kill-session -t l2evalsrv 2>/dev/null || true
 
 # ------------------------------------------------------------------ summary (800/800 or FAIL)

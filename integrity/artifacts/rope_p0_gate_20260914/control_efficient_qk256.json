@@ -1,0 +1,276 @@
+{
+  "schema_version": 2,
+  "label": "control_efficient_qk256",
+  "started_at_utc": "2026-09-14T20:57:37.303058+00:00",
+  "args": {
+    "backend": "EFFICIENT_ATTENTION",
+    "label": "control_efficient_qk256",
+    "qk_dims": [
+      256
+    ],
+    "v_dim": 256,
+    "pad_qk_to": 0,
+    "heads": 16,
+    "kv_heads": 4,
+    "scale": 0.0625,
+    "numeric_length": 512,
+    "cache_prefix": 384,
+    "memory_lengths": [
+      4096,
+      16384
+    ],
+    "out_atol": 0.025,
+    "out_rtol": 0.025,
+    "grad_atol": 0.05,
+    "grad_rtol": 0.05,
+    "seed": 20260914,
+    "rocm_experimental": false,
+    "report": "/workspace/runs/p0-backend-gate/control_efficient_qk256.json",
+    "skip_profile": false
+  },
+  "environment": {
+    "hostname": "2",
+    "platform": "Linux-6.8.0-60-generic-x86_64-with-glibc2.39",
+    "python": "3.12.10",
+    "torch": "2.6.0+git684f6f2",
+    "torch_cuda": null,
+    "torch_hip": "6.4.43483-a187df25c",
+    "cuda_available": true,
+    "env_TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL": null,
+    "device_name": "AMD Instinct MI300X VF",
+    "device_capability": [
+      9,
+      4
+    ],
+    "gcn_arch": "gfx942:sramecc+:xnack-",
+    "total_memory_gib": 191.69,
+    "bf16_supported": true,
+    "sdp_flags": {
+      "flash": true,
+      "mem_efficient": true,
+      "math": true
+    }
+  },
+  "cases": [
+    {
+      "case": "numeric_causal_square_qk256",
+      "required": true,
+      "q_len": 512,
+      "kv_len": 512,
+      "qk_dim": 256,
+      "qk_dim_padded": 256,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "EFFICIENT_ATTENTION",
+      "explicit_mask": false,
+      "wall_seconds_incl_compile": 0.0184,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.012630462646484375,
+          "mean_abs_err": 0.000196852270164527,
+          "max_rel_err": 610.2874755859375,
+          "ref_abs_mean": 0.07068300247192383,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.006986141204833984,
+          "mean_abs_err": 0.00012496851559262723,
+          "max_rel_err": 1228.89599609375,
+          "ref_abs_mean": 0.03332360461354256,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.012115955352783203,
+          "mean_abs_err": 0.00022146159608382732,
+          "max_rel_err": 611.0444946289062,
+          "ref_abs_mean": 0.054061949253082275,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.0345768928527832,
+          "mean_abs_err": 0.0003707595751620829,
+          "max_rel_err": 976.6630859375,
+          "ref_abs_mean": 0.11020846664905548,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_cache_offset_qk256",
+      "required": true,
+      "q_len": 128,
+      "kv_len": 512,
+      "qk_dim": 256,
+      "qk_dim_padded": 256,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "EFFICIENT_ATTENTION",
+      "explicit_mask": true,
+      "wall_seconds_incl_compile": 0.0169,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.0008317083120346069,
+          "mean_abs_err": 0.00011349012493155897,
+          "max_rel_err": 304.2234191894531,
+          "ref_abs_mean": 0.039327334612607956,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.0005492493510246277,
+          "mean_abs_err": 7.257774996105582e-05,
+          "max_rel_err": 231.73863220214844,
+          "ref_abs_mean": 0.019387805834412575,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.0005938112735748291,
+          "mean_abs_err": 7.754239049972966e-05,
+          "max_rel_err": 209.08145141601562,
+          "ref_abs_mean": 0.01899397186934948,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.001089721918106079,
+          "mean_abs_err": 0.00012719232472591102,
+          "max_rel_err": 365.41558837890625,
+          "ref_abs_mean": 0.0379580482840538,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L4096_qk256",
+      "required": true,
+      "q_len": 4096,
+      "kv_len": 4096,
+      "qk_dim": 256,
+      "qk_dim_padded": 256,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "EFFICIENT_ATTENTION",
+      "wall_seconds_first_incl_compile": 0.0055,
+      "wall_seconds_fwd_bwd": 0.0052,
+      "peak_allocated_gib": 0.266,
+      "attention_extra_gib": 0.219,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L16384_qk256",
+      "required": true,
+      "q_len": 16384,
+      "kv_len": 16384,
+      "qk_dim": 256,
+      "qk_dim_padded": 256,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "EFFICIENT_ATTENTION",
+      "wall_seconds_first_incl_compile": 0.0584,
+      "wall_seconds_fwd_bwd": 0.0584,
+      "peak_allocated_gib": 1.064,
+      "attention_extra_gib": 0.877,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "profile_qk256",
+      "required": false,
+      "backend": "EFFICIENT_ATTENTION",
+      "kernels": [
+        {
+          "name": "autograd::engine::evaluate_function: ScaledDotProductEfficientAttentionBackward0",
+          "count": 1,
+          "device_time_ms": 1.198
+        },
+        {
+          "name": "ScaledDotProductEfficientAttentionBackward0",
+          "count": 1,
+          "device_time_ms": 1.198
+        },
+        {
+          "name": "aten::_scaled_dot_product_efficient_attention_backward",
+          "count": 1,
+          "device_time_ms": 1.198
+        },
+        {
+          "name": "aten::_efficient_attention_backward",
+          "count": 1,
+          "device_time_ms": 1.198
+        },
+        {
+          "name": "aten::scaled_dot_product_attention",
+          "count": 1,
+          "device_time_ms": 0.442
+        },
+        {
+          "name": "aten::_scaled_dot_product_efficient_attention",
+          "count": 1,
+          "device_time_ms": 0.442
+        },
+        {
+          "name": "aten::_efficient_attention_forward",
+          "count": 1,
+          "device_time_ms": 0.442
+        },
+        {
+          "name": "attn_fwd",
+          "count": 1,
+          "device_time_ms": 0.44
+        }
+      ],
+      "math_fallback_seen": false,
+      "pass": true,
+      "status": "PASS"
+    }
+  ],
+  "verdict": "PASS",
+  "required_cases": 4,
+  "required_failed": [],
+  "finished_at_utc": "2026-09-14T20:57:38.992230+00:00"
+}

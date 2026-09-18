@@ -1,0 +1,89 @@
+{
+  "checkpoint": "/workspace/runs/va1r/checkpoints/step_000000022440",
+  "optimizer_step": 22440,
+  "rows": 102,
+  "train_rows": 71,
+  "val_rows": 31,
+  "alpha": 100.0,
+  "layers": {
+    "0": {
+      "real": {
+        "pearson": 0.0,
+        "r2": -0.05170582723973571,
+        "median_abs_error": 0.2587896535094355
+      },
+      "shuffled_null": {
+        "pearson": 0.0,
+        "r2": -0.03611159875103187,
+        "median_abs_error": 0.203858281525088
+      },
+      "median_abs_error_samples": 4240.009683098591
+    },
+    "8": {
+      "real": {
+        "pearson": -0.2736522977988688,
+        "r2": -0.6352891304112063,
+        "median_abs_error": 0.3174905527646614
+      },
+      "shuffled_null": {
+        "pearson": -0.08567293221469381,
+        "r2": -0.7424095490956923,
+        "median_abs_error": 0.327188406178394
+      },
+      "median_abs_error_samples": 5201.765216496213
+    },
+    "16": {
+      "real": {
+        "pearson": -0.027312721802147975,
+        "r2": -0.6694019008703576,
+        "median_abs_error": 0.34340831092976276
+      },
+      "shuffled_null": {
+        "pearson": -0.1271282462457512,
+        "r2": -0.6627303372870661,
+        "median_abs_error": 0.3236382467100216
+      },
+      "median_abs_error_samples": 5626.401766273233
+    },
+    "24": {
+      "real": {
+        "pearson": 0.10425060465182924,
+        "r2": -0.33181693772789567,
+        "median_abs_error": 0.2627862149193272
+      },
+      "shuffled_null": {
+        "pearson": -0.2764227044460404,
+        "r2": -0.9724494675339161,
+        "median_abs_error": 0.34138846475871276
+      },
+      "median_abs_error_samples": 4305.489345238257
+    },
+    "31": {
+      "real": {
+        "pearson": 0.2820669677228263,
+        "r2": -0.028969615913585267,
+        "median_abs_error": 0.27380296917315883
+      },
+      "shuffled_null": {
+        "pearson": 0.03891092803557274,
+        "r2": -0.31342388692518974,
+        "median_abs_error": 0.29340306383755466
+      },
+      "median_abs_error_samples": 4485.987846933034
+    },
+    "final": {
+      "real": {
+        "pearson": 0.23601265819001413,
+        "r2": -0.044467398120643375,
+        "median_abs_error": 0.2461561118352843
+      },
+      "shuffled_null": {
+        "pearson": -0.0031628799187469643,
+        "r2": -0.5097355314641308,
+        "median_abs_error": 0.2893860212402132
+      },
+      "median_abs_error_samples": 4033.021736309298
+    }
+  },
+  "seconds": 82.3
+}

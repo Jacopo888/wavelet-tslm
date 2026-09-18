@@ -1,0 +1,886 @@
+{
+  "checkpoint": "/workspace/runs/p1-g/checkpoints/step_000000000300",
+  "optimizer_step": 300,
+  "rows": 60,
+  "seed": 5,
+  "min_advantage": 0.1,
+  "ce_mean": {
+    "TRUE": 1.2309539516766865,
+    "SUBSTITUTED": 1.2306476066509882,
+    "ZEROED": 1.9602771162986756
+  },
+  "bootstrap": {
+    "both": {
+      "mean": -0.0003063450256983439,
+      "ci95_lower": -0.011422360911965369,
+      "ci95_upper": 0.01052538772424062,
+      "n": 60,
+      "resamples": 10000
+    },
+    "vs_substituted": {
+      "mean": -0.0003063450256983439,
+      "ci95_lower": -0.011422360911965369,
+      "ci95_upper": 0.01052538772424062,
+      "n": 60,
+      "resamples": 10000
+    },
+    "vs_zeroed": {
+      "mean": 0.729323164621989,
+      "ci95_lower": 0.6814586600661278,
+      "ci95_upper": 0.776318059961001,
+      "n": 60,
+      "resamples": 10000
+    }
+  },
+  "generated_accuracy_mean": {},
+  "criteria": {
+    "advantage_ge_min": false,
+    "ci95_lower_gt_zero_vs_substituted": false,
+    "ci95_lower_gt_zero_vs_zeroed": true,
+    "generated_accuracy_true_above_controls": null
+  },
+  "verdict": "FAIL",
+  "seconds": 107.6,
+  "records": [
+    {
+      "recording_id": "5c33161fbecdeb04",
+      "category": "localize",
+      "row": 12,
+      "donor_row": 26,
+      "teacher_reading": "top ch_00:31,63,62; peak ch_00:31.",
+      "ce": {
+        "TRUE": 1.0771459341049194,
+        "SUBSTITUTED": 1.1941050291061401,
+        "ZEROED": 1.9267135858535767
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "a817b347cae6a26f",
+      "category": "localize",
+      "row": 21,
+      "donor_row": 35,
+      "teacher_reading": "top ch_00:23,3,43; peak ch_00:60.",
+      "ce": {
+        "TRUE": 1.574303150177002,
+        "SUBSTITUTED": 1.5074974298477173,
+        "ZEROED": 2.3083105087280273
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "68bcab19adc2d04c",
+      "category": "localize",
+      "row": 24,
+      "donor_row": 2,
+      "teacher_reading": "top ch_00:49,48,41; peak ch_00:49.",
+      "ce": {
+        "TRUE": 1.0307966470718384,
+        "SUBSTITUTED": 1.0021281242370605,
+        "ZEROED": 1.978415846824646
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "5a49f9dee9d8a9ad",
+      "category": "classify_with_evidence",
+      "row": 25,
+      "donor_row": 86,
+      "teacher_reading": "top ch_00:41,42,56; peak ch_00:41.",
+      "ce": {
+        "TRUE": 1.1156134605407715,
+        "SUBSTITUTED": 1.1797007322311401,
+        "ZEROED": 2.0413572788238525
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "3aa0b03078419654",
+      "category": "classify_with_evidence",
+      "row": 27,
+      "donor_row": 60,
+      "teacher_reading": "top ch_00:56,55,4; peak ch_00:56.",
+      "ce": {
+        "TRUE": 0.8930416107177734,
+        "SUBSTITUTED": 0.9061360955238342,
+        "ZEROED": 1.8461112976074219
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "a43cc75d1864db57",
+      "category": "classify_with_evidence",
+      "row": 43,
+      "donor_row": 55,
+      "teacher_reading": "top ch_00:58,47,0; peak ch_00:58.",
+      "ce": {
+        "TRUE": 1.1704481840133667,
+        "SUBSTITUTED": 1.2011326551437378,
+        "ZEROED": 1.9180670976638794
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "b4d1df0a1c59f545",
+      "category": "classify_with_evidence",
+      "row": 51,
+      "donor_row": 12,
+      "teacher_reading": "top ch_00:41,42,12; peak ch_00:42.",
+      "ce": {
+        "TRUE": 1.1326539516448975,
+        "SUBSTITUTED": 1.1239537000656128,
+        "ZEROED": 2.06658673286438
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "819c1e042afeaa85",
+      "category": "measure_magnitude",
+      "row": 67,
+      "donor_row": 34,
+      "teacher_reading": "top ch_00:22,28,46; peak ch_00:22.",
+      "ce": {
+        "TRUE": 1.143117904663086,
+        "SUBSTITUTED": 1.109537124633789,
+        "ZEROED": 1.8581770658493042
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "1a9269aa6436ba65",
+      "category": "measure_magnitude",
+      "row": 87,
+      "donor_row": 20,
+      "teacher_reading": "top ch_00:25,15,55; peak ch_00:25.",
+      "ce": {
+        "TRUE": 1.1184760332107544,
+        "SUBSTITUTED": 1.093936800956726,
+        "ZEROED": 1.655927062034607
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "a6fa68ab78bd67da",
+      "category": "measure_magnitude",
+      "row": 94,
+      "donor_row": 84,
+      "teacher_reading": "top ch_00:9,8,49; peak ch_00:8.",
+      "ce": {
+        "TRUE": 1.6378525495529175,
+        "SUBSTITUTED": 1.623091220855713,
+        "ZEROED": 2.561878204345703
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "03d58dd14d4107e3",
+      "category": "localize",
+      "row": 112,
+      "donor_row": 143,
+      "teacher_reading": "top ch_00:31,30,63; peak ch_00:63.",
+      "ce": {
+        "TRUE": 1.1343868970870972,
+        "SUBSTITUTED": 1.2697855234146118,
+        "ZEROED": 2.1866774559020996
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "72c3ce61243de3e0",
+      "category": "localize",
+      "row": 119,
+      "donor_row": 138,
+      "teacher_reading": "top ch_00:44,32,13; peak ch_00:44.",
+      "ce": {
+        "TRUE": 1.1278883218765259,
+        "SUBSTITUTED": 1.1453921794891357,
+        "ZEROED": 1.8524165153503418
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "5a64d30eb300c755",
+      "category": "localize",
+      "row": 120,
+      "donor_row": 190,
+      "teacher_reading": "top ch_00:46,14,62; peak ch_00:62.",
+      "ce": {
+        "TRUE": 1.231332778930664,
+        "SUBSTITUTED": 1.2221601009368896,
+        "ZEROED": 2.1850078105926514
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "cd1d69eba24d6a19",
+      "category": "localize",
+      "row": 124,
+      "donor_row": 168,
+      "teacher_reading": "top ch_00:51,3,32; peak ch_00:51.",
+      "ce": {
+        "TRUE": 1.0662776231765747,
+        "SUBSTITUTED": 1.0529093742370605,
+        "ZEROED": 1.4462714195251465
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "040be1521b16ecd5",
+      "category": "classify_with_evidence",
+      "row": 161,
+      "donor_row": 125,
+      "teacher_reading": "top ch_00:49,11,60; peak ch_00:49.",
+      "ce": {
+        "TRUE": 1.084702968597412,
+        "SUBSTITUTED": 1.083465337753296,
+        "ZEROED": 2.0490567684173584
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "0814638ebafa9b90",
+      "category": "classify_with_evidence",
+      "row": 163,
+      "donor_row": 186,
+      "teacher_reading": "top ch_00:8,42,2; peak ch_00:20.",
+      "ce": {
+        "TRUE": 1.5619628429412842,
+        "SUBSTITUTED": 1.5483944416046143,
+        "ZEROED": 2.268822431564331
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "3740886f351938aa",
+      "category": "measure_magnitude",
+      "row": 166,
+      "donor_row": 197,
+      "teacher_reading": "top ch_00:53,29,14; peak ch_00:62.",
+      "ce": {
+        "TRUE": 1.6060341596603394,
+        "SUBSTITUTED": 1.5666638612747192,
+        "ZEROED": 2.0753138065338135
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "69de09837174bdae",
+      "category": "measure_magnitude",
+      "row": 181,
+      "donor_row": 107,
+      "teacher_reading": "top ch_00:28,56,12; peak ch_00:28.",
+      "ce": {
+        "TRUE": 1.1087260246276855,
+        "SUBSTITUTED": 1.100293755531311,
+        "ZEROED": 1.8104801177978516
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "a3b5defd6c6a45e0",
+      "category": "measure_magnitude",
+      "row": 183,
+      "donor_row": 161,
+      "teacher_reading": "top ch_00:33,32,12; peak ch_00:33.",
+      "ce": {
+        "TRUE": 0.9610075354576111,
+        "SUBSTITUTED": 0.974076509475708,
+        "ZEROED": 1.867044448852539
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "c23b03ce76bef607",
+      "category": "measure_magnitude",
+      "row": 187,
+      "donor_row": 160,
+      "teacher_reading": "top ch_00:11,0,38; peak ch_00:11.",
+      "ce": {
+        "TRUE": 1.2014431953430176,
+        "SUBSTITUTED": 1.2051650285720825,
+        "ZEROED": 1.9891530275344849
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "d74d1c0bc409ccc8",
+      "category": "measure_magnitude",
+      "row": 189,
+      "donor_row": 108,
+      "teacher_reading": "top ch_00:50,49,56; peak ch_00:50.",
+      "ce": {
+        "TRUE": 1.0784412622451782,
+        "SUBSTITUTED": 1.064782977104187,
+        "ZEROED": 2.0168120861053467
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "10e88c60bf93159d",
+      "category": "localize",
+      "row": 205,
+      "donor_row": 276,
+      "teacher_reading": "top ch_00:37,52,57; peak ch_00:54.",
+      "ce": {
+        "TRUE": 1.504177451133728,
+        "SUBSTITUTED": 1.5413626432418823,
+        "ZEROED": 2.0938827991485596
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "bd6691e559fcf6eb",
+      "category": "localize",
+      "row": 212,
+      "donor_row": 268,
+      "teacher_reading": "top ch_00:12,45,32; peak ch_00:12.",
+      "ce": {
+        "TRUE": 1.124606966972351,
+        "SUBSTITUTED": 1.1269057989120483,
+        "ZEROED": 1.7486416101455688
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "636f0f848a373616",
+      "category": "localize",
+      "row": 218,
+      "donor_row": 269,
+      "teacher_reading": "top ch_00:58,57,2; peak ch_00:58.",
+      "ce": {
+        "TRUE": 0.9123600125312805,
+        "SUBSTITUTED": 0.9159254431724548,
+        "ZEROED": 1.846323847770691
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "514c3b70614a8e1a",
+      "category": "localize",
+      "row": 231,
+      "donor_row": 219,
+      "teacher_reading": "top ch_00:6,60,14; peak ch_00:6.",
+      "ce": {
+        "TRUE": 1.1284772157669067,
+        "SUBSTITUTED": 1.1308948993682861,
+        "ZEROED": 1.7521932125091553
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "9df5a025c88a4953",
+      "category": "classify_with_evidence",
+      "row": 244,
+      "donor_row": 280,
+      "teacher_reading": "top ch_00:41,11,4; peak ch_00:57.",
+      "ce": {
+        "TRUE": 1.4592156410217285,
+        "SUBSTITUTED": 1.4721083641052246,
+        "ZEROED": 2.371642827987671
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "33e803694f9b596a",
+      "category": "classify_with_evidence",
+      "row": 250,
+      "donor_row": 238,
+      "teacher_reading": "top ch_00:24,3,23; peak ch_00:7.",
+      "ce": {
+        "TRUE": 1.5521119832992554,
+        "SUBSTITUTED": 1.582143783569336,
+        "ZEROED": 2.212916612625122
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "3bd5bef28a791bf1",
+      "category": "classify_with_evidence",
+      "row": 254,
+      "donor_row": 276,
+      "teacher_reading": "top ch_00:53,11,48; peak ch_00:53.",
+      "ce": {
+        "TRUE": 1.0882052183151245,
+        "SUBSTITUTED": 1.0741610527038574,
+        "ZEROED": 1.8661068677902222
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "c3c51b76e8d88b44",
+      "category": "measure_magnitude",
+      "row": 259,
+      "donor_row": 276,
+      "teacher_reading": "top ch_00:5,48,57; peak ch_00:5.",
+      "ce": {
+        "TRUE": 1.1365593671798706,
+        "SUBSTITUTED": 1.1324107646942139,
+        "ZEROED": 1.9186151027679443
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "5aa40e2f8de9aeec",
+      "category": "measure_magnitude",
+      "row": 269,
+      "donor_row": 238,
+      "teacher_reading": "top ch_00:42,41,2; peak ch_00:42.",
+      "ce": {
+        "TRUE": 0.8892955183982849,
+        "SUBSTITUTED": 0.8905889987945557,
+        "ZEROED": 1.904893159866333
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "44016e38abeceab2",
+      "category": "measure_magnitude",
+      "row": 273,
+      "donor_row": 233,
+      "teacher_reading": "top ch_00:55,16,2; peak ch_00:55.",
+      "ce": {
+        "TRUE": 0.9547625184059143,
+        "SUBSTITUTED": 0.9876889586448669,
+        "ZEROED": 1.7280926704406738
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "f2dbd4f64cbefaef",
+      "category": "measure_magnitude",
+      "row": 274,
+      "donor_row": 258,
+      "teacher_reading": "top ch_00:43,32,5; peak ch_00:32.",
+      "ce": {
+        "TRUE": 1.190651535987854,
+        "SUBSTITUTED": 1.2109425067901611,
+        "ZEROED": 2.074293375015259
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "2798b5d7283facda",
+      "category": "measure_magnitude",
+      "row": 281,
+      "donor_row": 243,
+      "teacher_reading": "top ch_00:20,26,11; peak ch_00:20.",
+      "ce": {
+        "TRUE": 1.105162262916565,
+        "SUBSTITUTED": 1.091812014579773,
+        "ZEROED": 1.7945865392684937
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "354c82f9b4436fff",
+      "category": "localize",
+      "row": 294,
+      "donor_row": 309,
+      "teacher_reading": "top ch_00:23,28,58; peak ch_00:23.",
+      "ce": {
+        "TRUE": 1.1746257543563843,
+        "SUBSTITUTED": 1.1541600227355957,
+        "ZEROED": 1.9070712327957153
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "4455839439bdce7f",
+      "category": "localize",
+      "row": 295,
+      "donor_row": 341,
+      "teacher_reading": "top ch_00:42,31,12; peak ch_00:31.",
+      "ce": {
+        "TRUE": 1.2567943334579468,
+        "SUBSTITUTED": 1.340711236000061,
+        "ZEROED": 2.0495009422302246
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "fd53e29f767a4c70",
+      "category": "localize",
+      "row": 304,
+      "donor_row": 299,
+      "teacher_reading": "top ch_00:51,12,6; peak ch_00:55.",
+      "ce": {
+        "TRUE": 1.449945330619812,
+        "SUBSTITUTED": 1.434376835823059,
+        "ZEROED": 2.0284042358398438
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "54969169f5855b14",
+      "category": "localize",
+      "row": 309,
+      "donor_row": 306,
+      "teacher_reading": "top ch_00:28,51,31; peak ch_00:28.",
+      "ce": {
+        "TRUE": 1.1483163833618164,
+        "SUBSTITUTED": 1.145594596862793,
+        "ZEROED": 1.9737414121627808
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "fe659a78e14e3321",
+      "category": "classify_with_evidence",
+      "row": 317,
+      "donor_row": 358,
+      "teacher_reading": "top ch_00:41,33,58; peak ch_00:63.",
+      "ce": {
+        "TRUE": 1.5546573400497437,
+        "SUBSTITUTED": 1.5629820823669434,
+        "ZEROED": 2.3160524368286133
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "d1676522cfdff948",
+      "category": "classify_with_evidence",
+      "row": 323,
+      "donor_row": 363,
+      "teacher_reading": "top ch_00:36,16,24; peak ch_00:5.",
+      "ce": {
+        "TRUE": 1.5255435705184937,
+        "SUBSTITUTED": 1.3279327154159546,
+        "ZEROED": 2.140129566192627
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "303e9a3417e80c0b",
+      "category": "classify_with_evidence",
+      "row": 333,
+      "donor_row": 342,
+      "teacher_reading": "top ch_00:52,0,4; peak ch_00:60.",
+      "ce": {
+        "TRUE": 1.7525269985198975,
+        "SUBSTITUTED": 1.7167737483978271,
+        "ZEROED": 2.1141622066497803
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "298f25c9c6e500ea",
+      "category": "classify_with_evidence",
+      "row": 339,
+      "donor_row": 346,
+      "teacher_reading": "top ch_00:46,45,8; peak ch_00:46.",
+      "ce": {
+        "TRUE": 1.158447265625,
+        "SUBSTITUTED": 1.1244781017303467,
+        "ZEROED": 2.2903339862823486
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "354256cbb9e34ded",
+      "category": "measure_magnitude",
+      "row": 357,
+      "donor_row": 298,
+      "teacher_reading": "top ch_00:53,17,40; peak ch_00:53.",
+      "ce": {
+        "TRUE": 1.10529625415802,
+        "SUBSTITUTED": 1.0633254051208496,
+        "ZEROED": 1.8731762170791626
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "21edae74e15fe6e5",
+      "category": "measure_magnitude",
+      "row": 367,
+      "donor_row": 297,
+      "teacher_reading": "top ch_00:51,23,37; peak ch_00:51.",
+      "ce": {
+        "TRUE": 1.1035099029541016,
+        "SUBSTITUTED": 1.0976247787475586,
+        "ZEROED": 1.789444088935852
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "765342b063c02040",
+      "category": "localize_all_channels",
+      "row": 375,
+      "donor_row": 404,
+      "teacher_reading": "top ch_14:26,38,10; peak ch_04:14, ch_14:63.",
+      "ce": {
+        "TRUE": 1.8862581253051758,
+        "SUBSTITUTED": 1.911855936050415,
+        "ZEROED": 2.476919651031494
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "5cc0e4454360e218",
+      "category": "localize_all_channels",
+      "row": 380,
+      "donor_row": 392,
+      "teacher_reading": "top ch_08:54,11,43; peak ch_08:59, ch_00:63.",
+      "ce": {
+        "TRUE": 1.6418976783752441,
+        "SUBSTITUTED": 1.6438267230987549,
+        "ZEROED": 2.4719114303588867
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "10c6e864e5762298",
+      "category": "localize_all_channels",
+      "row": 388,
+      "donor_row": 397,
+      "teacher_reading": "top ch_05:0, ch_06:63,62; peak ch_12:0, ch_05:0.",
+      "ce": {
+        "TRUE": 1.63187837600708,
+        "SUBSTITUTED": 1.6192378997802734,
+        "ZEROED": 2.506375789642334
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "c59fed69d5b7c1a2",
+      "category": "localize_all_channels",
+      "row": 394,
+      "donor_row": 385,
+      "teacher_reading": "top ch_14:56,36,40; peak ch_14:5, ch_05:0.",
+      "ce": {
+        "TRUE": 1.696099042892456,
+        "SUBSTITUTED": 1.6800943613052368,
+        "ZEROED": 2.4890925884246826
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "607c1e5ff86f396d",
+      "category": "localize_all_channels",
+      "row": 421,
+      "donor_row": 418,
+      "teacher_reading": "top ch_03:0,41,59; peak ch_03:57, ch_10:39.",
+      "ce": {
+        "TRUE": 1.8077858686447144,
+        "SUBSTITUTED": 1.8148550987243652,
+        "ZEROED": 2.400739908218384
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "f9540e93b032c5ce",
+      "category": "localize_all_channels",
+      "row": 431,
+      "donor_row": 438,
+      "teacher_reading": "top ch_09:7,11,15; peak ch_09:7, ch_00:4.",
+      "ce": {
+        "TRUE": 1.8304165601730347,
+        "SUBSTITUTED": 1.832845687866211,
+        "ZEROED": 2.117872476577759
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "881eafc0215f44da",
+      "category": "localize_all_channels",
+      "row": 434,
+      "donor_row": 442,
+      "teacher_reading": "top ch_01:15,54,21; peak ch_01:63, ch_02:42.",
+      "ce": {
+        "TRUE": 1.6340734958648682,
+        "SUBSTITUTED": 1.6501970291137695,
+        "ZEROED": 2.1472837924957275
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "5270ec978f0eaa6d",
+      "category": "localize_all_channels",
+      "row": 436,
+      "donor_row": 440,
+      "teacher_reading": "top ch_11:0, ch_10:38, ch_04:51; peak ch_04:0, ch_11:0.",
+      "ce": {
+        "TRUE": 1.4962061643600464,
+        "SUBSTITUTED": 1.5173234939575195,
+        "ZEROED": 2.046640157699585
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "849823f9129e4f51",
+      "category": "lead_lag_with_magnitude",
+      "row": 452,
+      "donor_row": 468,
+      "teacher_reading": "top A_ch_00:44,7,43; peak A_ch_00:44, B_ch_00:47.",
+      "ce": {
+        "TRUE": 1.3118144273757935,
+        "SUBSTITUTED": 1.3197859525680542,
+        "ZEROED": 1.7842488288879395
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "1db126800bb8c341",
+      "category": "lead_lag_with_magnitude",
+      "row": 458,
+      "donor_row": 478,
+      "teacher_reading": "top B_ch_00:35,34, A_ch_00:23; peak B_ch_00:35, A_ch_00:23.",
+      "ce": {
+        "TRUE": 0.7324004173278809,
+        "SUBSTITUTED": 0.7352372407913208,
+        "ZEROED": 1.345439076423645
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "4c023ddbf3050404",
+      "category": "lead_lag_with_magnitude",
+      "row": 466,
+      "donor_row": 469,
+      "teacher_reading": "top B_ch_00:22,59, A_ch_00:6; peak B_ch_00:21, A_ch_00:6.",
+      "ce": {
+        "TRUE": 1.034525752067566,
+        "SUBSTITUTED": 1.059855341911316,
+        "ZEROED": 1.5585858821868896
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "6d6c64c16e06b197",
+      "category": "lead_lag_with_magnitude",
+      "row": 474,
+      "donor_row": 470,
+      "teacher_reading": "top B_ch_00:4, A_ch_00:12,43; peak B_ch_00:4, A_ch_00:12.",
+      "ce": {
+        "TRUE": 0.6837971806526184,
+        "SUBSTITUTED": 0.6793433427810669,
+        "ZEROED": 1.5432432889938354
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "6aa61ebbc2baf30e",
+      "category": "lead_lag_with_magnitude",
+      "row": 476,
+      "donor_row": 446,
+      "teacher_reading": "top B_ch_00:54,55,5; peak B_ch_00:54, A_ch_00:56.",
+      "ce": {
+        "TRUE": 0.9352832436561584,
+        "SUBSTITUTED": 0.8601052761077881,
+        "ZEROED": 1.2258102893829346
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "befd7df1eb6e9aff",
+      "category": "lead_lag_with_magnitude",
+      "row": 478,
+      "donor_row": 467,
+      "teacher_reading": "top A_ch_00:54, B_ch_00:51,52; peak B_ch_00:51, A_ch_00:54.",
+      "ce": {
+        "TRUE": 0.6956748366355896,
+        "SUBSTITUTED": 0.6975048184394836,
+        "ZEROED": 1.2976045608520508
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "6820f89ef975be68",
+      "category": "lead_lag_with_magnitude",
+      "row": 483,
+      "donor_row": 500,
+      "teacher_reading": "top B_ch_00:59, A_ch_00:45,61; peak B_ch_00:59, A_ch_00:45.",
+      "ce": {
+        "TRUE": 0.7731887102127075,
+        "SUBSTITUTED": 0.7754004597663879,
+        "ZEROED": 1.435322642326355
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "89205f25381ab9f0",
+      "category": "lead_lag_with_magnitude",
+      "row": 497,
+      "donor_row": 496,
+      "teacher_reading": "top A_ch_00:53,10,1; peak A_ch_00:53, B_ch_00:20.",
+      "ce": {
+        "TRUE": 1.015773892402649,
+        "SUBSTITUTED": 1.0271562337875366,
+        "ZEROED": 1.5652307271957397
+      },
+      "generated": {},
+      "accuracy": {}
+    },
+    {
+      "recording_id": "3a777dc3d012d95f",
+      "category": "lead_lag_with_magnitude",
+      "row": 509,
+      "donor_row": 515,
+      "teacher_reading": "top B_ch_00:53, A_ch_00:41,0; peak B_ch_00:53, A_ch_00:41.",
+      "ce": {
+        "TRUE": 0.7192614674568176,
+        "SUBSTITUTED": 0.7150187492370605,
+        "ZEROED": 1.5015003681182861
+      },
+      "generated": {},
+      "accuracy": {}
+    }
+  ]
+}

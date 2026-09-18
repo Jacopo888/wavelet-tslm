@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # L2 pilot run driver — one arm, two phases, fail-closed. Usage: node_l2_run.sh <code|wavelet>
 #
-#   phase 1 (steps 1..35): negatives withheld  -> ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN_K=1
-#   phase 2 (steps 36..60): resume from step_35 with both vars UNSET (benchmark 80/20 split)
-# exactly the paper's two-phase recipe (220/400 -> 35/60), driven from the LAUNCH env of the
+#   phase 1 (steps 1..10): easy localize/magnitude curriculum, negatives withheld
+#   phase 2 (steps 11..60): resume from step_10 on the official generator distribution
+# The short prefix is a learnability bootstrap for the 2B LoRA pilot; it is driven from the
 # `rl` process (the generator reads the vars at import inside the env-server process, which
 # inherits this shell; setting them in harness.env would silently do nothing).
 # Arm `wavelet` additionally exports TIMERLM_NOTE_VARIANT=wavelet (task-note sentence); the
 # RLM_SKILLS harness entry lives in its config. Everything else is identical between arms.
 #
-# Gates: env manifest + SMOKE_OK (stages a b c d) must exist; a run dir with DONE/FAILED is
+# Gates: env manifest + SMOKE_OK (stages a b c d e) must exist; a run dir with DONE/FAILED is
 # never reused silently. Every wait is bounded. Any process death, missing checkpoint, or
 # failed resume writes FAILED with the reason and exits non-zero. Coverage: l2_monitor.py
 # follows the run (tmux l2mon) and the post-hoc pass must report zero violations for DONE.
@@ -18,7 +18,7 @@ ARM="${1:-}"; [ "$ARM" = code ] || [ "$ARM" = wavelet ] || { echo "usage: $0 <co
 TIMERLM="${TIMERLM:-$HOME/timerlm}"; PR="$TIMERLM/prime-rl"; L2="$TIMERLM/l2"
 KIT="${L2_KIT:-$HOME/l2/kit/l2}"; LOGS="$HOME/l2/logs"; RUN="$HOME/l2/runs/$ARM"
 MANIFEST="$HOME/L2_ENV_MANIFEST.json"; SMOKE_OK="$HOME/l2/smoke/SMOKE_OK"
-PHASE1_STEPS="${L2_PHASE1_STEPS:-35}"; TOTAL_STEPS="${L2_TOTAL_STEPS:-60}"
+PHASE1_STEPS="${L2_PHASE1_STEPS:-10}"; TOTAL_STEPS="${L2_TOTAL_STEPS:-60}"
 PHASE_WALL_H="${L2_PHASE_WALL_H:-45}"          # bounded wait per phase (hours)
 EXPECT_ROLLOUTS="${L2_EXPECT_ROLLOUTS:-64}"
 PORT=8000; VENV_PY="$PR/.venv/bin/python"
@@ -31,6 +31,9 @@ export PRIME_RL_TRAINER_ALLOC_CONF=""
 export FLA_TILELANG=0
 # torch._grouped_mm backward asserts 16-byte strides here: plain per-adapter matmul (overlay/prime-rl multi_linear.py)
 export PRIME_RL_LORA_GROUPED_MM=0
+# tmux sessions inherit the tmux server environment, not exports made later by this driver.
+# Pass every runtime-critical override explicitly to child sessions; also erase stale phase vars.
+RUNTIME_ENV="env -u ANOMALYXL_P_PRESENT -u ANOMALYXL_ALLCH_MIN_K -u ANOMALYXL_CURRICULUM PATH='$PATH' HF_HUB_OFFLINE=1 WANDB_MODE=disabled TOKENIZERS_PARALLELISM=false PRIME_RL_DIST_BACKEND='cpu:gloo,cuda:gloo' PRIME_RL_TRAINER_ALLOC_CONF='' FLA_TILELANG=0 PRIME_RL_LORA_GROUPED_MM=0"
 mkdir -p "$LOGS" "$HOME/l2/runs"
 
 log() { echo "[l2-run/$ARM $(date -u +%H:%M:%S)] $*" | tee -a "$LOGS/run_${ARM}_driver.log"; }
@@ -39,7 +42,7 @@ fail() { log "FAILED: $*"; mkdir -p "$RUN"; echo "$(date -u +%FT%TZ) $*" > "$RUN
 # ------------------------------------------------------------------ gates
 [ -f "$MANIFEST" ] || fail "no env manifest (run node_l2_env.sh)"
 [ -f "$SMOKE_OK" ] || fail "no SMOKE_OK (run node_l2_smoke.sh a b c d first)"
-for s in a b c d; do grep -q " $s" "$SMOKE_OK" || grep -q "SMOKE_OK $s" "$SMOKE_OK" || grep -qE "(^| )$s( |$)" "$SMOKE_OK" || fail "smoke stage $s not recorded in SMOKE_OK"; done
+for s in a b c d e; do grep -q " $s" "$SMOKE_OK" || grep -q "SMOKE_OK $s" "$SMOKE_OK" || grep -qE "(^| )$s( |$)" "$SMOKE_OK" || fail "smoke stage $s not recorded in SMOKE_OK"; done
 [ "$SMOKE_OK" -nt "$MANIFEST" ] || fail "SMOKE_OK is older than the env manifest: re-run the smoke"
 [ -x "$VENV_PY" ] || fail "prime-rl venv missing"
 mkdir -p "$L2/configs" && cp "$KIT"/configs/*.toml "$L2/configs/"
@@ -63,7 +66,7 @@ while server_up; do
 done
 rm -f "$LOGS/inference_${ARM}.log"
 log "starting a fresh inference server for arm $ARM"
-tmux new-session -d -s l2srv "cd '$PR' && uv run --no-sync inference @ ../l2/configs/inference_l2.toml > '$LOGS/inference_${ARM}.log' 2>&1; echo EXIT:\$? >> '$LOGS/inference_${ARM}.log'"
+tmux new-session -d -s l2srv "cd '$PR' && $RUNTIME_ENV uv run --no-sync inference @ ../l2/configs/inference_l2.toml > '$LOGS/inference_${ARM}.log' 2>&1; echo EXIT:\$? >> '$LOGS/inference_${ARM}.log'"
 t=0; until server_up; do sleep 5; t=$((t+5)); grep -q "EXIT:" "$LOGS/inference_${ARM}.log" 2>/dev/null && fail "server died at startup"; [ $t -ge 900 ] && fail "server not healthy after 900s"; done
 log "fresh server healthy after ${t}s"
 MODEL_NAME="$("$VENV_PY" -c "import tomllib;print(tomllib.load(open('$L2/configs/inference_l2.toml','rb'))['model']['name'])")"
@@ -76,14 +79,23 @@ probe_negatives() {  # prints the effective P_PRESENT the env-server would see i
 run_phase() {  # $1 phase label, $2.. extra rl args; expects env already exported
   local phase="$1"; shift
   local plog="$LOGS/${ARM}_${phase}.log" exitf="$RUN/${phase}.EXIT"
+  local phase_env="$RUNTIME_ENV TIMERLM_NOTE_VARIANT='$TIMERLM_NOTE_VARIANT'"
+  if [ -v ANOMALYXL_P_PRESENT ]; then
+    phase_env="$phase_env ANOMALYXL_P_PRESENT='$ANOMALYXL_P_PRESENT' ANOMALYXL_ALLCH_MIN_K='$ANOMALYXL_ALLCH_MIN_K'"
+  fi
+  if [ -v ANOMALYXL_CURRICULUM ]; then
+    phase_env="$phase_env ANOMALYXL_CURRICULUM='$ANOMALYXL_CURRICULUM'"
+  fi
   rm -f "$exitf"
-  tmux new-session -d -s "l2$ARM" "cd '$PR' && uv run --no-sync rl @ $CFG --output-dir '$RUN' $* > '$plog' 2>&1; echo EXIT:\$? > '$exitf'"
+  tmux new-session -d -s "l2$ARM" "cd '$PR' && $phase_env uv run --no-sync rl @ $CFG --output-dir '$RUN' $* > '$plog' 2>&1; echo EXIT:\$? > '$exitf'"
   log "$phase launched: rl @ $CFG $* (tmux l2$ARM, log $plog)"
   local t=0 max=$((PHASE_WALL_H*3600))
   while [ ! -f "$exitf" ]; do
     sleep 60; t=$((t+60))
     server_up || fail "$phase: inference server stopped answering"
     tmux has-session -t "l2$ARM" 2>/dev/null || { sleep 5; [ -f "$exitf" ] || fail "$phase: rl session vanished without EXIT"; }
+    "$VENV_PY" "$KIT/l2_monitor.py" "$RUN" --guard-collapse --expect-rollouts "$EXPECT_ROLLOUTS" \
+      > "$RUN/collapse_guard.txt" 2>&1 || { tail -5 "$RUN/collapse_guard.txt"; fail "$phase: reward-collapse guard fired"; }
     [ $t -ge $max ] && fail "$phase: exceeded ${PHASE_WALL_H}h wall limit"
     if [ $((t % 1800)) -eq 0 ]; then
       "$VENV_PY" "$KIT/l2_monitor.py" "$RUN" --expect-rollouts "$EXPECT_ROLLOUTS" 2>/dev/null | tail -1 | tee -a "$LOGS/run_${ARM}_driver.log" || true
@@ -101,22 +113,22 @@ require_ckpt() {  # $1 step — at this pin the trainer checkpoint lives in chec
 }
 
 # ------------------------------------------------------------------ phase 1: negatives OFF
-export ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN_K=1
+export ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN_K=1 ANOMALYXL_CURRICULUM=bootstrap
 [ "$ARM" = wavelet ] && export TIMERLM_NOTE_VARIANT=wavelet || export TIMERLM_NOTE_VARIANT=default
 read -r P1 K1 <<<"$(probe_negatives)"; [ "$P1" = "1.0" ] && [ "$K1" = "1" ] || fail "phase-1 env probe: P_PRESENT=$P1 MIN_K=$K1"
-log "phase-1 env verified (P_PRESENT=$P1, ALLCH_MIN_K=$K1, NOTE_VARIANT=$TIMERLM_NOTE_VARIANT)"
+log "phase-1 env verified (P_PRESENT=$P1, ALLCH_MIN_K=$K1, CURRICULUM=$ANOMALYXL_CURRICULUM, NOTE_VARIANT=$TIMERLM_NOTE_VARIANT)"
 tmux new-session -d -s l2mon "'$VENV_PY' '$KIT/l2_monitor.py' '$RUN' --follow --interval 120 --jsonl '$RUN/coverage.jsonl' --expect-rollouts $EXPECT_ROLLOUTS > '$LOGS/${ARM}_coverage.log' 2>&1"
 cat > "$RUN/RUN_MANIFEST_L2.json" <<JSON
 {"arm": "$ARM", "config": "$CFG", "phase1_steps": $PHASE1_STEPS, "total_steps": $TOTAL_STEPS,
- "phase1_env": {"ANOMALYXL_P_PRESENT": "1.0", "ANOMALYXL_ALLCH_MIN_K": "1", "TIMERLM_NOTE_VARIANT": "$TIMERLM_NOTE_VARIANT"},
- "phase2_env": {"ANOMALYXL_P_PRESENT": "unset", "ANOMALYXL_ALLCH_MIN_K": "unset", "TIMERLM_NOTE_VARIANT": "$TIMERLM_NOTE_VARIANT"},
+ "phase1_env": {"ANOMALYXL_P_PRESENT": "1.0", "ANOMALYXL_ALLCH_MIN_K": "1", "ANOMALYXL_CURRICULUM": "bootstrap", "TIMERLM_NOTE_VARIANT": "$TIMERLM_NOTE_VARIANT"},
+ "phase2_env": {"ANOMALYXL_P_PRESENT": "unset", "ANOMALYXL_ALLCH_MIN_K": "unset", "ANOMALYXL_CURRICULUM": "official", "TIMERLM_NOTE_VARIANT": "$TIMERLM_NOTE_VARIANT"},
  "started_utc": "$(date -u +%FT%TZ)", "env_manifest": "$MANIFEST", "smoke_ok": "$(cat "$SMOKE_OK")"}
 JSON
 run_phase phase1 --max-steps "$PHASE1_STEPS"
 require_ckpt "$PHASE1_STEPS"
 
 # ------------------------------------------------------------------ phase 2: negatives ON (resume)
-unset ANOMALYXL_P_PRESENT ANOMALYXL_ALLCH_MIN_K
+unset ANOMALYXL_P_PRESENT ANOMALYXL_ALLCH_MIN_K ANOMALYXL_CURRICULUM
 read -r P2 K2 <<<"$(probe_negatives)"; [ "$P2" = "0.8" ] && [ "$K2" = "unset" ] || fail "phase-2 env probe: P_PRESENT=$P2 MIN_K=$K2"
 log "phase-2 env verified (P_PRESENT=$P2, ALLCH_MIN_K unset)"
 run_phase phase2 --max-steps "$TOTAL_STEPS" --ckpt.resume-step "$PHASE1_STEPS"
@@ -126,7 +138,11 @@ require_ckpt "$TOTAL_STEPS"
 
 # ------------------------------------------------------------------ finalize
 tmux kill-session -t l2mon 2>/dev/null || true
-"$VENV_PY" "$KIT/l2_monitor.py" "$RUN" --jsonl "$RUN/coverage_final.jsonl" --expect-rollouts "$EXPECT_ROLLOUTS" > "$RUN/coverage_final.txt" 2>&1 || fail "post-hoc coverage reported violations (see $RUN/coverage_final.txt)"
+rm -f "$RUN/coverage_final.jsonl"
+"$VENV_PY" "$KIT/l2_monitor.py" "$RUN" \
+  --log-file "$LOGS/${ARM}_phase1.log" --log-file "$LOGS/${ARM}_phase2.log" \
+  --jsonl "$RUN/coverage_final.jsonl" --expect-rollouts "$EXPECT_ROLLOUTS" \
+  > "$RUN/coverage_final.txt" 2>&1 || fail "post-hoc coverage reported violations (see $RUN/coverage_final.txt)"
 NSTEPS=$(grep -c "^\[L2-Coverage\] step" "$RUN/coverage_final.txt" || true)
 [ "$NSTEPS" -ge "$TOTAL_STEPS" ] || fail "coverage has $NSTEPS steps, expected $TOTAL_STEPS"
 cp "$MANIFEST" "$RUN/L2_ENV_MANIFEST.json"; cp "$L2/configs/l2_pilot_${ARM}.toml" "$L2/configs/inference_l2.toml" "$RUN/"

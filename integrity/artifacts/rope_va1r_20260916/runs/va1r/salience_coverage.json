@@ -1,0 +1,3434 @@
+{
+  "config": "configs/va1r_mi300x.toml",
+  "category": "localize",
+  "rows": 100,
+  "gold_width_median": 144.5,
+  "summary": {
+    "A": {
+      "hit_rate": 1.0,
+      "best_iou_median": 0.1313,
+      "best_iou_mean": 0.1875,
+      "cover_median": 1.0
+    },
+    "D_coverage": {
+      "hit_rate": 1.0,
+      "best_iou_median": 0.1313,
+      "best_iou_mean": 0.1875,
+      "cover_median": 1.0
+    },
+    "D_salient": {
+      "hit_rate": 0.93,
+      "best_iou_median": 0.2126,
+      "best_iou_mean": 0.2664,
+      "cover_median": 0.5585
+    },
+    "raw": {
+      "hit_rate": 1.0,
+      "best_iou_median": 0.1313,
+      "best_iou_mean": 0.1875,
+      "cover_median": 1.0
+    }
+  },
+  "records": [
+    {
+      "id": "bbba8aede2628590",
+      "window": [
+        9401,
+        9435
+      ],
+      "width": 34,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1328,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1328,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1176,
+          "cover": 0.2353
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1328,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "a5f08bb6777f5521",
+      "window": [
+        6943,
+        7038
+      ],
+      "width": 95,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3711,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3711,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1684,
+          "cover": 0.1895
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3711,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "9bc312d178826fd4",
+      "window": [
+        696,
+        879
+      ],
+      "width": 183,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3384,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3384,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3384,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3384,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "684b090e56def54d",
+      "window": [
+        6882,
+        6993
+      ],
+      "width": 111,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2832,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2832,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5766,
+          "cover": 0.7297
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2832,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "706eec8629504acd",
+      "window": [
+        6886,
+        6963
+      ],
+      "width": 77,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1809,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1809,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3312,
+          "cover": 0.6623
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1809,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "e7c168c043166d66",
+      "window": [
+        14776,
+        14908
+      ],
+      "width": 132,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2278,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2278,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.383,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2278,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "180828470b2f480b",
+      "window": [
+        8990,
+        9192
+      ],
+      "width": 202,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.7891,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.7891,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0099,
+          "cover": 0.0198
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.7891,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "d7e9445ec4a9f2e3",
+      "window": [
+        112,
+        222
+      ],
+      "width": 110,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4297,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4297,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.6528,
+          "cover": 0.8545
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4297,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "8d9394a0a92a9462",
+      "window": [
+        916,
+        1155
+      ],
+      "width": 239,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3599,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3599,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.2678,
+          "cover": 0.6025
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3599,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "eee4585ad1ea9f37",
+      "window": [
+        15858,
+        15947
+      ],
+      "width": 89,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2778,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2778,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.0225,
+          "cover": 0.0899
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2778,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "39f3f82669276b7d",
+      "window": [
+        7276,
+        7506
+      ],
+      "width": 230,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4379,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4379,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0171,
+          "cover": 0.0261
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4379,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "5c33161fbecdeb04",
+      "window": [
+        8082,
+        8170
+      ],
+      "width": 88,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3438,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3438,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0227,
+          "cover": 0.0455
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3438,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "7b1bf31ad5910a41",
+      "window": [
+        13042,
+        13231
+      ],
+      "width": 189,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6481,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6481,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6772,
+          "cover": 0.9259
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6481,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "acd0415e6bed30ee",
+      "window": [
+        3312,
+        3513
+      ],
+      "width": 201,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6801,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6801,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1592,
+          "cover": 0.1642
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6801,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "7c1b35e96081377f",
+      "window": [
+        998,
+        1027
+      ],
+      "width": 29,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1004,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1004,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1004,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "b4c6f5195bb7ceb9",
+      "window": [
+        6994,
+        7148
+      ],
+      "width": 154,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.6016,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.6016,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6207,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.6016,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "aed2f57307ecff8d",
+      "window": [
+        13161,
+        13176
+      ],
+      "width": 15,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0586,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0586,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1172,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0586,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "37be439bd36c315d",
+      "window": [
+        8605,
+        8818
+      ],
+      "width": 213,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3211,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3211,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.0094,
+          "cover": 0.0376
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3211,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "f92d2365cbd92b30",
+      "window": [
+        15080,
+        15186
+      ],
+      "width": 106,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2929,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2929,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5395,
+          "cover": 0.7736
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2929,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "68bcab19adc2d04c",
+      "window": [
+        12468,
+        12708
+      ],
+      "width": 240,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.494,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.494,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.494,
+          "cover": 0.95
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.494,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "75adf4b32692a37d",
+      "window": [
+        1294,
+        1312
+      ],
+      "width": 18,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0352,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0352,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2222,
+          "cover": 0.4444
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0352,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "60ae9d4eb638fdc0",
+      "window": [
+        29986,
+        30014
+      ],
+      "width": 28,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0547,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0547,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2857,
+          "cover": 0.2857
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0547,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "93c51a17d08c3518",
+      "window": [
+        1716,
+        1785
+      ],
+      "width": 69,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1348,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1348,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5391,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1348,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "b85ce070d0de7386",
+      "window": [
+        18634,
+        18816
+      ],
+      "width": 182,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3555,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3555,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3555,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "b4fed9a32d5451ea",
+      "window": [
+        17995,
+        18177
+      ],
+      "width": 182,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3555,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3555,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.7033,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3555,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "1f62421d1c12202a",
+      "window": [
+        21975,
+        22015
+      ],
+      "width": 40,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0781,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0781,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.05,
+          "cover": 0.1
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0781,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "7f88c941dc0ea530",
+      "window": [
+        2708,
+        2931
+      ],
+      "width": 223,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4355,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4355,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4355,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4355,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "4efc65dc3b372403",
+      "window": [
+        6810,
+        7056
+      ],
+      "width": 246,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4805,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4805,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4022,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4805,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "821a35fc770db5a5",
+      "window": [
+        17305,
+        17513
+      ],
+      "width": 208,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1707,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1707,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.4545,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1707,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "d718661868688a9d",
+      "window": [
+        30300,
+        30460
+      ],
+      "width": 160,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3125,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3125,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.025,
+          "cover": 0.0375
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3125,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "50a1c10fea270af0",
+      "window": [
+        32011,
+        32057
+      ],
+      "width": 46,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0898,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0898,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3594,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0898,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "20f0eac433737d65",
+      "window": [
+        30177,
+        30382
+      ],
+      "width": 205,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3204,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3204,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6063,
+          "cover": 0.8488
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3204,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "03d58dd14d4107e3",
+      "window": [
+        15843,
+        16002
+      ],
+      "width": 159,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2403,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2403,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.805,
+          "cover": 0.8176
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2403,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "4c96d496149d1296",
+      "window": [
+        17885,
+        17894
+      ],
+      "width": 9,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0176,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0176,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0176,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "696d625786c39d35",
+      "window": [
+        5928,
+        6039
+      ],
+      "width": 111,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2168,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2168,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5828,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2168,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "fba1613ad79041d7",
+      "window": [
+        29051,
+        29127
+      ],
+      "width": 76,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1484,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1484,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0263,
+          "cover": 0.0526
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1484,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "d00e15b36ba377eb",
+      "window": [
+        14702,
+        14942
+      ],
+      "width": 240,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2409,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2409,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0167,
+          "cover": 0.025
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2409,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "72c3ce61243de3e0",
+      "window": [
+        22673,
+        22740
+      ],
+      "width": 67,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1309,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1309,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0299,
+          "cover": 0.0597
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1309,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "5a64d30eb300c755",
+      "window": [
+        20321,
+        20560
+      ],
+      "width": 239,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2686,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2686,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4732,
+          "cover": 0.6653
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2686,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "33101f32efac8889",
+      "window": [
+        12881,
+        12993
+      ],
+      "width": 112,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2188,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2188,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2188,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2188,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "616c455525c6cbc2",
+      "window": [
+        5628,
+        5796
+      ],
+      "width": 168,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3178,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3178,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0233,
+          "cover": 0.0476
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3178,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "71f6ab954c122126",
+      "window": [
+        32524,
+        32727
+      ],
+      "width": 203,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3965,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3965,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0193,
+          "cover": 0.0246
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3965,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "cd1d69eba24d6a19",
+      "window": [
+        26301,
+        26363
+      ],
+      "width": 62,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1211,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1211,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0448,
+          "cover": 0.0645
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1211,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "9750cc5f7dc4d153",
+      "window": [
+        13973,
+        14188
+      ],
+      "width": 215,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4199,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4199,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4596,
+          "cover": 0.5023
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.4199,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "dce198f709dc74ee",
+      "window": [
+        1887,
+        2083
+      ],
+      "width": 196,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2943,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2943,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.0102,
+          "cover": 0.0408
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2943,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "3654d9e851d8b0cf",
+      "window": [
+        12567,
+        12736
+      ],
+      "width": 169,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3301,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3301,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3787,
+          "cover": 0.568
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.3301,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "138fb0f940ab6254",
+      "window": [
+        14787,
+        14884
+      ],
+      "width": 97,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1113,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1113,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.61,
+          "cover": 0.9588
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1113,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "d2a529e9f17613ab",
+      "window": [
+        10688,
+        10727
+      ],
+      "width": 39,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0762,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0762,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0762,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "1ea243997c92633d",
+      "window": [
+        394,
+        461
+      ],
+      "width": 67,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1309,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1309,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0597,
+          "cover": 0.0896
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1309,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "c70faed136047ba3",
+      "window": [
+        14166,
+        14175
+      ],
+      "width": 9,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0176,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0176,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0176,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "0c2d6c7b1a586eb6",
+      "window": [
+        21931,
+        22165
+      ],
+      "width": 234,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2496,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2496,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0085,
+          "cover": 0.0171
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2496,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "72074ce46bb942cc",
+      "window": [
+        25054,
+        25189
+      ],
+      "width": 135,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1318,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1318,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4741,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1318,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "10e88c60bf93159d",
+      "window": [
+        37983,
+        38075
+      ],
+      "width": 92,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0898,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0898,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3594,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0898,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "934bca3240a908fb",
+      "window": [
+        13233,
+        13418
+      ],
+      "width": 185,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0961,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0961,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3376,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0961,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "efc27eb0c6793528",
+      "window": [
+        5680,
+        5883
+      ],
+      "width": 203,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1982,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1982,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3965,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1982,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "e67dba354bea0dcd",
+      "window": [
+        63093,
+        63321
+      ],
+      "width": 228,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2227,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2227,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0088,
+          "cover": 0.0175
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2227,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "bd6691e559fcf6eb",
+      "window": [
+        12656,
+        12729
+      ],
+      "width": 73,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0713,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0713,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0135,
+          "cover": 0.0137
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0713,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "219b01a8cd65fb40",
+      "window": [
+        53126,
+        53226
+      ],
+      "width": 100,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0977,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0977,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.7812,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0977,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "5ec7b2d8ca2207ee",
+      "window": [
+        57950,
+        58010
+      ],
+      "width": 60,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0586,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0586,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0667,
+          "cover": 0.0667
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0586,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "455a7bebda1bd804",
+      "window": [
+        19624,
+        19795
+      ],
+      "width": 171,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.167,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.167,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.017,
+          "cover": 0.0175
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.167,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "9b3fd889641eb02e",
+      "window": [
+        22576,
+        22778
+      ],
+      "width": 202,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1973,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1973,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.7891,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1973,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "974be9e265586f57",
+      "window": [
+        6695,
+        6837
+      ],
+      "width": 142,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1387,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1387,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4917,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1387,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "636f0f848a373616",
+      "window": [
+        59330,
+        59520
+      ],
+      "width": 190,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1179,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1179,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.1684,
+          "cover": 0.5895
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1179,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "54c7668a68f885e0",
+      "window": [
+        29932,
+        29942
+      ],
+      "width": 10,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0098,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0098,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4,
+          "cover": 0.6
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0098,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "abb946e7b0bf6d0d",
+      "window": [
+        17802,
+        17957
+      ],
+      "width": 155,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1514,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1514,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.2065,
+          "cover": 0.4129
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1514,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "214156a193af3b43",
+      "window": [
+        13277,
+        13424
+      ],
+      "width": 147,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1058,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1058,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3849,
+          "cover": 0.7687
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1058,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "4e0d8c766331c098",
+      "window": [
+        25393,
+        25595
+      ],
+      "width": 202,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1973,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1973,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3945,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1973,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "88e03f905165cb07",
+      "window": [
+        26558,
+        26569
+      ],
+      "width": 11,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0107,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0107,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3636,
+          "cover": 0.5455
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0107,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "beb3f1d1d5e77e20",
+      "window": [
+        49989,
+        50159
+      ],
+      "width": 170,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.166,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.166,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0118,
+          "cover": 0.0235
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.166,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "c2e9921cad487b86",
+      "window": [
+        18326,
+        18402
+      ],
+      "width": 76,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0742,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0742,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4211,
+          "cover": 0.6316
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0742,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "0d9187472dddddb6",
+      "window": [
+        63080,
+        63251
+      ],
+      "width": 171,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.167,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.167,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.167,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "ad09df3c327209de",
+      "window": [
+        58703,
+        58908
+      ],
+      "width": 205,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2002,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2002,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.039,
+          "cover": 0.078
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.2002,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "06316dc88948c46e",
+      "window": [
+        36741,
+        36874
+      ],
+      "width": 133,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.119,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.119,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.0602,
+          "cover": 0.1203
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.119,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "514c3b70614a8e1a",
+      "window": [
+        6319,
+        6365
+      ],
+      "width": 46,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0449,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0449,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.358,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0449,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "cfc2757e123c557a",
+      "window": [
+        5787,
+        5859
+      ],
+      "width": 72,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0703,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0703,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0278,
+          "cover": 0.0556
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0703,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "1b5ddc264a85d04a",
+      "window": [
+        45408,
+        45515
+      ],
+      "width": 107,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1045,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1045,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0748,
+          "cover": 0.0841
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1045,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "b51d5baad89989f5",
+      "window": [
+        39442,
+        39525
+      ],
+      "width": 83,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0811,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0811,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.4554,
+          "cover": 0.9398
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0811,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "f7fe85dbf6e8c89d",
+      "window": [
+        55702,
+        55858
+      ],
+      "width": 156,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1523,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1523,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0128,
+          "cover": 0.0256
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1523,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "3edcc5582fc7b2d6",
+      "window": [
+        16313,
+        16462
+      ],
+      "width": 149,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0368,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0368,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.0134,
+          "cover": 0.0537
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0368,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "fa4ee824c5f334bc",
+      "window": [
+        98441,
+        98530
+      ],
+      "width": 89,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0435,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0435,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6953,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0435,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "1080bfc234c5dec1",
+      "window": [
+        118387,
+        118449
+      ],
+      "width": 62,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0303,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0303,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.129,
+          "cover": 0.1935
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0303,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "f845940778ac85ee",
+      "window": [
+        36962,
+        37114
+      ],
+      "width": 152,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0742,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0742,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5938,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0742,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "8257d8d02b53814d",
+      "window": [
+        51698,
+        51851
+      ],
+      "width": 153,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0747,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0747,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0131,
+          "cover": 0.0261
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0747,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "fc497fc3cbdf78b2",
+      "window": [
+        69888,
+        69915
+      ],
+      "width": 27,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0132,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0132,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0938,
+          "cover": 0.1111
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0132,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "a818680782064c5b",
+      "window": [
+        58216,
+        58269
+      ],
+      "width": 53,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0259,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0259,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5179,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0259,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "354c82f9b4436fff",
+      "window": [
+        47842,
+        48016
+      ],
+      "width": 174,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.085,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.085,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3678,
+          "cover": 0.7356
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.085,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "cb54009c0d5c589b",
+      "window": [
+        60775,
+        60908
+      ],
+      "width": 133,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0649,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0649,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1299,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0649,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "bde73700502f4dcf",
+      "window": [
+        110460,
+        110664
+      ],
+      "width": 204,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0623,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0623,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.1569,
+          "cover": 0.549
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0623,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "d62bb692aa3a574e",
+      "window": [
+        98012,
+        98139
+      ],
+      "width": 127,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.062,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.062,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0157,
+          "cover": 0.0315
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.062,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "86886293e8af2b81",
+      "window": [
+        92909,
+        93136
+      ],
+      "width": 227,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1108,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1108,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0129,
+          "cover": 0.0132
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.1108,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "1b31b07cfc3966cb",
+      "window": [
+        3319,
+        3532
+      ],
+      "width": 213,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.104,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.104,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.416,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.104,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "dd8c062d4c9b9395",
+      "window": [
+        40342,
+        40476
+      ],
+      "width": 134,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0654,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0654,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0299,
+          "cover": 0.0597
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0654,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "fd53e29f767a4c70",
+      "window": [
+        105777,
+        105978
+      ],
+      "width": 201,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0981,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0981,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.1963,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0981,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "da2b7d84af21f16b",
+      "window": [
+        75000,
+        75077
+      ],
+      "width": 77,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0376,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0376,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.8312,
+          "cover": 0.8961
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0376,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "8b21f007fdcbad98",
+      "window": [
+        94885,
+        95100
+      ],
+      "width": 215,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.105,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.105,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3573,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.105,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "1bb898e06b9e2f65",
+      "window": [
+        64362,
+        64383
+      ],
+      "width": 21,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0103,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0103,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 0,
+          "best_iou": 0.0,
+          "cover": 0.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0103,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "54969169f5855b14",
+      "window": [
+        57404,
+        57578
+      ],
+      "width": 174,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.085,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.085,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.5408,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.085,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "0687bb6453f22f07",
+      "window": [
+        669,
+        745
+      ],
+      "width": 76,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0371,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0371,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.3333,
+          "cover": 1.0
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0371,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "61224b803da3c121",
+      "window": [
+        8128,
+        8302
+      ],
+      "width": 174,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0521,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0521,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 4,
+          "best_iou": 0.023,
+          "cover": 0.0575
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.0521,
+          "cover": 1.0
+        }
+      }
+    },
+    {
+      "id": "d0224ac2e43c04dd",
+      "window": [
+        123896,
+        124083
+      ],
+      "width": 187,
+      "families": {
+        "A": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0913,
+          "cover": 1.0
+        },
+        "D_coverage": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0913,
+          "cover": 1.0
+        },
+        "D_salient": {
+          "tokens": 64,
+          "overlapping": 2,
+          "best_iou": 0.6845,
+          "cover": 0.9572
+        },
+        "raw": {
+          "tokens": 64,
+          "overlapping": 1,
+          "best_iou": 0.0913,
+          "cover": 1.0
+        }
+      }
+    }
+  ]
+}

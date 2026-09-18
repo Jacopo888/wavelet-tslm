@@ -4,7 +4,7 @@ prime-rl c5afcaa2e writes on disk (no GPU, no prime-rl import):
 
   <output_dir>/run_default/rollouts/step_N/train_rollouts.jsonl   one record per rollout that was
       shipped to the trainer at step N: task (category, length, n_channels, seed), rewards
-      ({correct_answer, forced_final_penalty}), metrics (dataset metrics), nodes (message graph
+      ({correct_answer, answer_format}), metrics (dataset metrics + forced_final telemetry), nodes (message graph
       with tool_calls + per-node usage), stop_condition, errors, is_completed, timing
   <output_dir>/logs/orchestrator.log   ``Step N | t | Reward r | Trainable a/b | Turns t | ... |
       Error e% | Truncation t%`` success lines (the sink-level view, errored arrivals included)
@@ -13,8 +13,8 @@ Usage:
   l2_monitor.py <output_dir> [--follow] [--jsonl <path>] [--expect-rollouts N] [--max-error-rate F]
 
 Exit codes (the run driver uses them as a fail-closed gate): 0 fine; 3 a step exceeded the error
-rate, had incomplete sources, or shipped a different rollout count; 4 no step seen. The JSONL written with --jsonl is
-the durable coverage record of the run.
+rate, had incomplete sources, or shipped a different rollout count; 4 no step seen; 5 the
+optional collapse guard fired. The JSONL written with --jsonl is the durable coverage record.
 """
 
 from __future__ import annotations
@@ -84,6 +84,14 @@ def _tokens(rec: dict) -> tuple[int, int]:
     return p, c
 
 
+def _final_text(rec: dict) -> str:
+    for node in reversed(rec.get("nodes") or []):
+        msg = node.get("message") or {}
+        if msg.get("role") == "assistant":
+            return str(msg.get("content") or "")
+    return ""
+
+
 def summarize_step(step: int, path: Path) -> dict:
     rows = []
     with open(path, encoding="utf-8", errors="replace") as f:
@@ -99,7 +107,13 @@ def summarize_step(step: int, path: Path) -> dict:
     errored = sum(1 for r in rows if (r.get("errors") or []) or r.get("is_completed") is False)
     total_rewards = [float(sum((r.get("rewards") or {}).values())) for r in rows]
     correct = [float((r.get("rewards") or {}).get("correct_answer", 0.0)) for r in rows]
-    forced = sum(1 for r in rows if float((r.get("rewards") or {}).get("forced_final_penalty", 0.0)) < 0)
+    format_valid = sum(1 for r in rows if float((r.get("rewards") or {}).get("answer_format", 0.0)) > 0)
+    forced = sum(
+        1 for r in rows
+        if float((r.get("metrics") or {}).get("forced_final", 0.0)) > 0
+        or float((r.get("rewards") or {}).get("forced_final_penalty", 0.0)) < 0  # legacy runs
+    )
+    empty_final = sum(1 for r in rows if not _final_text(r).strip())
     stops = collections.Counter(str(r.get("stop_condition")) for r in rows)
     by_cat: dict[str, list[float]] = collections.defaultdict(list)
     for r, rew in zip(rows, total_rewards):
@@ -126,7 +140,11 @@ def summarize_step(step: int, path: Path) -> dict:
         "reward_mean": (sum(total_rewards) / n) if n else None,
         "reward_positive": sum(1 for x in total_rewards if x > 0),
         "correct_mean": (sum(correct) / n) if n else None,
+        "correct_positive": sum(1 for x in correct if x > 0),
+        "format_valid": format_valid,
         "forced_final": forced,
+        "empty_final": empty_final,
+        "empty_final_rate": (empty_final / n) if n else None,
         "stop_conditions": dict(stops),
         "per_category": {k: {"n": len(v), "reward_mean": sum(v) / len(v)} for k, v in sorted(by_cat.items())},
         "groups": len(groups),
@@ -150,7 +168,9 @@ def fmt(row: dict) -> str:
         f"log_err {f(row.get('log_error_rate'))}",
         f"trainable {row.get('log_trainable')}/{row.get('log_effective')}",
         f"reward {f(row.get('reward_mean'))} (>0: {row.get('reward_positive')})",
-        f"correct {f(row.get('correct_mean'))}",
+        f"correct {f(row.get('correct_mean'))} (>0: {row.get('correct_positive')})",
+        f"format {row.get('format_valid')}",
+        f"empty_final {row.get('empty_final')} ({f(row.get('empty_final_rate'))})",
         f"forced_final {row.get('forced_final')}",
         f"zero_var_groups {row.get('zero_variance_groups')}/{row.get('groups')}",
         f"turns {f(row.get('turns_mean'), 1)}",
@@ -180,19 +200,51 @@ def coverage_row(step: int, summary: dict | None, lg: dict | None, expect_rollou
     return row
 
 
+def collapse_guard(rows: list[dict], consecutive: int, min_trainable: int, max_empty_rate: float) -> tuple[bool, str]:
+    """Fail only on a consecutive completed-step streak; one noisy step is tolerated."""
+    streak: list[tuple[int, list[str]]] = []
+    for row in sorted(rows, key=lambda r: r["step"]):
+        reasons = []
+        if (row.get("log_trainable") is not None and row["log_trainable"] < min_trainable):
+            reasons.append(f"trainable={row['log_trainable']}<{min_trainable}")
+        if (row.get("empty_final_rate") is not None and row["empty_final_rate"] > max_empty_rate):
+            reasons.append(f"empty_final_rate={row['empty_final_rate']:.3f}>{max_empty_rate:.3f}")
+        if reasons:
+            if streak and row["step"] != streak[-1][0] + 1:
+                streak = []
+            streak.append((row["step"], reasons))
+            if len(streak) >= consecutive:
+                return False, "; ".join(f"step {s}: {', '.join(rs)}" for s, rs in streak[-consecutive:])
+        else:
+            streak = []
+    return True, "no consecutive collapse signature"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("output_dir")
     ap.add_argument("--follow", action="store_true")
     ap.add_argument("--interval", type=float, default=60.0)
     ap.add_argument("--jsonl", help="append one coverage row per new step here")
+    ap.add_argument(
+        "--log-file",
+        action="append",
+        default=[],
+        help="orchestrator log to parse; repeat for multi-phase runs (default: output_dir/logs/orchestrator.log)",
+    )
     ap.add_argument("--expect-rollouts", type=int, default=None)
     ap.add_argument("--max-error-rate", type=float, default=0.25)
+    ap.add_argument("--guard-collapse", action="store_true", help="check only consecutive empty/low-trainable steps")
+    ap.add_argument("--guard-consecutive", type=int, default=2)
+    ap.add_argument("--min-trainable", type=int, default=8)
+    ap.add_argument("--max-empty-rate", type=float, default=0.80)
     args = ap.parse_args()
+    if args.guard_collapse and args.follow:
+        ap.error("--guard-collapse is a one-shot check and cannot be combined with --follow")
 
     out = Path(args.output_dir)
     rollouts_root = out / "run_default" / "rollouts"
-    log_path = out / "logs" / "orchestrator.log"
+    log_paths = [Path(p) for p in args.log_file] or [out / "logs" / "orchestrator.log"]
     seen: set[int] = set()
     violations = 0
     jsonl = open(args.jsonl, "a", encoding="utf-8") if args.jsonl else None
@@ -207,7 +259,17 @@ def main() -> int:
                             step_files[int(d.name.split("_")[1])] = p
                         except ValueError:
                             continue
-            lg = parse_log_steps(log_path)
+            lg = {}
+            for log_path in log_paths:
+                lg.update(parse_log_steps(log_path))
+            if args.guard_collapse:
+                rows = [
+                    coverage_row(s, summarize_step(s, step_files[s]), lg[s], args.expect_rollouts)
+                    for s in sorted(set(step_files) & set(lg))
+                ]
+                ok, reason = collapse_guard(rows, args.guard_consecutive, args.min_trainable, args.max_empty_rate)
+                print(f"[L2-Guard] {'OK' if ok else 'COLLAPSE'}: {reason}", flush=True)
+                return 0 if ok else 5
             for s in sorted(set(step_files) | set(lg)):
                 if s in seen:
                     continue

@@ -4,13 +4,14 @@
 # config) for prime-rl c5afcaa2e (2026-06-26, the last upstream commit whose schema and
 # verifiers submodule match the paper's env; see l2/PROTOCOL-L2.md). Everything the paper
 # fixed is kept: generator taskset at fixed theta, RLM harness, reward = scorer +
-# group-aware token-expense penalty (coef 0.1) + forced-final penalty, renderer qwen3.5,
+# group-aware token-expense penalty (coef 0.1), renderer qwen3.5,
 # online eval on the precise val, two-phase negatives schedule (driven by the launch env,
 # see node_l2_run.sh). What changes is hardware-forced and identical for both arms:
 #   - policy Qwen3.5-2B (4B does not fit next to vLLM in 24 GB), LoRA r32/a64 instead of
 #     full-parameter, lr 2e-5 (LoRA needs more than the paper's 7e-6 full-param)
-#   - seq_len 32768 (was 65536), 12-turn cap (was 15), 16k completion budget (was 24k)
+#   - seq_len 32768 (was 65536), 16k completion budget (was 24k); turn cap stays 15
 #   - 64 rollouts/step = 8 prompts x 8 (was 1024 = 128 x 8), 60 steps (was 400)
+#   - first 10 steps use the same easy curriculum in both arms, then return to official theta
 #   - ONE standalone vLLM server on the same GPU (was two servers on two GPUs)
 # The wavelet arm (l2_pilot_wavelet.toml) differs from this file ONLY in output_dir and
 # the RLM_SKILLS harness env entry. The task-note variant is selected by
@@ -60,14 +61,14 @@ name = "anomalyxl-generator"
 # AnomalyXL dataset for the scorer/schema; unset it resolves the HF shard (blocked offline, and
 # unpinned) -> point it at the pinned local val directory (never read for training tasks).
 taskset = { id = "timeseries-qa-v1", repo_or_path = "/root/timerlm/l2/data/val", generator = { num_tasks = 100000, run_seed = 20260903 } }
-harness = { id = "timeseries-qa-v1", summarize_at_tokens = 22000, env = { RLM_MAX_TOKENS = "16384", RLM_MAX_OUTPUT = "4096", RLM_MAX_TURNS = "12" } }
+harness = { id = "timeseries-qa-v1", summarize_at_tokens = 22000, env = { RLM_MAX_TOKENS = "16384", RLM_MAX_OUTPUT = "4096", RLM_MAX_TURNS = "15" } }
 
 # Online eval every 10 steps on the pinned local precise VALIDATION split (first 100 rows =
 # eval pool, 32 sampled), through the v0 eval env exactly like the paper.
 [[orchestrator.eval.env]]
 id = "timeseries-qa"
 name = "anomalyxl-rlm-text-eval"
-args = { dataset = "anomalyxl", repo_or_path = "/root/timerlm/l2/data/val", mode = "rlm", use_image = false, use_local_executor = true, eval_size = 100, max_turns = 12 }
+args = { dataset = "anomalyxl", repo_or_path = "/root/timerlm/l2/data/val", mode = "rlm", use_image = false, use_local_executor = true, eval_size = 100, max_turns = 15 }
 
 [orchestrator.eval]
 interval = 10
@@ -96,9 +97,8 @@ rank = 32
 alpha = 64
 target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "in_proj_qkv", "in_proj_z", "in_proj_b", "in_proj_a", "out_proj"]
 
-# Phase boundary of the negatives schedule = step 35 (paper: 220/400 = 55%; 35/60 = 58%,
-# the nearest checkpoint multiple). keep_interval keeps step_35 for the phase-2 resume.
+# Phase boundary = step 10: short learnability bootstrap, then official distribution.
 [ckpt]
 interval = 5
 keep_last = 3
-keep_interval = 35
+keep_interval = 10

@@ -1,0 +1,758 @@
+{
+  "checkpoint": "/workspace/runs/va1r/checkpoints/step_000000004488",
+  "optimizer_step": 4488,
+  "rows": 6,
+  "seed": 5,
+  "conditions": [
+    "real",
+    "empty",
+    "substituted",
+    "oracle",
+    "permuted"
+  ],
+  "budgets": {
+    "max_new_tokens": 768,
+    "max_reasoning_tokens": 0,
+    "thinking": false
+  },
+  "ce_mean": {
+    "real": 0.868728148934224,
+    "empty": 0.8668081978947839,
+    "substituted": 0.8710253099541964,
+    "oracle": 0.8713150978080648,
+    "permuted": 0.8687546471745691
+  },
+  "primary_mean": {
+    "real": 0.4451536625452586,
+    "empty": 0.4752095494212198,
+    "substituted": 0.4496546189985049,
+    "oracle": 0.47666485867443603,
+    "permuted": 0.44515441270466755
+  },
+  "invalid_rate": {
+    "real": 0.0,
+    "empty": 0.0,
+    "substituted": 0.0,
+    "oracle": 0.0,
+    "permuted": 0.0
+  },
+  "oracle_bootstrap": {
+    "permuted_minus_oracle": {
+      "mean": -0.0025604506334957478,
+      "ci95_lower": -0.00712866187095642,
+      "ci95_upper": 0.001091704765826762,
+      "n": 6,
+      "resamples": 10000
+    },
+    "empty_minus_oracle": {
+      "mean": -0.004506899913280904,
+      "ci95_lower": -0.011131270726650655,
+      "ci95_upper": 0.0025675853092176717,
+      "n": 6,
+      "resamples": 10000
+    }
+  },
+  "criteria": {
+    "ci95_lower_gt_zero_permuted_minus_oracle": false,
+    "ci95_lower_gt_zero_empty_minus_oracle": false,
+    "primary_oracle_gt_permuted": true,
+    "primary_oracle_gt_empty": true
+  },
+  "verdict": "INCONCLUSIVE",
+  "content_dependence": {
+    "primary_real_minus_substituted": {
+      "mean": -0.004500956453246274,
+      "ci95_lower": -0.013502869359738823,
+      "ci95_upper": 0.0,
+      "n": 6,
+      "resamples": 10000
+    },
+    "primary_real_minus_empty": {
+      "mean": -0.03005588687596115,
+      "ci95_lower": -0.09016766062788345,
+      "ci95_upper": 0.0,
+      "n": 6,
+      "resamples": 10000
+    },
+    "ce_substituted_minus_real": {
+      "mean": 0.0022971610199723123,
+      "ci95_lower": -0.003530514243114643,
+      "ci95_upper": 0.00910888115564982,
+      "n": 6,
+      "resamples": 10000
+    },
+    "ce_empty_minus_real": {
+      "mean": -0.0019199510394400932,
+      "ci95_lower": -0.007132381200790405,
+      "ci95_upper": 0.005216379960378011,
+      "n": 6,
+      "resamples": 10000
+    },
+    "z1bis_reference": {
+      "primary_delta": 0.1349,
+      "ci95": [
+        0.0954,
+        0.1748
+      ],
+      "threshold": 0.05
+    }
+  },
+  "content_dependence_signal_only": {
+    "categories": [
+      "localize",
+      "classify_with_evidence",
+      "localize_all_channels"
+    ],
+    "primary_real_minus_substituted": {
+      "mean": 0.0,
+      "ci95_lower": 0.0,
+      "ci95_upper": 0.0,
+      "n": 4,
+      "resamples": 10000
+    },
+    "primary_real_minus_empty": {
+      "mean": 0.0,
+      "ci95_lower": 0.0,
+      "ci95_upper": 0.0,
+      "n": 4,
+      "resamples": 10000
+    },
+    "ce_substituted_minus_real": {
+      "mean": 0.0011145591693093593,
+      "ci95_lower": -0.002566009759902954,
+      "ci95_upper": 0.004431784152984619,
+      "n": 4,
+      "resamples": 10000
+    },
+    "meets_z1bis_threshold": false
+  },
+  "primary_by_category": {
+    "classify_with_evidence": {
+      "real": 0.0,
+      "empty": 0.0,
+      "substituted": 0.0,
+      "oracle": 0.0,
+      "permuted": 0.0
+    },
+    "lead_lag_with_magnitude": {
+      "real": 0.86053466796875,
+      "empty": 0.86053466796875,
+      "substituted": 0.86053466796875,
+      "oracle": 0.86053466796875,
+      "permuted": 0.86053466796875
+    },
+    "localize": {
+      "real": 0.0,
+      "empty": 0.0,
+      "substituted": 0.0,
+      "oracle": 0.0,
+      "permuted": 0.0
+    },
+    "localize_all_channels": {
+      "real": 1.0,
+      "empty": 1.0,
+      "substituted": 1.0,
+      "oracle": 1.0,
+      "permuted": 1.0
+    },
+    "measure_magnitude": {
+      "real": 0.8103873073028018,
+      "empty": 0.9907226285585687,
+      "substituted": 0.8373930460222795,
+      "oracle": 0.9994544840778663,
+      "permuted": 0.8103918082592549
+    }
+  },
+  "ce_by_category": {
+    "classify_with_evidence": {
+      "real": 1.114296793937683,
+      "empty": 1.107028603553772,
+      "substituted": 1.1172542572021484,
+      "oracle": 1.0963367223739624,
+      "permuted": 1.0955040454864502
+    },
+    "lead_lag_with_magnitude": {
+      "real": 0.9202411770820618,
+      "empty": 0.9348037838935852,
+      "substituted": 0.9372299313545227,
+      "oracle": 0.9459354281425476,
+      "permuted": 0.9418342709541321
+    },
+    "localize": {
+      "real": 1.1034378409385681,
+      "empty": 1.0953122973442078,
+      "substituted": 1.1041873097419739,
+      "oracle": 1.1044456362724304,
+      "permuted": 1.0973097681999207
+    },
+    "localize_all_channels": {
+      "real": 5.292874448059592e-06,
+      "empty": 2.932543111455743e-06,
+      "substituted": 7.12868040864123e-06,
+      "oracle": 2.7179671633348335e-06,
+      "permuted": 2.813333821904962e-06
+    },
+    "measure_magnitude": {
+      "real": 0.9709499478340149,
+      "empty": 0.9683892726898193,
+      "substituted": 0.9632859230041504,
+      "oracle": 0.9767244458198547,
+      "permuted": 0.980567216873169
+    }
+  },
+  "seconds": 275.8,
+  "records": [
+    {
+      "recording_id": "4c96d496149d1296",
+      "category": "localize",
+      "row": 113,
+      "text_donor_row": 493,
+      "token_donor_row": 102,
+      "true_reading": "top ch_00:25,54,13; peak ch_00:59.",
+      "ce": {
+        "real": 1.1317239999771118,
+        "empty": 1.1246874332427979,
+        "substituted": 1.1273168325424194,
+        "oracle": 1.1262576580047607,
+        "permuted": 1.1253806352615356
+      },
+      "primary": {
+        "real": 0.0,
+        "empty": 0.0,
+        "substituted": 0.0,
+        "oracle": 0.0,
+        "permuted": 0.0
+      },
+      "invalid_format": {
+        "real": false,
+        "empty": false,
+        "substituted": false,
+        "oracle": false,
+        "permuted": false
+      },
+      "prediction": {
+        "real": "localize:{\"_L\": 32768, \"end\": 11061, \"present\": true, \"start\": 10914}",
+        "empty": "localize:{\"_L\": 32768, \"end\": 12007, \"present\": true, \"start\": 11914}",
+        "substituted": "localize:{\"_L\": 32768, \"end\": 12161, \"present\": true, \"start\": 12014}",
+        "oracle": "localize:{\"_L\": 32768, \"end\": 12161, \"present\": true, \"start\": 12010}",
+        "permuted": "localize:{\"_L\": 32768, \"end\": 12061, \"present\": true, \"start\": 11914}"
+      },
+      "generated_reading": {
+        "real": "",
+        "empty": "",
+        "substituted": "",
+        "oracle": "",
+        "permuted": ""
+      },
+      "generation": {
+        "real": {
+          "prompt_tokens": 550,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 39,
+          "finished": true,
+          "forced_closure": false
+        },
+        "empty": {
+          "prompt_tokens": 550,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 39,
+          "finished": true,
+          "forced_closure": false
+        },
+        "substituted": {
+          "prompt_tokens": 550,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 39,
+          "finished": true,
+          "forced_closure": false
+        },
+        "oracle": {
+          "prompt_tokens": 577,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 39,
+          "finished": true,
+          "forced_closure": false
+        },
+        "permuted": {
+          "prompt_tokens": 594,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 39,
+          "finished": true,
+          "forced_closure": false
+        }
+      },
+      "final_field_tokens": {
+        "real": 15,
+        "empty": 15,
+        "substituted": 15,
+        "oracle": 15,
+        "permuted": 15
+      }
+    },
+    {
+      "recording_id": "a818680782064c5b",
+      "category": "localize",
+      "row": 293,
+      "text_donor_row": 113,
+      "token_donor_row": 318,
+      "true_reading": "top ch_00:28,33,4; peak ch_00:28.",
+      "ce": {
+        "real": 1.0751516819000244,
+        "empty": 1.0659371614456177,
+        "substituted": 1.0810577869415283,
+        "oracle": 1.0826336145401,
+        "permuted": 1.0692389011383057
+      },
+      "primary": {
+        "real": 0.0,
+        "empty": 0.0,
+        "substituted": 0.0,
+        "oracle": 0.0,
+        "permuted": 0.0
+      },
+      "invalid_format": {
+        "real": false,
+        "empty": false,
+        "substituted": false,
+        "oracle": false,
+        "permuted": false
+      },
+      "prediction": {
+        "real": "localize:{\"_L\": 131072, \"end\": 102161, \"present\": true, \"start\": 102010}",
+        "empty": "localize:{\"_L\": 131072, \"end\": 102611, \"present\": true, \"start\": 102470}",
+        "substituted": "localize:{\"_L\": 131072, \"end\": 102611, \"present\": true, \"start\": 102460}",
+        "oracle": "localize:{\"_L\": 131072, \"end\": 101121, \"present\": true, \"start\": 100966}",
+        "permuted": "localize:{\"_L\": 131072, \"end\": 102117, \"present\": true, \"start\": 102010}"
+      },
+      "generated_reading": {
+        "real": "",
+        "empty": "",
+        "substituted": "",
+        "oracle": "",
+        "permuted": ""
+      },
+      "generation": {
+        "real": {
+          "prompt_tokens": 561,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 42,
+          "finished": true,
+          "forced_closure": false
+        },
+        "empty": {
+          "prompt_tokens": 561,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 42,
+          "finished": true,
+          "forced_closure": false
+        },
+        "substituted": {
+          "prompt_tokens": 561,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 42,
+          "finished": true,
+          "forced_closure": false
+        },
+        "oracle": {
+          "prompt_tokens": 587,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 42,
+          "finished": true,
+          "forced_closure": false
+        },
+        "permuted": {
+          "prompt_tokens": 588,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 42,
+          "finished": true,
+          "forced_closure": false
+        }
+      },
+      "final_field_tokens": {
+        "real": 16,
+        "empty": 16,
+        "substituted": 16,
+        "oracle": 16,
+        "permuted": 16
+      }
+    },
+    {
+      "recording_id": "d982373ec1c32dad",
+      "category": "classify_with_evidence",
+      "row": 336,
+      "text_donor_row": 293,
+      "token_donor_row": 361,
+      "true_reading": "top ch_00:13,24,60; peak ch_00:13.",
+      "ce": {
+        "real": 1.114296793937683,
+        "empty": 1.107028603553772,
+        "substituted": 1.1172542572021484,
+        "oracle": 1.0963367223739624,
+        "permuted": 1.0955040454864502
+      },
+      "primary": {
+        "real": 0.0,
+        "empty": 0.0,
+        "substituted": 0.0,
+        "oracle": 0.0,
+        "permuted": 0.0
+      },
+      "invalid_format": {
+        "real": false,
+        "empty": false,
+        "substituted": false,
+        "oracle": false,
+        "permuted": false
+      },
+      "prediction": {
+        "real": "classify_with_evidence:{\"_L\": 131072, \"end\": 100000, \"kind\": \"Change in Variance\", \"start\": 99800}",
+        "empty": "classify_with_evidence:{\"_L\": 131072, \"end\": 100000, \"kind\": \"Change in Variance\", \"start\": 99800}",
+        "substituted": "classify_with_evidence:{\"_L\": 131072, \"end\": 100000, \"kind\": \"Change in Variance\", \"start\": 99800}",
+        "oracle": "classify_with_evidence:{\"_L\": 131072, \"end\": 100000, \"kind\": \"Change in Variance\", \"start\": 99800}",
+        "permuted": "classify_with_evidence:{\"_L\": 131072, \"end\": 100000, \"kind\": \"Change in Variance\", \"start\": 99750}"
+      },
+      "generated_reading": {
+        "real": "",
+        "empty": "",
+        "substituted": "",
+        "oracle": "",
+        "permuted": ""
+      },
+      "generation": {
+        "real": {
+          "prompt_tokens": 701,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 47,
+          "finished": true,
+          "forced_closure": false
+        },
+        "empty": {
+          "prompt_tokens": 701,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 47,
+          "finished": true,
+          "forced_closure": false
+        },
+        "substituted": {
+          "prompt_tokens": 701,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 47,
+          "finished": true,
+          "forced_closure": false
+        },
+        "oracle": {
+          "prompt_tokens": 728,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 47,
+          "finished": true,
+          "forced_closure": false
+        },
+        "permuted": {
+          "prompt_tokens": 727,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 47,
+          "finished": true,
+          "forced_closure": false
+        }
+      },
+      "final_field_tokens": {
+        "real": 16,
+        "empty": 16,
+        "substituted": 16,
+        "oracle": 16,
+        "permuted": 16
+      }
+    },
+    {
+      "recording_id": "2212e3897f20f4b6",
+      "category": "measure_magnitude",
+      "row": 364,
+      "text_donor_row": 336,
+      "token_donor_row": 301,
+      "true_reading": "top ch_00:38,20,10; peak ch_00:38.",
+      "ce": {
+        "real": 0.9709499478340149,
+        "empty": 0.9683892726898193,
+        "substituted": 0.9632859230041504,
+        "oracle": 0.9767244458198547,
+        "permuted": 0.980567216873169
+      },
+      "primary": {
+        "real": 0.8103873073028018,
+        "empty": 0.9907226285585687,
+        "substituted": 0.8373930460222795,
+        "oracle": 0.9994544840778663,
+        "permuted": 0.8103918082592549
+      },
+      "invalid_format": {
+        "real": false,
+        "empty": false,
+        "substituted": false,
+        "oracle": false,
+        "permuted": false
+      },
+      "prediction": {
+        "real": "measure_magnitude:{\"_L\": 131072, \"magnitude_sigma\": 2.011114}",
+        "empty": "measure_magnitude:{\"_L\": 131072, \"magnitude_sigma\": 2.211444}",
+        "substituted": "measure_magnitude:{\"_L\": 131072, \"magnitude_sigma\": 2.041114}",
+        "oracle": "measure_magnitude:{\"_L\": 131072, \"magnitude_sigma\": 2.221144}",
+        "permuted": "measure_magnitude:{\"_L\": 131072, \"magnitude_sigma\": 2.011119}"
+      },
+      "generated_reading": {
+        "real": "",
+        "empty": "",
+        "substituted": "",
+        "oracle": "",
+        "permuted": ""
+      },
+      "generation": {
+        "real": {
+          "prompt_tokens": 545,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 30,
+          "finished": true,
+          "forced_closure": false
+        },
+        "empty": {
+          "prompt_tokens": 545,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 30,
+          "finished": true,
+          "forced_closure": false
+        },
+        "substituted": {
+          "prompt_tokens": 545,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 30,
+          "finished": true,
+          "forced_closure": false
+        },
+        "oracle": {
+          "prompt_tokens": 572,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 30,
+          "finished": true,
+          "forced_closure": false
+        },
+        "permuted": {
+          "prompt_tokens": 572,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 30,
+          "finished": true,
+          "forced_closure": false
+        }
+      },
+      "final_field_tokens": {
+        "real": 12,
+        "empty": 12,
+        "substituted": 12,
+        "oracle": 12,
+        "permuted": 12
+      }
+    },
+    {
+      "recording_id": "3887b52915a0b5bd",
+      "category": "localize_all_channels",
+      "row": 391,
+      "text_donor_row": 364,
+      "token_donor_row": 393,
+      "true_reading": "top ch_07:11,8,16; peak ch_07:53, ch_15:59.",
+      "ce": {
+        "real": 5.292874448059592e-06,
+        "empty": 2.932543111455743e-06,
+        "substituted": 7.12868040864123e-06,
+        "oracle": 2.7179671633348335e-06,
+        "permuted": 2.813333821904962e-06
+      },
+      "primary": {
+        "real": 1.0,
+        "empty": 1.0,
+        "substituted": 1.0,
+        "oracle": 1.0,
+        "permuted": 1.0
+      },
+      "invalid_format": {
+        "real": false,
+        "empty": false,
+        "substituted": false,
+        "oracle": false,
+        "permuted": false
+      },
+      "prediction": {
+        "real": "localize_all_channels:{\"_L\": 32768, \"anomalies\": []}",
+        "empty": "localize_all_channels:{\"_L\": 32768, \"anomalies\": []}",
+        "substituted": "localize_all_channels:{\"_L\": 32768, \"anomalies\": []}",
+        "oracle": "localize_all_channels:{\"_L\": 32768, \"anomalies\": []}",
+        "permuted": "localize_all_channels:{\"_L\": 32768, \"anomalies\": []}"
+      },
+      "generated_reading": {
+        "real": "",
+        "empty": "",
+        "substituted": "",
+        "oracle": "",
+        "permuted": ""
+      },
+      "generation": {
+        "real": {
+          "prompt_tokens": 5377,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 23,
+          "finished": true,
+          "forced_closure": false
+        },
+        "empty": {
+          "prompt_tokens": 5377,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 23,
+          "finished": true,
+          "forced_closure": false
+        },
+        "substituted": {
+          "prompt_tokens": 5377,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 23,
+          "finished": true,
+          "forced_closure": false
+        },
+        "oracle": {
+          "prompt_tokens": 5411,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 23,
+          "finished": true,
+          "forced_closure": false
+        },
+        "permuted": {
+          "prompt_tokens": 5404,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 23,
+          "finished": true,
+          "forced_closure": false
+        }
+      },
+      "final_field_tokens": {
+        "real": 5,
+        "empty": 5,
+        "substituted": 5,
+        "oracle": 5,
+        "permuted": 5
+      }
+    },
+    {
+      "recording_id": "f896d0c9378dcf75",
+      "category": "lead_lag_with_magnitude",
+      "row": 493,
+      "text_donor_row": 391,
+      "token_donor_row": 509,
+      "true_reading": "top B_ch_00:57,63, A_ch_00:62; peak B_ch_00:63, A_ch_00:62.",
+      "ce": {
+        "real": 0.9202411770820618,
+        "empty": 0.9348037838935852,
+        "substituted": 0.9372299313545227,
+        "oracle": 0.9459354281425476,
+        "permuted": 0.9418342709541321
+      },
+      "primary": {
+        "real": 0.86053466796875,
+        "empty": 0.86053466796875,
+        "substituted": 0.86053466796875,
+        "oracle": 0.86053466796875,
+        "permuted": 0.86053466796875
+      },
+      "invalid_format": {
+        "real": false,
+        "empty": false,
+        "substituted": false,
+        "oracle": false,
+        "permuted": false
+      },
+      "prediction": {
+        "real": "lead_lag_with_magnitude:{\"_L\": 131072, \"direction\": \"lag\", \"lag_samples\": 10000}",
+        "empty": "lead_lag_with_magnitude:{\"_L\": 131072, \"direction\": \"lag\", \"lag_samples\": 10000}",
+        "substituted": "lead_lag_with_magnitude:{\"_L\": 131072, \"direction\": \"lag\", \"lag_samples\": 10000}",
+        "oracle": "lead_lag_with_magnitude:{\"_L\": 131072, \"direction\": \"lag\", \"lag_samples\": 10000}",
+        "permuted": "lead_lag_with_magnitude:{\"_L\": 131072, \"direction\": \"lag\", \"lag_samples\": 10000}"
+      },
+      "generated_reading": {
+        "real": "",
+        "empty": "",
+        "substituted": "",
+        "oracle": "",
+        "permuted": ""
+      },
+      "generation": {
+        "real": {
+          "prompt_tokens": 954,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 36,
+          "finished": true,
+          "forced_closure": false
+        },
+        "empty": {
+          "prompt_tokens": 954,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 36,
+          "finished": true,
+          "forced_closure": false
+        },
+        "substituted": {
+          "prompt_tokens": 954,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 36,
+          "finished": true,
+          "forced_closure": false
+        },
+        "oracle": {
+          "prompt_tokens": 998,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 36,
+          "finished": true,
+          "forced_closure": false
+        },
+        "permuted": {
+          "prompt_tokens": 988,
+          "reasoning_tokens": 0,
+          "replayed_ids": 0,
+          "final_tokens": 36,
+          "finished": true,
+          "forced_closure": false
+        }
+      },
+      "final_field_tokens": {
+        "real": 11,
+        "empty": 11,
+        "substituted": 11,
+        "oracle": 11,
+        "permuted": 11
+      }
+    }
+  ]
+}

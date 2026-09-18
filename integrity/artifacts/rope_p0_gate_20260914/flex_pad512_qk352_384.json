@@ -1,0 +1,473 @@
+{
+  "schema_version": 2,
+  "label": "flex_pad512_qk352_384",
+  "started_at_utc": "2026-09-14T20:58:14.077105+00:00",
+  "args": {
+    "backend": "FLEX",
+    "label": "flex_pad512_qk352_384",
+    "qk_dims": [
+      352,
+      384
+    ],
+    "v_dim": 256,
+    "pad_qk_to": 512,
+    "heads": 16,
+    "kv_heads": 4,
+    "scale": 0.0625,
+    "numeric_length": 512,
+    "cache_prefix": 384,
+    "memory_lengths": [
+      4096,
+      16384
+    ],
+    "out_atol": 0.025,
+    "out_rtol": 0.025,
+    "grad_atol": 0.05,
+    "grad_rtol": 0.05,
+    "seed": 20260914,
+    "rocm_experimental": false,
+    "report": "/workspace/runs/p0-backend-gate/flex_pad512_qk352_384.json",
+    "skip_profile": false
+  },
+  "environment": {
+    "hostname": "2",
+    "platform": "Linux-6.8.0-60-generic-x86_64-with-glibc2.39",
+    "python": "3.12.10",
+    "torch": "2.6.0+git684f6f2",
+    "torch_cuda": null,
+    "torch_hip": "6.4.43483-a187df25c",
+    "cuda_available": true,
+    "env_TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL": null,
+    "device_name": "AMD Instinct MI300X VF",
+    "device_capability": [
+      9,
+      4
+    ],
+    "gcn_arch": "gfx942:sramecc+:xnack-",
+    "total_memory_gib": 191.69,
+    "bf16_supported": true,
+    "sdp_flags": {
+      "flash": true,
+      "mem_efficient": true,
+      "math": true
+    }
+  },
+  "cases": [
+    {
+      "case": "numeric_causal_square_qk352",
+      "required": true,
+      "q_len": 512,
+      "kv_len": 512,
+      "qk_dim": 352,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "explicit_mask": false,
+      "wall_seconds_incl_compile": 6.7292,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.01147913932800293,
+          "mean_abs_err": 0.00020026015408802778,
+          "max_rel_err": 523.1742553710938,
+          "ref_abs_mean": 0.0714646503329277,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.008877277374267578,
+          "mean_abs_err": 0.00012646245886571705,
+          "max_rel_err": 1540.9521484375,
+          "ref_abs_mean": 0.033321164548397064,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.0112113356590271,
+          "mean_abs_err": 0.00022434585844166577,
+          "max_rel_err": 488.5271301269531,
+          "ref_abs_mean": 0.05423546954989433,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.03539466857910156,
+          "mean_abs_err": 0.0003771943156607449,
+          "max_rel_err": 670.55224609375,
+          "ref_abs_mean": 0.11325857788324356,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_cache_offset_qk352",
+      "required": true,
+      "q_len": 128,
+      "kv_len": 512,
+      "qk_dim": 352,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "explicit_mask": true,
+      "wall_seconds_incl_compile": 4.7378,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.0008470118045806885,
+          "mean_abs_err": 0.00011463984264992177,
+          "max_rel_err": 181.41004943847656,
+          "ref_abs_mean": 0.03940579667687416,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.0005460083484649658,
+          "mean_abs_err": 7.394852582365274e-05,
+          "max_rel_err": 176.72915649414062,
+          "ref_abs_mean": 0.01966759003698826,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.0006417557597160339,
+          "mean_abs_err": 7.896783790783957e-05,
+          "max_rel_err": 172.26107788085938,
+          "ref_abs_mean": 0.019224075600504875,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.0010310262441635132,
+          "mean_abs_err": 0.00013003087951801717,
+          "max_rel_err": 267.2237243652344,
+          "ref_abs_mean": 0.0398554652929306,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L4096_qk352",
+      "required": true,
+      "q_len": 4096,
+      "kv_len": 4096,
+      "qk_dim": 352,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "wall_seconds_first_incl_compile": 4.6481,
+      "wall_seconds_fwd_bwd": 0.0173,
+      "peak_allocated_gib": 0.437,
+      "attention_extra_gib": 0.376,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L16384_qk352",
+      "required": true,
+      "q_len": 16384,
+      "kv_len": 16384,
+      "qk_dim": 352,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "wall_seconds_first_incl_compile": 4.8872,
+      "wall_seconds_fwd_bwd": 0.2297,
+      "peak_allocated_gib": 3.496,
+      "attention_extra_gib": 3.25,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "profile_qk352",
+      "required": false,
+      "backend": "FLEX",
+      "kernels": [
+        {
+          "name": "triton_tem_fused_zeros_1",
+          "count": 1,
+          "device_time_ms": 3.549
+        },
+        {
+          "name": "triton_tem_fused_zeros_1",
+          "count": 1,
+          "device_time_ms": 3.549
+        },
+        {
+          "name": "triton_tem_fused_0",
+          "count": 1,
+          "device_time_ms": 0.919
+        },
+        {
+          "name": "triton_tem_fused_0",
+          "count": 1,
+          "device_time_ms": 0.919
+        },
+        {
+          "name": "triton_per_fused_zeros_0",
+          "count": 1,
+          "device_time_ms": 0.018
+        },
+        {
+          "name": "triton_per_fused_zeros_0",
+          "count": 1,
+          "device_time_ms": 0.018
+        }
+      ],
+      "math_fallback_seen": false,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_causal_square_qk384",
+      "required": true,
+      "q_len": 512,
+      "kv_len": 512,
+      "qk_dim": 384,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "explicit_mask": false,
+      "wall_seconds_incl_compile": 0.0024,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.013086795806884766,
+          "mean_abs_err": 0.00020042716641910374,
+          "max_rel_err": 564.8609008789062,
+          "ref_abs_mean": 0.07199417054653168,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.008670926094055176,
+          "mean_abs_err": 0.00012747036817017943,
+          "max_rel_err": 432.8765563964844,
+          "ref_abs_mean": 0.03375076502561569,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.012586832046508789,
+          "mean_abs_err": 0.00022608489962294698,
+          "max_rel_err": 618.6524658203125,
+          "ref_abs_mean": 0.054738812148571014,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.036475181579589844,
+          "mean_abs_err": 0.0003774742945097387,
+          "max_rel_err": 501.2748107910156,
+          "ref_abs_mean": 0.11055350303649902,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_cache_offset_qk384",
+      "required": true,
+      "q_len": 128,
+      "kv_len": 512,
+      "qk_dim": 384,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "explicit_mask": true,
+      "wall_seconds_incl_compile": 0.0022,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.0008700937032699585,
+          "mean_abs_err": 0.00011626128980424255,
+          "max_rel_err": 468.7734680175781,
+          "ref_abs_mean": 0.03981770575046539,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.0005017444491386414,
+          "mean_abs_err": 7.418982568196952e-05,
+          "max_rel_err": 258.4194641113281,
+          "ref_abs_mean": 0.01966056227684021,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.0006288737058639526,
+          "mean_abs_err": 7.899958291091025e-05,
+          "max_rel_err": 213.31198120117188,
+          "ref_abs_mean": 0.01926429569721222,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.0011839866638183594,
+          "mean_abs_err": 0.0001304656034335494,
+          "max_rel_err": 129.10008239746094,
+          "ref_abs_mean": 0.039238572120666504,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L4096_qk384",
+      "required": true,
+      "q_len": 4096,
+      "kv_len": 4096,
+      "qk_dim": 384,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "wall_seconds_first_incl_compile": 0.0174,
+      "wall_seconds_fwd_bwd": 0.0171,
+      "peak_allocated_gib": 0.442,
+      "attention_extra_gib": 0.376,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L16384_qk384",
+      "required": true,
+      "q_len": 16384,
+      "kv_len": 16384,
+      "qk_dim": 384,
+      "qk_dim_padded": 512,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "FLEX",
+      "wall_seconds_first_incl_compile": 0.2304,
+      "wall_seconds_fwd_bwd": 0.2309,
+      "peak_allocated_gib": 3.516,
+      "attention_extra_gib": 3.25,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "profile_qk384",
+      "required": false,
+      "backend": "FLEX",
+      "kernels": [
+        {
+          "name": "triton_tem_fused_zeros_1",
+          "count": 1,
+          "device_time_ms": 3.458
+        },
+        {
+          "name": "triton_tem_fused_zeros_1",
+          "count": 1,
+          "device_time_ms": 3.458
+        },
+        {
+          "name": "triton_tem_fused_0",
+          "count": 1,
+          "device_time_ms": 0.918
+        },
+        {
+          "name": "triton_tem_fused_0",
+          "count": 1,
+          "device_time_ms": 0.918
+        },
+        {
+          "name": "triton_per_fused_zeros_0",
+          "count": 1,
+          "device_time_ms": 0.018
+        },
+        {
+          "name": "triton_per_fused_zeros_0",
+          "count": 1,
+          "device_time_ms": 0.018
+        }
+      ],
+      "math_fallback_seen": false,
+      "pass": true,
+      "status": "PASS"
+    }
+  ],
+  "verdict": "PASS",
+  "required_cases": 8,
+  "required_failed": [],
+  "finished_at_utc": "2026-09-14T20:58:42.037404+00:00"
+}

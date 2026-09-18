@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+#PBS -N wrrope-p0
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=16gb
+#PBS -l walltime=00:20:00
+
+set -Eeuo pipefail
+umask 0007
+
+readonly EXPECTED_PROJECT_ROOT="/work/u10970284/wavelet-tslm-rope-ablation"
+readonly PROJECT_ROOT="${WR_PROJECT_ROOT:?submit with tools/submit_run.py}"
+readonly RUN_ID="${WR_RUN_ID:?submit with tools/submit_run.py}"
+: "${P0_COMMAND:?P0_COMMAND is mandatory; no backend-gate entrypoint is assumed}"
+: "${WR_P0_GATE_KIND:?kernel or full-smoke must be explicit}"
+: "${WR_SCRATCH_ROOT_SPEC:?an explicit scratch root or pbs-tmpdir is required}"
+: "${WR_SCRATCH_LIFETIME_SECONDS:?scratch lifetime must be declared}"
+: "${WR_ENV_MODE:?readonly or staged must be explicit}"
+
+if [[ "${PROJECT_ROOT}" != "${EXPECTED_PROJECT_ROOT}" ]]; then
+  printf 'Refusing unexpected WR_PROJECT_ROOT: %s\n' "${PROJECT_ROOT}" >&2
+  exit 64
+fi
+if [[ ! "${RUN_ID}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]; then
+  printf 'Invalid WR_RUN_ID: %s\n' "${RUN_ID}" >&2
+  exit 64
+fi
+
+readonly CODE_ROOT="${PROJECT_ROOT}/code"
+readonly RUN_DIR="${PROJECT_ROOT}/runs/${RUN_ID}"
+readonly REQUEST_FILE="${RUN_DIR}/request.json"
+readonly STATE_FILE="${RUN_DIR}/state.json"
+
+if [[ ! -d "${CODE_ROOT}" || ! -f "${REQUEST_FILE}" ]]; then
+  printf 'Missing synchronized code or immutable run request.\n' >&2
+  exit 66
+fi
+
+export WR_CODE_ROOT="${CODE_ROOT}"
+export WR_RUN_DIR="${RUN_DIR}"
+export PYTHONPATH="${CODE_ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
+export TOKENIZERS_PARALLELISM=false
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+
+case "${WR_SCRATCH_ROOT_SPEC}" in
+  pbs-tmpdir)
+    readonly SCRATCH_ROOT="${TMPDIR:?PBS did not provide TMPDIR}"
+    ;;
+  /*)
+    readonly SCRATCH_ROOT="${WR_SCRATCH_ROOT_SPEC}"
+    ;;
+  *)
+    printf 'Scratch must be an absolute path or pbs-tmpdir.\n' >&2
+    exit 64
+    ;;
+esac
+
+readonly JOB_SCRATCH="${SCRATCH_ROOT%/}/wavelet-tslm-rope-ablation/${USER}/${PBS_JOBID:?PBS_JOBID is missing}"
+mkdir -p -- "${JOB_SCRATCH}"
+python3 "${CODE_ROOT}/tools/preflight_storage.py" \
+  --scratch-root "${SCRATCH_ROOT}" \
+  --job-scratch "${JOB_SCRATCH}" \
+  --gate-kind "${WR_P0_GATE_KIND}" \
+  --snapshot "${WR_SHARED_SNAPSHOT:-}" \
+  --snapshot-revision "${WR_SNAPSHOT_REVISION:-}" \
+  --environment-mode "${WR_ENV_MODE}" \
+  --environment-source "${WR_READONLY_ENV_ROOT:-}" \
+  --environment-install-bytes "${WR_ENV_INSTALL_BYTES:-0}" \
+  --stage-data-bytes "${WR_STAGE_DATA_BYTES:-0}" \
+  --expected-output-bytes "${WR_EXPECTED_OUTPUT_BYTES:-0}" \
+  --required-inodes "${WR_REQUIRED_SCRATCH_INODES:-100000}" \
+  --required-lifetime-seconds 1200 \
+  --declared-lifetime-seconds "${WR_SCRATCH_LIFETIME_SECONDS}" \
+  --report "${RUN_DIR}/storage_preflight.json"
+
+export TMPDIR="${JOB_SCRATCH}/tmp"
+export HF_HOME="${JOB_SCRATCH}/cache/huggingface"
+export HUGGINGFACE_HUB_CACHE="${HF_HOME}/hub"
+export TORCH_HOME="${JOB_SCRATCH}/cache/torch"
+export XDG_CACHE_HOME="${JOB_SCRATCH}/cache/xdg"
+mkdir -p -- "${TMPDIR}" "${HUGGINGFACE_HUB_CACHE}" "${TORCH_HOME}" "${XDG_CACHE_HOME}"
+
+write_state() {
+  local status="$1"
+  local exit_code="${2:-}"
+  WR_STATE_STATUS="${status}" WR_STATE_EXIT_CODE="${exit_code}" python3 - <<'PY'
+import json
+import os
+import socket
+from datetime import datetime, timezone
+from pathlib import Path
+
+run_dir = Path(os.environ["WR_RUN_DIR"])
+target = run_dir / "state.json"
+payload = {
+    "schema_version": 1,
+    "status": os.environ["WR_STATE_STATUS"],
+    "exit_code": (
+        int(os.environ["WR_STATE_EXIT_CODE"])
+        if os.environ.get("WR_STATE_EXIT_CODE")
+        else None
+    ),
+    "job_id": os.environ.get("PBS_JOBID"),
+    "attempt": int(os.environ.get("WR_ATTEMPT", "1")),
+    "host": socket.gethostname(),
+    "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+}
+temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
+with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+    json.dump(payload, handle, indent=2, sort_keys=True)
+    handle.write("\n")
+    handle.flush()
+    os.fsync(handle.fileno())
+os.replace(temporary, target)
+PY
+}
+
+finalize() {
+  local rc=$?
+  trap - EXIT
+  set +e
+  if (( rc == 0 )); then
+    write_state succeeded 0
+  else
+    write_state failed "${rc}"
+  fi
+  exit "${rc}"
+}
+trap finalize EXIT
+
+python3 - <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+
+request_path = Path(os.environ["WR_RUN_DIR"]) / "request.json"
+request = json.loads(request_path.read_text(encoding="utf-8"))
+actual = hashlib.sha256(os.environ["P0_COMMAND"].encode("utf-8")).hexdigest()
+if actual != request["command_sha256"]:
+    raise SystemExit("P0_COMMAND does not match the immutable request")
+PY
+
+write_state running
+cd -- "${CODE_ROOT}"
+printf 'P0 backend gate job=%s run=%s host=%s started=%s\n' \
+  "${PBS_JOBID}" "${RUN_ID}" "$(hostname)" "$(date --iso-8601=seconds)"
+bash -lc "${P0_COMMAND}"

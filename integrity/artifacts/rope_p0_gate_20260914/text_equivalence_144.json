@@ -1,0 +1,33 @@
+{
+  "tokens": 144,
+  "noise_native_sdpa_vs_eager": {
+    "mean_abs": 0.09944,
+    "p99_abs": 1.2656,
+    "max_abs": 16.8438,
+    "argmax_agreement": 0.9514,
+    "ref_abs_mean": 2.1605
+  },
+  "wrapped_flex_vs_native_eager": {
+    "mean_abs": 0.09407,
+    "p99_abs": 1.1875,
+    "max_abs": 13.1562,
+    "argmax_agreement": 0.9444,
+    "ref_abs_mean": 2.1605
+  },
+  "wrapped_flex_vs_native_sdpa": {
+    "mean_abs": 0.07136,
+    "p99_abs": 0.8906,
+    "max_abs": 10.1562,
+    "argmax_agreement": 0.9792,
+    "ref_abs_mean": 2.169
+  },
+  "wrapped_math_vs_native_eager": {
+    "mean_abs": 0.0924,
+    "p99_abs": 1.125,
+    "max_abs": 16.9688,
+    "argmax_agreement": 0.9444,
+    "ref_abs_mean": 2.1605
+  },
+  "pass": true,
+  "criterion": "wrapped-vs-native deviation within 1.25x the native SDPA/eager noise on the same input (mean, p99) and argmax within 2 points"
+}

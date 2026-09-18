@@ -1,0 +1,5 @@
+SALIENCE_COVERAGE localize: 100 rows, gold width median 144.5
+  A            hit 1.000  best IoU median 0.1313 (mean 0.1875)  cover median 1.000
+  D_coverage   hit 1.000  best IoU median 0.1313 (mean 0.1875)  cover median 1.000
+  D_salient    hit 0.930  best IoU median 0.2126 (mean 0.2664)  cover median 0.558
+  raw          hit 1.000  best IoU median 0.1313 (mean 0.1875)  cover median 1.000

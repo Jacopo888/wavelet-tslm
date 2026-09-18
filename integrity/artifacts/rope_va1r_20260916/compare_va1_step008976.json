@@ -1,0 +1,126 @@
+{
+  "va1r_dump": "..\\integrity\\artifacts\\rope_va1r_20260916\\val_quick_pass1_step008976.json",
+  "optimizer_step": 8976,
+  "tag": "quick_pass1",
+  "overall": {
+    "rows": 104,
+    "unmatched_rows": 0,
+    "va1": 0.35341896361440966,
+    "va1r": 0.26424934320483034,
+    "delta": {
+      "mean": -0.08916962040957929,
+      "ci95_lower": -0.15357872983315335,
+      "ci95_upper": -0.030236275113559172,
+      "n": 104
+    }
+  },
+  "by_category": {
+    "classify_with_evidence": {
+      "n": 22,
+      "va1": 0.08200136078908737,
+      "va1r": 0.013713405238828968,
+      "delta": {
+        "mean": -0.0682879555502584,
+        "ci95_lower": -0.14423346858236064,
+        "ci95_upper": -0.004507888805409466,
+        "n": 22
+      }
+    },
+    "lead_lag_with_magnitude": {
+      "n": 15,
+      "va1": 0.2854410807291667,
+      "va1r": 0.0,
+      "delta": {
+        "mean": -0.2854410807291667,
+        "ci95_lower": -0.5131917317708333,
+        "ci95_upper": -0.08544108072916666,
+        "n": 15
+      }
+    },
+    "localize": {
+      "n": 26,
+      "va1": 0.27246963562753035,
+      "va1r": 0.19230769230769232,
+      "delta": {
+        "mean": -0.08016194331983807,
+        "ci95_lower": -0.19554655870445345,
+        "ci95_upper": 0.0,
+        "n": 26
+      }
+    },
+    "localize_all_channels": {
+      "n": 15,
+      "va1": 0.26666666666666666,
+      "va1r": 0.2,
+      "delta": {
+        "mean": -0.06666666666666667,
+        "ci95_lower": -0.2,
+        "ci95_upper": 0.0,
+        "n": 15
+      }
+    },
+    "measure_magnitude": {
+      "n": 26,
+      "va1": 0.7532967515878995,
+      "va1r": 0.7377014145403122,
+      "delta": {
+        "mean": -0.015595337047587319,
+        "ci95_lower": -0.16322811839872606,
+        "ci95_upper": 0.13241587104107638,
+        "n": 26
+      }
+    }
+  },
+  "decomposition": {
+    "classify_with_evidence": {
+      "n": 22,
+      "primary": 0.013713405238828968,
+      "on_positives": 0.013713405238828968,
+      "on_negatives": null,
+      "n_positives": 22,
+      "n_negatives": 0,
+      "specificity": null,
+      "false_empty_rate": null
+    },
+    "lead_lag_with_magnitude": {
+      "n": 15,
+      "primary": 0.0,
+      "on_positives": 0.0,
+      "on_negatives": null,
+      "n_positives": 15,
+      "n_negatives": 0,
+      "specificity": null,
+      "false_empty_rate": null
+    },
+    "localize": {
+      "n": 26,
+      "primary": 0.19230769230769232,
+      "on_positives": 0.0,
+      "on_negatives": 0.625,
+      "n_positives": 18,
+      "n_negatives": 8,
+      "specificity": 0.625,
+      "false_empty_rate": 0.0
+    },
+    "localize_all_channels": {
+      "n": 15,
+      "primary": 0.2,
+      "on_positives": 0.0,
+      "on_negatives": 0.75,
+      "n_positives": 11,
+      "n_negatives": 4,
+      "specificity": 0.75,
+      "false_empty_rate": 0.0
+    },
+    "measure_magnitude": {
+      "n": 26,
+      "primary": 0.7377014145403122,
+      "on_positives": 0.7377014145403122,
+      "on_negatives": null,
+      "n_positives": 26,
+      "n_negatives": 0,
+      "specificity": null,
+      "false_empty_rate": null
+    }
+  }
+}

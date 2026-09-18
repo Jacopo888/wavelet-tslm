@@ -1,0 +1,244 @@
+{
+  "checks": [
+    {
+      "check": "direct_forward_backward",
+      "pass": true,
+      "loss": 2.358553171157837,
+      "ce": {
+        "final": 2.2618982791900635
+      },
+      "aux": 0.926024317741394,
+      "tokens": 553,
+      "signal_tokens": 256,
+      "seconds": 37.46,
+      "grads": {
+        "A_trunk": {
+          "params": 52032,
+          "grad_tensors": 28,
+          "nonzero_grad_elems": 51776
+        },
+        "D_trunk": {
+          "params": 103360,
+          "grad_tensors": 45,
+          "nonzero_grad_elems": 102693
+        },
+        "raw_trunk": {
+          "params": 34816,
+          "grad_tensors": 20,
+          "nonzero_grad_elems": 34560
+        },
+        "local_adapters": {
+          "params": 119168,
+          "grad_tensors": 0,
+          "nonzero_grad_elems": 0
+        },
+        "tokenizer_fusion": {
+          "params": 441024,
+          "grad_tensors": 18,
+          "nonzero_grad_elems": 430272
+        },
+        "aux_head": {
+          "params": 65,
+          "grad_tensors": 2,
+          "nonzero_grad_elems": 65
+        },
+        "mixer": {
+          "params": 5257216,
+          "grad_tensors": 36,
+          "nonzero_grad_elems": 5257216
+        },
+        "projector": {
+          "params": 7870464,
+          "grad_tensors": 6,
+          "nonzero_grad_elems": 7870464
+        },
+        "lora": {
+          "params": 3145728,
+          "grad_tensors": 64,
+          "nonzero_grad_elems": 1638400
+        }
+      },
+      "actions": [],
+      "peak_gib": 12.68
+    },
+    {
+      "check": "fixed_crop_forward_backward",
+      "pass": true,
+      "loss": 2.2660398483276367,
+      "ce": {
+        "final": 2.172197103500366
+      },
+      "aux": 0.8887792825698853,
+      "tokens": 1680,
+      "signal_tokens": 971,
+      "seconds": 0.63,
+      "grads": {
+        "A_trunk": {
+          "params": 52032,
+          "grad_tensors": 28,
+          "nonzero_grad_elems": 52011
+        },
+        "D_trunk": {
+          "params": 103360,
+          "grad_tensors": 45,
+          "nonzero_grad_elems": 103075
+        },
+        "raw_trunk": {
+          "params": 34816,
+          "grad_tensors": 20,
+          "nonzero_grad_elems": 34798
+        },
+        "local_adapters": {
+          "params": 119168,
+          "grad_tensors": 52,
+          "nonzero_grad_elems": 119135
+        },
+        "tokenizer_fusion": {
+          "params": 441024,
+          "grad_tensors": 18,
+          "nonzero_grad_elems": 431579
+        },
+        "aux_head": {
+          "params": 65,
+          "grad_tensors": 2,
+          "nonzero_grad_elems": 65
+        },
+        "mixer": {
+          "params": 5257216,
+          "grad_tensors": 36,
+          "nonzero_grad_elems": 5254431
+        },
+        "projector": {
+          "params": 7870464,
+          "grad_tensors": 6,
+          "nonzero_grad_elems": 7865961
+        },
+        "lora": {
+          "params": 3145728,
+          "grad_tensors": 64,
+          "nonzero_grad_elems": 1638400
+        }
+      },
+      "actions": [
+        "{\"tool\":\"zoom\",\"channels\":[\"A_ch_00\"],\"start\":26562,\"end\":31390}"
+      ],
+      "peak_gib": 12.68
+    },
+    {
+      "check": "optimizer_step_updates_every_group",
+      "pass": true,
+      "max_abs_change": {
+        "A_trunk": 0.00010102987289428711,
+        "D_trunk": 0.00010323524475097656,
+        "raw_trunk": 0.00010102987289428711,
+        "local_adapters": 0.00010102987289428711,
+        "tokenizer_fusion": 0.00010204315185546875,
+        "aux_head": 0.00010012835264205933,
+        "mixer": 0.00010102987289428711,
+        "projector": 0.00010102987289428711,
+        "lora": 1.99999976757681e-05
+      }
+    },
+    {
+      "check": "ce_only_gradients_reach_perceptual_stack",
+      "pass": true,
+      "aux_weight_used": 0.0,
+      "loss": 3.1207196712493896,
+      "grads": {
+        "A_trunk": {
+          "params": 52032,
+          "grad_tensors": 28,
+          "nonzero_grad_elems": 51776
+        },
+        "D_trunk": {
+          "params": 103360,
+          "grad_tensors": 45,
+          "nonzero_grad_elems": 102702
+        },
+        "raw_trunk": {
+          "params": 34816,
+          "grad_tensors": 20,
+          "nonzero_grad_elems": 34560
+        },
+        "local_adapters": {
+          "params": 119168,
+          "grad_tensors": 0,
+          "nonzero_grad_elems": 0
+        },
+        "tokenizer_fusion": {
+          "params": 441024,
+          "grad_tensors": 18,
+          "nonzero_grad_elems": 429760
+        },
+        "aux_head": {
+          "params": 65,
+          "grad_tensors": 2,
+          "nonzero_grad_elems": 0
+        },
+        "mixer": {
+          "params": 5257216,
+          "grad_tensors": 36,
+          "nonzero_grad_elems": 5257216
+        },
+        "projector": {
+          "params": 7870464,
+          "grad_tensors": 6,
+          "nonzero_grad_elems": 7870464
+        },
+        "lora": {
+          "params": 3145728,
+          "grad_tensors": 64,
+          "nonzero_grad_elems": 3145728
+        }
+      }
+    },
+    {
+      "check": "soft_token_rms_matches_text_embeddings",
+      "pass": true,
+      "soft_rms": 0.013028651475906372,
+      "target_rms": 0.013028954155743122
+    },
+    {
+      "check": "reading_segment_supervised_and_decorrelation_finite",
+      "pass": true,
+      "reading": "Global view read at 256 samples per bin. Haar detail energy concentrates in ch_00 [6144,6400), ch_00 [3840,4096), ch_00 [12800,13056). ch_00 deviates most in [512,768).",
+      "ce": {
+        "reasoning": 2.1965172290802,
+        "final": 2.462324857711792
+      },
+      "decorrelation": 0.4917243719100952,
+      "loss": 3.6472456455230713,
+      "tokens": 617,
+      "reading_segment_on": true,
+      "decorrelation_weight": 0.01
+    },
+    {
+      "check": "save_reload_restores_parameters_exactly",
+      "pass": true,
+      "perturbed_max_abs": 0.005565669387578964,
+      "restored_max_abs": 0.0
+    },
+    {
+      "check": "save_reload_same_loss",
+      "pass": true,
+      "loss_before": 2.2116527557373047,
+      "loss_before_repeat": 2.2116527557373047,
+      "loss_after": 2.2116527557373047,
+      "run_to_run_abs": 0.0,
+      "tolerance": 0.00442330551147461
+    },
+    {
+      "check": "generation_runs_and_terminates",
+      "pass": true,
+      "text": "{\"kind\": \"Transient Spike\", \"start\": 128, \"end\": 132}",
+      "parsed": true,
+      "reading": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, ch_00), statistics (median, scale, min, max, valid), and a \"Global view\" of 256 signal to",
+      "reasoning_tokens": 384,
+      "forced_closure": true,
+      "seconds": 23.69,
+      "prompt_tokens": 652,
+      "new_tokens": 408
+    }
+  ],
+  "verdict": "PASS"
+}

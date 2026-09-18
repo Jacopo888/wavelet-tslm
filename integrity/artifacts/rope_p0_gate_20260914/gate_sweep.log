@@ -1,0 +1,48 @@
+=============== control_efficient_qk256  20:57:30
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[                  PASS] numeric_causal_square_qk256          output max_abs=1.263e-02; dQ max_abs=6.986e-03; dK max_abs=1.212e-02; dV max_abs=3.458e-02
+[                  PASS] numeric_cache_offset_qk256           output max_abs=8.317e-04; dQ max_abs=5.492e-04; dK max_abs=5.938e-04; dV max_abs=1.090e-03
+[                  PASS] memory_causal_L4096_qk256            peak=0.266 GiB attn_extra=0.219 GiB t=0.0052s (first 0.0055s)
+[                  PASS] memory_causal_L16384_qk256           peak=1.064 GiB attn_extra=0.877 GiB t=0.0584s (first 0.0584s)
+[                  PASS] profile_qk256                        autograd::engine::evaluate_function: ScaledDotProductEfficie, ScaledDotProductEfficientAttentionBackward0, aten::_scaled_dot_product_efficient_attention_backward, aten::_efficient_attention_backward
+VERDICT PASS  backend=EFFICIENT_ATTENTION pad=0 label='control_efficient_qk256'  failed=[]  report=/workspace/runs/p0-backend-gate/control_efficient_qk256.json
+=============== math_eager_qk352_384  20:57:41
+[                  PASS] numeric_causal_square_qk352          output max_abs=1.264e-02; dQ max_abs=6.666e-03; dK max_abs=1.025e-02; dV max_abs=2.865e-02
+[                  PASS] numeric_cache_offset_qk352           output max_abs=8.296e-04; dQ max_abs=6.134e-04; dK max_abs=5.935e-04; dV max_abs=1.080e-03
+[                  PASS] memory_causal_L4096_qk352            peak=4.358 GiB attn_extra=4.297 GiB t=0.0168s (first 0.0174s)
+[                  PASS] memory_causal_L16384_qk352           peak=65.434 GiB attn_extra=65.188 GiB t=0.2497s (first 0.2469s)
+[                  PASS] profile_qk352                        aten::bmm, aten::scaled_dot_product_attention, aten::_scaled_dot_product_attention_math, autograd::engine::evaluate_function: BmmBackward0
+[                  PASS] numeric_causal_square_qk384          output max_abs=1.142e-02; dQ max_abs=6.961e-03; dK max_abs=1.039e-02; dV max_abs=3.352e-02
+[                  PASS] numeric_cache_offset_qk384           output max_abs=7.800e-04; dQ max_abs=5.067e-04; dK max_abs=6.912e-04; dV max_abs=1.014e-03
+[                  PASS] memory_causal_L4096_qk384            peak=4.379 GiB attn_extra=4.312 GiB t=0.0171s (first 0.0175s)
+[                  PASS] memory_causal_L16384_qk384           peak=65.516 GiB attn_extra=65.25 GiB t=0.2494s (first 0.2494s)
+[                  PASS] profile_qk384                        aten::bmm, autograd::engine::evaluate_function: BmmBackward0, BmmBackward0, aten::scaled_dot_product_attention
+VERDICT PASS  backend=MATH pad=0 label='math_eager_qk352_384'  failed=[]  report=/workspace/runs/p0-backend-gate/math_eager_qk352_384.json
+=============== flex_qk352_384  20:57:52
+  warnings.warn(msg)
+[         BACKEND_ERROR] numeric_causal_square_qk352          ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=352 and Ev=256.
+[         BACKEND_ERROR] numeric_cache_offset_qk352           ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=352 and Ev=256.
+[         BACKEND_ERROR] memory_causal_L4096_qk352            ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=352 and Ev=256.
+[         BACKEND_ERROR] memory_causal_L16384_qk352           ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=352 and Ev=256.
+[         PROFILE_ERROR] profile_qk352                        ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=352 and Ev=256.
+[         BACKEND_ERROR] numeric_causal_square_qk384          ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=384 and Ev=256.
+[         BACKEND_ERROR] numeric_cache_offset_qk384           ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=384 and Ev=256.
+[         BACKEND_ERROR] memory_causal_L4096_qk384            ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=384 and Ev=256.
+[         BACKEND_ERROR] memory_causal_L16384_qk384           ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=384 and Ev=256.
+[         PROFILE_ERROR] profile_qk384                        ValueError: NYI: Currently non power of 2 embedding dimension are not supported. Got E=384 and Ev=256.
+VERDICT FAIL  backend=FLEX pad=0 label='flex_qk352_384'  failed=['numeric_causal_square_qk352', 'numeric_cache_offset_qk352', 'memory_causal_L4096_qk352', 'memory_causal_L16384_qk352', 'numeric_causal_square_qk384', 'numeric_cache_offset_qk384', 'memory_causal_L4096_qk384', 'memory_causal_L16384_qk384']  report=/workspace/runs/p0-backend-gate/flex_qk352_384.json
+=============== flex_pad512_qk352_384  20:58:06
+  warnings.warn(msg)
+  warnings.warn(msg)
+[                  PASS] numeric_causal_square_qk352          output max_abs=1.148e-02; dQ max_abs=8.877e-03; dK max_abs=1.121e-02; dV max_abs=3.539e-02
+[                  PASS] numeric_cache_offset_qk352           output max_abs=8.470e-04; dQ max_abs=5.460e-04; dK max_abs=6.418e-04; dV max_abs=1.031e-03
+[                  PASS] memory_causal_L4096_qk352            peak=0.437 GiB attn_extra=0.376 GiB t=0.0173s (first 4.6481s)
+[                  PASS] memory_causal_L16384_qk352           peak=3.496 GiB attn_extra=3.25 GiB t=0.2297s (first 4.8872s)
+[                  PASS] profile_qk352                        triton_tem_fused_zeros_1, triton_tem_fused_zeros_1, triton_tem_fused_0, triton_tem_fused_0
+[                  PASS] numeric_causal_square_qk384          output max_abs=1.309e-02; dQ max_abs=8.671e-03; dK max_abs=1.259e-02; dV max_abs=3.648e-02
+[                  PASS] numeric_cache_offset_qk384           output max_abs=8.701e-04; dQ max_abs=5.017e-04; dK max_abs=6.289e-04; dV max_abs=1.184e-03
+[                  PASS] memory_causal_L4096_qk384            peak=0.442 GiB attn_extra=0.376 GiB t=0.0171s (first 0.0174s)
+[                  PASS] memory_causal_L16384_qk384           peak=3.516 GiB attn_extra=3.25 GiB t=0.2309s (first 0.2304s)
+[                  PASS] profile_qk384                        triton_tem_fused_zeros_1, triton_tem_fused_zeros_1, triton_tem_fused_0, triton_tem_fused_0
+VERDICT PASS  backend=FLEX pad=512 label='flex_pad512_qk352_384'  failed=[]  report=/workspace/runs/p0-backend-gate/flex_pad512_qk352_384.json
+SWEEP_DONE 20:58:46

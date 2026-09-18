@@ -1,0 +1,76 @@
+schema_version = 1
+phase = "P0"
+smoke_only = true
+architecture_spec = "../prototype.spec.json"
+run_root = "REQUIRED"
+seed = "REQUIRED"
+
+[dataset]
+root = "REQUIRED"
+authoritative_manifest = "REQUIRED"
+repo = "nz00shuuuu/AnomalyXL"
+revision = "df363a467f855e55aaad414b0bdd58590829df9a"
+train_relative_path = "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/train.parquet"
+train_rows = 4488
+train_sha256 = "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+validation_relative_path = "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/val.parquet"
+validation_rows = 520
+validation_sha256 = "90b805b8f40e203b76873a9cf3a0f986e21700c9185c74acc33c44a183b1d977"
+test_relative_path = "anomalyXL/datasets/anomalyxl-precise/data.parquet"
+test_rows = 800
+test_sha256 = "7b37269d106f70ba7bee5feb504c00059bc880217a56a8279a2631c8bf5e1524"
+forbidden_fit_row_counts = [723, 77]
+
+[backbone]
+transformers_version = "REQUIRED"
+tokenizer_revision = "REQUIRED"
+
+[backbone.snapshot]
+root = "REQUIRED"
+verification_manifest = "REQUIRED"
+cache_scope = "run_local_verified_scratch"
+allow_shared_cache = false
+local_files_only = true
+allow_download = false
+quantization = "none"
+
+[normalization]
+mad_epsilon = "REQUIRED"
+
+[runtime]
+gpu_family = "MI300X"
+platform = "rocm"
+world_size = 1
+attention_backend = "FLEX_PAD512"
+attention_qk_pad_to = 512
+torch_build = "REQUIRED"
+accelerator_runtime = "REQUIRED"
+compute_dtype = "bf16"
+gradient_checkpointing = true
+requires_cuda_gate = true
+requires_real_qwen_smoke = true
+
+[optimizer]
+name = "REQUIRED"
+beta1 = "REQUIRED"
+beta2 = "REQUIRED"
+epsilon = "REQUIRED"
+lr_scheduler = "REQUIRED"
+p3_frontend_learning_rate = "REQUIRED"
+p3_lora_learning_rate = "REQUIRED"
+
+[training]
+segment_loss_reduction = "REQUIRED"
+
+[checkpoint]
+every_optimizer_steps = "REQUIRED"
+keep_last = "REQUIRED"
+save_at_pass_end = true
+optimizer_boundary_only = true
+
+[evaluation]
+selection_metric = "REQUIRED"
+selection_tiebreaker = "REQUIRED"
+
+[logging]
+every_optimizer_steps = "REQUIRED"

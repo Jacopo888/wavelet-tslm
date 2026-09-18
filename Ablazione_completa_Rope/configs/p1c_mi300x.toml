@@ -1,0 +1,80 @@
+# P1-c (Astra 15/09, sentinella): same runtime as p1_mi300x.toml, spec prototype.spec.p1c.json (reading segment, decorrelation, lr 2e-5/1e-4).
+# P1 (allineamento percettivo) sulla corsia MI300X/ROCm — valori risolti il 15/09/2026.
+# Le scelte non fissate dal DESIGN (ottimizzatore, scheduler, checkpoint, selezione) sono dichiarate qui e
+# sottoposte ad Astra; il resto viene da DESIGN.md §10 e prototype.spec.json.
+schema_version = 1
+phase = "P1"
+smoke_only = false
+architecture_spec = "../prototype.spec.p1c.json"
+run_root = "/workspace/runs"
+seed = 42
+
+[dataset]
+root = "/scratch/datasets/va1_layout"
+authoritative_manifest = "/workspace/integrity/artifacts/va1/RUN_MANIFEST.json"
+repo = "nz00shuuuu/AnomalyXL"
+revision = "df363a467f855e55aaad414b0bdd58590829df9a"
+train_relative_path = "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/train.parquet"
+train_rows = 4488
+train_sha256 = "b8571d886772a55613c2e8851a774e6a561e19c8272227f5abb70e2d76e70b7d"
+validation_relative_path = "anomalyXL/datasets/anomalyxl-train/anomalyxl-precise/val.parquet"
+validation_rows = 520
+validation_sha256 = "90b805b8f40e203b76873a9cf3a0f986e21700c9185c74acc33c44a183b1d977"
+test_relative_path = "anomalyXL/datasets/anomalyxl-precise/data.parquet"
+test_rows = 800
+test_sha256 = "7b37269d106f70ba7bee5feb504c00059bc880217a56a8279a2631c8bf5e1524"
+forbidden_fit_row_counts = [723, 77]
+
+[backbone]
+transformers_version = "5.3.0.dev0 (git 5c1c72b, pin va1)"
+tokenizer_revision = "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+
+[backbone.snapshot]
+root = "/scratch/hf/hub/models--Qwen--Qwen3.5-4B/snapshots/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+verification_manifest = "/scratch/hf/qwen35_4b_851bf6e806ef_VERIFIED.json"
+cache_scope = "run_local_verified_scratch"
+allow_shared_cache = false
+local_files_only = true
+allow_download = false
+quantization = "none"
+
+[normalization]
+mad_epsilon = 1e-6   # floor relativo: epsilon = max(1e-6 * max|x_valid|, float32 tiny) (Astra 14/09 §2.2)
+
+[runtime]
+gpu_family = "MI300X"
+platform = "rocm"
+world_size = 1
+attention_backend = "FLEX_PAD512"
+attention_qk_pad_to = 512
+torch_build = "2.6.0+git684f6f2"
+accelerator_runtime = "ROCm 6.4.1 / HIP 6.4.43483 / gfx942 (AMD Instinct MI300X VF)"
+compute_dtype = "bf16"
+gradient_checkpointing = true
+requires_cuda_gate = true
+requires_real_qwen_smoke = true
+
+[optimizer]
+name = "adamw"
+beta1 = 0.9
+beta2 = 0.999
+epsilon = 1e-8
+lr_scheduler = "linear_warmup_3pct_then_cosine_to_zero_over_phase"
+p3_frontend_learning_rate = 1e-4
+p3_lora_learning_rate = 5e-5
+
+[training]
+segment_loss_reduction = "mean_per_segment_then_weighted_sum"
+
+[checkpoint]
+every_optimizer_steps = 100
+keep_last = 3
+save_at_pass_end = true
+optimizer_boundary_only = true
+
+[evaluation]
+selection_metric = "validation_direct_primary"
+selection_tiebreaker = "validation_fixed_crop_loss"
+
+[logging]
+every_optimizer_steps = 10

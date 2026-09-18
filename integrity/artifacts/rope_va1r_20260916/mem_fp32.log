@@ -1,0 +1,26 @@
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+Current Triton version 3.2.0 is below the recommended 3.3.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/723 [00:00<?, ?it/s]Loading weights: 100%|██████████| 723/723 [00:00<00:00, 12594.10it/s]
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/redis/connection.py:77: UserWarning: redis-py works best with hiredis. Please consider installing
+  warnings.warn(msg)
+/workspace/code/src/wavelet_rope/perceptual_rope.py:89: UserWarning: Using AOTriton backend for Flash Attention forward... (Triggered internally at /var/lib/jenkins/pytorch/aten/src/ATen/native/transformers/hip/flash_attn/flash_api.h:267.)
+  attn = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
+24 examples, prompt prefix identical across all of them, meta_fp32=True
+/opt/conda/envs/py_3.12/lib/python3.12/site-packages/torch/autograd/graph.py:823: UserWarning: Using AOTriton backend for Flash Attention backward... (Triggered internally at /var/lib/jenkins/pytorch/aten/src/ATen/native/transformers/hip/flash_attn/flash_api.h:452.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+V0916 21:38:53.503000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles] Recompiling function flex_attention in /opt/conda/envs/py_3.12/lib/python3.12/site-packages/torch/nn/attention/flex_attention.py:1157
+V0916 21:38:53.503000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles]     triggered by the following guard failure(s):
+V0916 21:38:53.503000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/1] [__recompiles]     - 0/0: GLOBAL_STATE changed: grad_mode 
+V0916 21:38:54.206000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/2] [__recompiles] Recompiling function flex_attention in /opt/conda/envs/py_3.12/lib/python3.12/site-packages/torch/nn/attention/flex_attention.py:1157
+V0916 21:38:54.206000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/2] [__recompiles]     triggered by the following guard failure(s):
+V0916 21:38:54.206000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/2] [__recompiles]     - 0/1: tensor 'L['block_mask'].q_indices' stride mismatch at index 3. expected 1, actual 5
+V0916 21:38:54.206000 36972 site-packages/torch/_dynamo/guards.py:2791] [0/2] [__recompiles]     - 0/0: GLOBAL_STATE changed: grad_mode 
+  step  100 loss 0.3725 | primary veri 0.0000 sostituiti 0.0000 delta +0.0000 | risolti 0/24
+  step  200 loss 0.2743 | primary veri 0.0000 sostituiti 0.0000 delta +0.0000 | risolti 0/24
+  step  300 loss 0.2163 | primary veri 0.0000 sostituiti 0.0000 delta +0.0000 | risolti 0/24
+  step  400 loss 0.1550 | primary veri 0.0000 sostituiti 0.0417 delta -0.0417 | risolti 0/24
+  step  500 loss 0.0929 | primary veri 0.0417 sostituiti 0.0417 delta +0.0000 | risolti 1/24
+  step  600 loss 0.0896 | primary veri 0.0417 sostituiti 0.0417 delta +0.0000 | risolti 1/24
+MEMORIZATION_PROBE meta_fp32=True: best primary 0.041666666666666664 delta 0.0 -> NOT MEMORISED (891.3s)

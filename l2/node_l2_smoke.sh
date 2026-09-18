@@ -9,6 +9,8 @@
 #      asserts the run completes, checkpoints step_2, and the GPU peak stays under L2_PEAK_MIB.
 #   d  `rl --max-steps 2` at the REAL batch (64 rollouts/step): measures seconds/step and
 #      rollouts/errors so the driver can project hours per arm.
+#   e  5-step wavelet rescue gate at the real batch after a reward/protocol change: requires
+#      non-collapsed final answers, trainable groups, task reward signal, checkpoints and memory.
 # Every stage writes ~/l2/smoke/<stage>.json and prints PASS/FAIL. The machine is left clean
 # (server killed, no GPU processes). Output dirs are wiped before use (no stale resume).
 set -euo pipefail
@@ -109,7 +111,7 @@ if has_stage b; then
   run_arm() {  # $1 arm
     local arm="$1" extra=()
     local out="$SMOKE/b_${arm}_rollouts.jsonl"; rm -rf "$out" "${out%.jsonl}"
-    local envs=(RLM_MAX_TOKENS=16384 RLM_MAX_OUTPUT=4096 RLM_MAX_TURNS=12 RLM_SUMMARIZE_AT_TOKENS=22000
+    local envs=(RLM_MAX_TOKENS=16384 RLM_MAX_OUTPUT=4096 RLM_MAX_TURNS=15 RLM_SUMMARIZE_AT_TOKENS=22000
                 RLM_PYTHON="$TIMERLM/rlm-harness/.venv/bin/python" OMP_NUM_THREADS=2)
     [ "$arm" = wavelet ] && envs+=(RLM_SKILLS=wavelet_zoom TIMERLM_NOTE_VARIANT=wavelet)
     ( cd "$PR" && env "${envs[@]}" "$VENV_PY" "$TIMERLM/scripts/eval_v1_rlm.py" \
@@ -163,25 +165,26 @@ PY
 fi
 
 # ------------------------------------------------------------------ c: rl 2 steps, tiny batch, memory peak
-rl_run() {  # $1 name, $2 arm, $3 expected rollouts/step, $4... extra args
-  local name="$1" arm="$2" expected_rollouts="$3"; shift 3
+rl_run() {  # $1 name, $2 arm, $3 expected rollouts/step, $4 expected steps, $5... extra args
+  local name="$1" arm="$2" expected_rollouts="$3" expected_steps="$4"; shift 4
   local outdir="$HOME/l2/smoke/$name"; rm -rf "$outdir"
   local coverage="$SMOKE/${name}_coverage.jsonl"; rm -f "$coverage"
   server_up || start_server
   start_sampler "$SMOKE/${name}_mem.csv"
   local t0=$(date +%s)
-  # bounded: a 2-step run that does not finish within L2_RL_SMOKE_WALL_S (default 90 min) is a
+  # bounded: a run that does not finish within L2_RL_SMOKE_WALL_S (default 90 min) is a
   # failure (e.g. every rollout erroring so the batch never fills), not something to wait on.
   ( cd "$PR" && timeout "${L2_RL_SMOKE_WALL_S:-5400}" uv run --no-sync rl @ "../l2/configs/l2_pilot_${arm}.toml" "$@" --output-dir "$outdir" ) \
       > "$LOGS/smoke_${name}.log" 2>&1 || { stop_sampler; tail -60 "$LOGS/smoke_${name}.log"; grep -aE "Rollout failed|WARNING|ERROR" "$outdir/logs/orchestrator.log" 2>/dev/null | tail -5 | cut -c1-300; fail "rl run $name exited non-zero or exceeded the wall limit"; }
   local dt=$(( $(date +%s) - t0 ))
   stop_sampler
-  [ -s "$outdir/checkpoints/step_2/trainer/.metadata" ] || fail "$name: trainer checkpoint step_2 missing or empty"
-  [ -s "$outdir/weights/step_2/model.safetensors" ] || fail "$name: HF weights step_2 missing or empty"
+  [ -s "$outdir/checkpoints/step_$expected_steps/trainer/.metadata" ] || fail "$name: trainer checkpoint step_$expected_steps missing or empty"
+  [ -s "$outdir/weights/step_$expected_steps/model.safetensors" ] || fail "$name: HF weights step_$expected_steps missing or empty"
   "$VENV_PY" "$KIT/l2_monitor.py" "$outdir" --jsonl "$coverage" --expect-rollouts "$expected_rollouts" || fail "$name: monitor reported violations"
-  "$VENV_PY" - "$coverage" "$SMOKE/${name}_mem.csv" "$dt" "$PEAK_MIB" "$SMOKE/${name}.json" <<'PY'
+  "$VENV_PY" - "$coverage" "$SMOKE/${name}_mem.csv" "$dt" "$PEAK_MIB" "$SMOKE/${name}.json" "$expected_steps" <<'PY'
 import json, sys
-coverage, memcsv, dt, peak_lim, out = sys.argv[1:6]
+coverage, memcsv, dt, peak_lim, out, expected_steps = sys.argv[1:7]
+expected_steps = int(expected_steps)
 mem = [int(x) for x in open(memcsv).read().split() if x.strip().isdigit()]
 rows = [json.loads(l) for l in open(coverage, encoding="utf-8") if l.strip()]
 steps = {r["step"]: r for r in rows if "step" in r}
@@ -194,21 +197,21 @@ roll = [steps[s].get("rollouts") for s in sorted(steps)]
 err = [steps[s].get("errored") for s in sorted(steps)]
 res = {"wall_s": int(dt), "steps": sorted(steps), "time_per_step_s": st, "rollouts_per_step": roll, "errored_train": err,
        "gpu_peak_mib": max(mem) if mem else None, "gpu_peak_limit_mib": int(peak_lim),
-       "pass": sorted(steps) == [0, 1] and all(x > 0 for x in st) and (max(mem) if mem else 10**9) < int(peak_lim)}
+       "pass": sorted(steps) == list(range(expected_steps)) and all(x > 0 for x in st) and (max(mem) if mem else 10**9) < int(peak_lim)}
 json.dump(res, open(out, "w"), indent=1); print(json.dumps(res))
 assert res["pass"], "stage failed: " + json.dumps(res)
 PY
 }
 if has_stage c; then
   log "stage c: rl 2 steps tiny batch (memory gate)"
-  rl_run c_rl_tiny code 8 @ ../l2/configs/l2_smoke.toml
+  rl_run c_rl_tiny code 8 2 @ ../l2/configs/l2_smoke.toml
   log "stage c PASS"
 fi
 
 # ------------------------------------------------------------------ d: rl 2 steps, real batch (timing)
 if has_stage d; then
   log "stage d: rl 2 steps real batch (timing)"
-  rl_run d_rl_full code "${L2_EXPECT_ROLLOUTS:-64}" --max-steps 2 --ckpt.interval 2 --orchestrator.eval.interval 1000
+  rl_run d_rl_full code "${L2_EXPECT_ROLLOUTS:-64}" 2 --max-steps 2 --ckpt.interval 2 --orchestrator.eval.interval 1000
   "$VENV_PY" - "$SMOKE/d_rl_full.json" <<'PY'
 import json, sys
 r = json.load(open(sys.argv[1]))
@@ -218,10 +221,44 @@ print(json.dumps({"projected_hours_per_arm_60_steps": (per * 60 / 3600) if per e
 PY
   log "stage d PASS"
 fi
+
+# ------------------------------------------------------------------ e: 5-step rescue gate after reward/protocol changes
+if has_stage e; then
+  log "stage e: 5-step wavelet rescue gate (real batch, non-collapse)"
+  export ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN_K=1 ANOMALYXL_CURRICULUM=bootstrap TIMERLM_NOTE_VARIANT=wavelet
+  L2_RL_SMOKE_WALL_S="${L2_RESCUE_WALL_S:-14400}" \
+    rl_run e_rescue_wavelet wavelet "${L2_EXPECT_ROLLOUTS:-64}" 5 \
+      --max-steps 5 --ckpt.interval 5 --ckpt.keep-interval 5 --orchestrator.eval.interval 1000
+  unset ANOMALYXL_P_PRESENT ANOMALYXL_ALLCH_MIN_K ANOMALYXL_CURRICULUM TIMERLM_NOTE_VARIANT
+  "$VENV_PY" - "$SMOKE/e_rescue_wavelet_coverage.jsonl" "$SMOKE/e_rescue_wavelet.json" <<'PY'
+import json, sys
+coverage, summary = sys.argv[1:3]
+rows = [json.loads(line) for line in open(coverage, encoding="utf-8") if line.strip()]
+rows.sort(key=lambda r: r["step"])
+last = rows[-2:]
+task_positive = sum(int(r.get("correct_positive") or 0) for r in rows)
+checks = {
+    "five_steps": [r["step"] for r in rows] == list(range(5)),
+    "task_reward_seen": task_positive >= 1,
+    "nonnegative_reward": all((r.get("reward_mean") or 0) >= 0 for r in rows),
+    "last_two_empty_below_80pct": all((r.get("empty_final_rate") or 0) <= 0.80 for r in last),
+    "last_two_trainable_at_least_8": all((r.get("log_trainable") or 0) >= 8 for r in last),
+    "last_two_have_reward_variance": all((r.get("zero_variance_groups") or 0) < (r.get("groups") or 0) for r in last),
+}
+doc = json.load(open(summary, encoding="utf-8"))
+doc.update({"rescue_checks": checks, "task_positive_total": task_positive,
+            "last_two": [{k: r.get(k) for k in ("step", "correct_positive", "format_valid", "empty_final", "empty_final_rate", "log_trainable", "groups", "zero_variance_groups")} for r in last]})
+doc["pass"] = bool(doc.get("pass")) and all(checks.values())
+json.dump(doc, open(summary, "w"), indent=1)
+print(json.dumps(doc))
+assert doc["pass"], "rescue gate failed: " + json.dumps(checks)
+PY
+  log "stage e PASS"
+fi
 log "ALL REQUESTED STAGES PASSED: ${STAGES[*]}"
 # SMOKE_OK accumulates the stages that passed (stages may be run in separate invocations);
-# the run driver requires a, b and c to be recorded and the file to be newer than the env manifest.
+# the run driver requires a..e to be recorded and the file to be newer than the env manifest.
 prev=""; [ -f "$SMOKE/SMOKE_OK" ] && prev="$(sed 's/^SMOKE_OK//' "$SMOKE/SMOKE_OK")"
-all="$(printf '%s\n' $prev "${STAGES[@]}" | grep -E '^[abcd]$' | sort -u | tr '\n' ' ')"
+all="$(printf '%s\n' $prev "${STAGES[@]}" | grep -E '^[abcde]$' | sort -u | tr '\n' ' ')"
 echo "SMOKE_OK ${all% }" > "$SMOKE/SMOKE_OK"
 log "SMOKE_OK now records: ${all% }"

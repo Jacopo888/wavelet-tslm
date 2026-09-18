@@ -47,7 +47,7 @@ dell'harness rlm (mcp 2.x ha rinominato `streamablehttp_client`).
 | policy | Qwen3.5-4B, full-parameter | **Qwen3.5-2B** rev `15852e8c`, **LoRA r32/α64** su attn+MLP+GatedDeltaNet | il 4B non entra in 24 GB accanto a vLLM; LoRA per trainer leggero |
 | lr | 7e-6 | 2e-5 | LoRA vuole un lr più alto del full-param |
 | seq_len / compaction | 65536 / 45000 | 32768 / 22000 | memoria |
-| RLM_MAX_TOKENS / OUTPUT / TURNS | 24576 / 8192 / 15 | 16384 / 4096 / 12 | finestra dimezzata |
+| RLM_MAX_TOKENS / OUTPUT / TURNS | 24576 / 8192 / 15 | 16384 / 4096 / 15 | finestra/token ridotti; turni ripristinati nel rescue |
 | max_completion_tokens | 4096 | 2048 | idem |
 | rollouts/step | 1024 (128×8) | **64 (8×8)** | tempo per step su vGPU |
 | max_inflight | 128 | 12 (= max_num_seqs vLLM) | KV cache |
@@ -56,12 +56,14 @@ dell'harness rlm (mcp 2.x ha rinominato `streamablehttp_client`).
 | step | 400 | **60** | ~1.5% del compute del paper: è un pilot |
 | negativi | OFF fino a 220, poi ON (resume) | OFF fino a **35**, poi ON (resume da step_35) | stessa proporzione (58% vs 55%) |
 | eval online | ogni 20 step, 50 esempi (val HF) | ogni 10, 32 esempi (val locale pinnata) | provenienza |
-| length penalty | coef 0.1, gate off | uguale | |
+| length penalty | coef 0.1, gate off | uguale | reward mantenuto non negativo |
 | renderer / generator θ / celle | qwen3.5 / θ fisso / lunghezze fino a 131k | uguali (`run_seed` 20260903) | |
 | server | 2× `vllm serve` standalone | 1× `uv run inference` standalone (util 0.33, prefix caching, LoRA hot-load) | |
 
 Deviazioni che vanno dichiarate nel testo: modello 2B+LoRA, budget ridotto (step, rollouts,
-finestra), eval finale con budget di training (16k/4096/12) invece di quello del paper.
+finestra), eval finale con budget di training (16k/4096/15) invece di quello del paper; il
+`forced_final` è telemetria e non più reward negativo, e un JSON completo conforme allo schema
+riceve un bootstrap reward di 0,05 (il reward semantico ufficiale 0..1 resta invariato).
 
 Note di schema al pin (scoperte col `--dry-run`): `batch_size` conta i ROLLOUT per step e deve
 essere divisibile per `group_size` (64 = 8 prompt × 8; nel fork del paper contava i prompt);
@@ -76,8 +78,9 @@ la valutazione usa i pesi HF fusi in `weights/step_N` (l'adapter resta nel check
 | b | 2 rollout reali per braccio via `eval_v1_rlm.py` (val pinnata) | 0 errori, ≥1 turno; braccio wavelet: skill pubblicizzata nel prompt di sistema (chiamate ≥0 a zero-shot) |
 | c | `rl` 2 step, 2×4 rollout, sampler nvidia-smi 1 s | checkpoint trainer + pesi HF presenti, picco GPU < 23 000 MiB, 8/8 rollout per step |
 | d | `rl` 2 step al batch reale 8×8 | PASS: 64/64 per step, 0 errori, picco 22 206 MiB; massimo 1 280 s/step |
+| e | `rl` wavelet 5 step al batch reale dopo modifiche reward/budget | checkpoint+pesi, memoria <23 GB, almeno un reward semantico positivo; ultimi 2 step: finali vuoti ≤80%, trainable ≥8/64, varianza reward |
 
-Solo con `SMOKE_OK` (più recente del manifest d'ambiente) il driver accetta di partire.
+Solo con `SMOKE_OK a b c d e` (più recente del manifest d'ambiente) il driver accetta di partire.
 
 ## 5. Esecuzione e copertura
 
@@ -86,13 +89,29 @@ del braccio precedente) → fase 1 (`ANOMALYXL_P_PRESENT=1.0 ANOMALYXL_ALLCH_MIN
 esportati nell'env di lancio, sonda che li verifica) → checkpoint step_35 obbligatorio → fase 2
 (`--ckpt.resume-step 35 --max-steps 60`, sonda P_PRESENT=0.8) → `weights/step_60` → coverage
 post-hoc su tutti i 60 step (`[L2-Coverage] step N: rollouts C/64, errored, forced_final,
-reward, turni, token, gruppi a varianza zero`) → `DONE`. Qualunque processo morto, attesa
+reward semantico, formato valido, finali vuoti, turni, token, gruppi a varianza zero`) → `DONE`.
+Due step consecutivi con più dell'80% di finali vuoti o meno di 8/64 rollout trainabili fanno
+scattare il collapse guard. Qualunque processo morto, attesa
 oltre 45 h per fase, checkpoint mancante, fonte di coverage assente, tasso d'errore > 25% o
 conteggio rollout diverso da 64 in uno step → `FAILED` con motivo. Mai un DONE di comodo.
+Gli override per la vGPU e le variabili di fase sono inseriti esplicitamente nei comandi delle
+sessioni figlie: il driver può quindi vivere in una sessione `tmux` persistente senza dipendere
+dall'ambiente memorizzato in precedenza dal daemon `tmux`.
 
 Misura smoke d: 796 e 1 280 s per la raccolta dei due step; il trainer ha chiuso gli update
 in 31m01s e 20m04s end-to-end grazie alla pipeline concorrente. Proiezione di base dal massimo
 osservato: **21,3 h per braccio da 60 step**, più l'overhead degli eval online e finali.
+
+### Reward-collapse osservato e rescue
+
+Il primo pilot wavelet 2B con cap 12 e `forced_final_penalty=-0,25` è stato fermato a step 31.
+La policy aveva scoperto che terminare volontariamente con output vuoto valeva 0: da 48/64
+finali vuoti a step 0 è arrivata a 61/64, con quasi tutti i gruppi a varianza zero. Il reward
+medio che risaliva verso zero non era qualità, ma exploitation del segnale. Il run è conservato
+sul nodo sotto `~/l2/runs/archive/wavelet_reward_collapse_20260904T172706Z` e non è un risultato.
+Il rescue elimina l'asimmetria (nessun reward negativo per il cap), ripristina 15 turni e usa
+il piccolo reward di formato esclusivamente per insegnare il contratto d'output. Le due braccia
+ricevono esattamente la stessa modifica; lo stadio e deve passare prima di una nuova corsa lunga.
 
 ## 6. Valutazione finale
 

@@ -48,14 +48,14 @@ name = "anomalyxl-generator"
 # AnomalyXL dataset for the scorer/schema; unset it resolves the HF shard (blocked offline, and
 # unpinned) -> point it at the pinned local val directory (never read for training tasks).
 taskset = { id = "timeseries-qa-v1", repo_or_path = "/root/timerlm/l2/data/val", generator = { num_tasks = 100000, run_seed = 20260903 } }
-harness = { id = "timeseries-qa-v1", summarize_at_tokens = 22000, env = { RLM_MAX_TOKENS = "16384", RLM_MAX_OUTPUT = "4096", RLM_MAX_TURNS = "12", RLM_SKILLS = "wavelet_zoom" } }
+harness = { id = "timeseries-qa-v1", summarize_at_tokens = 22000, env = { RLM_MAX_TOKENS = "16384", RLM_MAX_OUTPUT = "4096", RLM_MAX_TURNS = "15", RLM_SKILLS = "wavelet_zoom" } }
 
 # Online eval every 10 steps on the pinned local precise VALIDATION split (first 100 rows =
 # eval pool, 32 sampled), through the v0 eval env exactly like the paper.
 [[orchestrator.eval.env]]
 id = "timeseries-qa"
 name = "anomalyxl-rlm-text-eval"
-args = { dataset = "anomalyxl", repo_or_path = "/root/timerlm/l2/data/val", mode = "rlm", use_image = false, use_local_executor = true, eval_size = 100, max_turns = 12 }
+args = { dataset = "anomalyxl", repo_or_path = "/root/timerlm/l2/data/val", mode = "rlm", use_image = false, use_local_executor = true, eval_size = 100, max_turns = 15 }
 
 [orchestrator.eval]
 interval = 10
@@ -84,9 +84,8 @@ rank = 32
 alpha = 64
 target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "in_proj_qkv", "in_proj_z", "in_proj_b", "in_proj_a", "out_proj"]
 
-# Phase boundary of the negatives schedule = step 35 (paper: 220/400 = 55%; 35/60 = 58%,
-# the nearest checkpoint multiple). keep_interval keeps step_35 for the phase-2 resume.
+# Phase boundary = step 10: short learnability bootstrap, then official distribution.
 [ckpt]
 interval = 5
 keep_last = 3
-keep_interval = 35
+keep_interval = 10

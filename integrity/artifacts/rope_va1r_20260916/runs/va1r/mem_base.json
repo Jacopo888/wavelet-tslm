@@ -1,0 +1,79 @@
+{
+  "config": "configs/va1r_mi300x.toml",
+  "meta_proj_fp32": false,
+  "checkpoint": null,
+  "n": 24,
+  "steps": 600,
+  "length": 131072,
+  "width": 137,
+  "amplitude": 8.0,
+  "lr": 0.0001,
+  "identical_prompt_prefix": false,
+  "history": [
+    {
+      "step": 100,
+      "loss": 0.40741032361984253,
+      "primary_true": 0.0,
+      "primary_substituted": 0.0,
+      "delta": 0.0,
+      "iou_true": 0.0,
+      "solved": 0
+    },
+    {
+      "step": 200,
+      "loss": 0.33311402797698975,
+      "primary_true": 0.0,
+      "primary_substituted": 0.0,
+      "delta": 0.0,
+      "iou_true": 0.0,
+      "solved": 0
+    },
+    {
+      "step": 300,
+      "loss": 0.1288418471813202,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.0,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    },
+    {
+      "step": 400,
+      "loss": 0.08426187187433243,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.0,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    },
+    {
+      "step": 500,
+      "loss": 0.08004210889339447,
+      "primary_true": 0.041666666666666664,
+      "primary_substituted": 0.0,
+      "delta": 0.041666666666666664,
+      "iou_true": 0.041666666666666664,
+      "solved": 1
+    },
+    {
+      "step": 600,
+      "loss": 0.12741553783416748,
+      "primary_true": 0.08333333333333333,
+      "primary_substituted": 0.041666666666666664,
+      "delta": 0.041666666666666664,
+      "iou_true": 0.08333333333333333,
+      "solved": 2
+    }
+  ],
+  "best": {
+    "step": 600,
+    "loss": 0.12741553783416748,
+    "primary_true": 0.08333333333333333,
+    "primary_substituted": 0.041666666666666664,
+    "delta": 0.041666666666666664,
+    "iou_true": 0.08333333333333333,
+    "solved": 2
+  },
+  "verdict": "NOT MEMORISED",
+  "seconds": 887.3
+}

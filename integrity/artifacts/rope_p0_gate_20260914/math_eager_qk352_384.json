@@ -1,0 +1,553 @@
+{
+  "schema_version": 2,
+  "label": "math_eager_qk352_384",
+  "started_at_utc": "2026-09-14T20:57:48.248956+00:00",
+  "args": {
+    "backend": "MATH",
+    "label": "math_eager_qk352_384",
+    "qk_dims": [
+      352,
+      384
+    ],
+    "v_dim": 256,
+    "pad_qk_to": 0,
+    "heads": 16,
+    "kv_heads": 4,
+    "scale": 0.0625,
+    "numeric_length": 512,
+    "cache_prefix": 384,
+    "memory_lengths": [
+      4096,
+      16384
+    ],
+    "out_atol": 0.025,
+    "out_rtol": 0.025,
+    "grad_atol": 0.05,
+    "grad_rtol": 0.05,
+    "seed": 20260914,
+    "rocm_experimental": false,
+    "report": "/workspace/runs/p0-backend-gate/math_eager_qk352_384.json",
+    "skip_profile": false
+  },
+  "environment": {
+    "hostname": "2",
+    "platform": "Linux-6.8.0-60-generic-x86_64-with-glibc2.39",
+    "python": "3.12.10",
+    "torch": "2.6.0+git684f6f2",
+    "torch_cuda": null,
+    "torch_hip": "6.4.43483-a187df25c",
+    "cuda_available": true,
+    "env_TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL": null,
+    "device_name": "AMD Instinct MI300X VF",
+    "device_capability": [
+      9,
+      4
+    ],
+    "gcn_arch": "gfx942:sramecc+:xnack-",
+    "total_memory_gib": 191.69,
+    "bf16_supported": true,
+    "sdp_flags": {
+      "flash": true,
+      "mem_efficient": true,
+      "math": true
+    }
+  },
+  "cases": [
+    {
+      "case": "numeric_causal_square_qk352",
+      "required": true,
+      "q_len": 512,
+      "kv_len": 512,
+      "qk_dim": 352,
+      "qk_dim_padded": 352,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "explicit_mask": false,
+      "wall_seconds_incl_compile": 0.0019,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.012635946273803711,
+          "mean_abs_err": 0.00016757768753450364,
+          "max_rel_err": 417.7198181152344,
+          "ref_abs_mean": 0.0714646503329277,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.006666421890258789,
+          "mean_abs_err": 0.00011264583736192435,
+          "max_rel_err": 410.0617980957031,
+          "ref_abs_mean": 0.033549848943948746,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.010247588157653809,
+          "mean_abs_err": 0.00020378126646392047,
+          "max_rel_err": 586.1428833007812,
+          "ref_abs_mean": 0.05426407977938652,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.028652191162109375,
+          "mean_abs_err": 0.0003267492866143584,
+          "max_rel_err": 2285.1396484375,
+          "ref_abs_mean": 0.11461964249610901,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_cache_offset_qk352",
+      "required": true,
+      "q_len": 128,
+      "kv_len": 512,
+      "qk_dim": 352,
+      "qk_dim_padded": 352,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "explicit_mask": true,
+      "wall_seconds_incl_compile": 0.0008,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.0008296370506286621,
+          "mean_abs_err": 9.422091534361243e-05,
+          "max_rel_err": 208.89694213867188,
+          "ref_abs_mean": 0.03940579667687416,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.0006133541464805603,
+          "mean_abs_err": 6.611169374082237e-05,
+          "max_rel_err": 225.86041259765625,
+          "ref_abs_mean": 0.019618216902017593,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.0005934685468673706,
+          "mean_abs_err": 7.201112020993605e-05,
+          "max_rel_err": 160.7174072265625,
+          "ref_abs_mean": 0.01917576603591442,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.001079753041267395,
+          "mean_abs_err": 0.00011205593182239681,
+          "max_rel_err": 182.31942749023438,
+          "ref_abs_mean": 0.0383744090795517,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L4096_qk352",
+      "required": true,
+      "q_len": 4096,
+      "kv_len": 4096,
+      "qk_dim": 352,
+      "qk_dim_padded": 352,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "wall_seconds_first_incl_compile": 0.0174,
+      "wall_seconds_fwd_bwd": 0.0168,
+      "peak_allocated_gib": 4.358,
+      "attention_extra_gib": 4.297,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L16384_qk352",
+      "required": true,
+      "q_len": 16384,
+      "kv_len": 16384,
+      "qk_dim": 352,
+      "qk_dim_padded": 352,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "wall_seconds_first_incl_compile": 0.2469,
+      "wall_seconds_fwd_bwd": 0.2497,
+      "peak_allocated_gib": 65.434,
+      "attention_extra_gib": 65.188,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "profile_qk352",
+      "required": false,
+      "backend": "MATH",
+      "kernels": [
+        {
+          "name": "aten::bmm",
+          "count": 6,
+          "device_time_ms": 2.87
+        },
+        {
+          "name": "aten::scaled_dot_product_attention",
+          "count": 1,
+          "device_time_ms": 1.972
+        },
+        {
+          "name": "aten::_scaled_dot_product_attention_math",
+          "count": 1,
+          "device_time_ms": 1.972
+        },
+        {
+          "name": "autograd::engine::evaluate_function: BmmBackward0",
+          "count": 2,
+          "device_time_ms": 1.933
+        },
+        {
+          "name": "BmmBackward0",
+          "count": 2,
+          "device_time_ms": 1.933
+        },
+        {
+          "name": "aten::matmul",
+          "count": 2,
+          "device_time_ms": 0.938
+        },
+        {
+          "name": "aten::_safe_softmax",
+          "count": 1,
+          "device_time_ms": 0.586
+        },
+        {
+          "name": "autograd::engine::evaluate_function: SafeSoftmaxBackward0",
+          "count": 1,
+          "device_time_ms": 0.411
+        },
+        {
+          "name": "SafeSoftmaxBackward0",
+          "count": 1,
+          "device_time_ms": 0.411
+        },
+        {
+          "name": "aten::_softmax_backward_data",
+          "count": 1,
+          "device_time_ms": 0.411
+        },
+        {
+          "name": "aten::softmax",
+          "count": 1,
+          "device_time_ms": 0.287
+        },
+        {
+          "name": "aten::_softmax",
+          "count": 1,
+          "device_time_ms": 0.287
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::cunn_SoftMaxForwardSmem<4, float, float, float, at::native::(anonymous namespace)::SoftMaxForwardEpilogue, long>(float*,",
+          "count": 1,
+          "device_time_ms": 0.287
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::cunn_SoftMaxBackward<4, float, float, float, at::native::(anonymous namespace)::SoftMaxBackwardEpilogue>(float*, float c",
+          "count": 1,
+          "device_time_ms": 0.207
+        }
+      ],
+      "math_fallback_seen": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_causal_square_qk384",
+      "required": true,
+      "q_len": 512,
+      "kv_len": 512,
+      "qk_dim": 384,
+      "qk_dim_padded": 384,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "explicit_mask": false,
+      "wall_seconds_incl_compile": 0.0008,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.011421680450439453,
+          "mean_abs_err": 0.00016735865210648626,
+          "max_rel_err": 641.1548461914062,
+          "ref_abs_mean": 0.07199417054653168,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.006961345672607422,
+          "mean_abs_err": 0.00011369946878403425,
+          "max_rel_err": 285.14385986328125,
+          "ref_abs_mean": 0.03395289182662964,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.01038658618927002,
+          "mean_abs_err": 0.00020565101294778287,
+          "max_rel_err": 392.4109191894531,
+          "ref_abs_mean": 0.05487170070409775,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.033516883850097656,
+          "mean_abs_err": 0.00032709777588024735,
+          "max_rel_err": 489.0374755859375,
+          "ref_abs_mean": 0.11188159137964249,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "numeric_cache_offset_qk384",
+      "required": true,
+      "q_len": 128,
+      "kv_len": 512,
+      "qk_dim": 384,
+      "qk_dim_padded": 384,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "explicit_mask": true,
+      "wall_seconds_incl_compile": 0.0008,
+      "checks": [
+        {
+          "tensor": "output",
+          "max_abs_err": 0.0007800161838531494,
+          "mean_abs_err": 9.648322156863287e-05,
+          "max_rel_err": 272.3165588378906,
+          "ref_abs_mean": 0.03981770575046539,
+          "finite": true,
+          "atol": 0.025,
+          "rtol": 0.025,
+          "pass": true
+        },
+        {
+          "tensor": "dQ",
+          "max_abs_err": 0.0005067363381385803,
+          "mean_abs_err": 6.66318810544908e-05,
+          "max_rel_err": 144.262939453125,
+          "ref_abs_mean": 0.01975547894835472,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dK",
+          "max_abs_err": 0.0006911605596542358,
+          "mean_abs_err": 7.239865226438269e-05,
+          "max_rel_err": 167.7880096435547,
+          "ref_abs_mean": 0.019326692447066307,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        },
+        {
+          "tensor": "dV",
+          "max_abs_err": 0.001013532280921936,
+          "mean_abs_err": 0.00011227749928366393,
+          "max_rel_err": 243.9757843017578,
+          "ref_abs_mean": 0.037768177688121796,
+          "finite": true,
+          "atol": 0.05,
+          "rtol": 0.05,
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L4096_qk384",
+      "required": true,
+      "q_len": 4096,
+      "kv_len": 4096,
+      "qk_dim": 384,
+      "qk_dim_padded": 384,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "wall_seconds_first_incl_compile": 0.0175,
+      "wall_seconds_fwd_bwd": 0.0171,
+      "peak_allocated_gib": 4.379,
+      "attention_extra_gib": 4.312,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "memory_causal_L16384_qk384",
+      "required": true,
+      "q_len": 16384,
+      "kv_len": 16384,
+      "qk_dim": 384,
+      "qk_dim_padded": 384,
+      "v_dim": 256,
+      "heads": 16,
+      "kv_heads": 4,
+      "dtype": "bfloat16",
+      "backend": "MATH",
+      "wall_seconds_first_incl_compile": 0.2494,
+      "wall_seconds_fwd_bwd": 0.2494,
+      "peak_allocated_gib": 65.516,
+      "attention_extra_gib": 65.25,
+      "finite": true,
+      "pass": true,
+      "status": "PASS"
+    },
+    {
+      "case": "profile_qk384",
+      "required": false,
+      "backend": "MATH",
+      "kernels": [
+        {
+          "name": "aten::bmm",
+          "count": 6,
+          "device_time_ms": 2.934
+        },
+        {
+          "name": "autograd::engine::evaluate_function: BmmBackward0",
+          "count": 2,
+          "device_time_ms": 2.032
+        },
+        {
+          "name": "BmmBackward0",
+          "count": 2,
+          "device_time_ms": 2.032
+        },
+        {
+          "name": "aten::scaled_dot_product_attention",
+          "count": 1,
+          "device_time_ms": 1.949
+        },
+        {
+          "name": "aten::_scaled_dot_product_attention_math",
+          "count": 1,
+          "device_time_ms": 1.949
+        },
+        {
+          "name": "aten::matmul",
+          "count": 2,
+          "device_time_ms": 0.902
+        },
+        {
+          "name": "aten::_safe_softmax",
+          "count": 1,
+          "device_time_ms": 0.582
+        },
+        {
+          "name": "autograd::engine::evaluate_function: SafeSoftmaxBackward0",
+          "count": 1,
+          "device_time_ms": 0.411
+        },
+        {
+          "name": "SafeSoftmaxBackward0",
+          "count": 1,
+          "device_time_ms": 0.411
+        },
+        {
+          "name": "aten::_softmax_backward_data",
+          "count": 1,
+          "device_time_ms": 0.411
+        },
+        {
+          "name": "aten::softmax",
+          "count": 1,
+          "device_time_ms": 0.288
+        },
+        {
+          "name": "aten::_softmax",
+          "count": 1,
+          "device_time_ms": 0.288
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::cunn_SoftMaxForwardSmem<4, float, float, float, at::native::(anonymous namespace)::SoftMaxForwardEpilogue, long>(float*,",
+          "count": 1,
+          "device_time_ms": 0.288
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::cunn_SoftMaxBackward<4, float, float, float, at::native::(anonymous namespace)::SoftMaxBackwardEpilogue>(float*, float c",
+          "count": 1,
+          "device_time_ms": 0.21
+        }
+      ],
+      "math_fallback_seen": true,
+      "pass": true,
+      "status": "PASS"
+    }
+  ],
+  "verdict": "PASS",
+  "required_cases": 8,
+  "required_failed": [],
+  "finished_at_utc": "2026-09-14T20:57:50.816346+00:00"
+}

@@ -27,7 +27,9 @@ dtype = "bfloat16"
 max_model_len = 32768
 enforce_eager = false
 tool_call_parser = "qwen3_coder"
-reasoning_parser = "qwen3"
+# Deliberately no reasoning_parser: Qwen3.5-2B often emits a plain final JSON without
+# <think> delimiters. vLLM's qwen3 parser misclassifies that entire answer as `reasoning`
+# and leaves `content=null`, so the RLM harness scores a correct answer as empty.
 
 [parallel]
 tp = 1

@@ -2,6 +2,9 @@
 # Stato tracciato in integrity/FREEZE.md (HEAD sha + lista overlay);
 # i sorgenti autorevoli degli innesti sono in kaggle/patch/.
 timerlm/
+# The compact L2 overlay is source code, not the 2.2 GB upstream checkout.
+!l2/overlay/timerlm/
+!l2/overlay/timerlm/**
 
 __pycache__/
 *.pyc
@@ -9,3 +12,12 @@ __pycache__/
 venv/
 *.pt
 *.ckpt
+
+# Virtualenv dell'ablazione RoPE (2,2 GB) e cache dei test.
+.venv-luna/
+.pytest_cache/
+
+# Pesi dei modelli negli artefatti: 386 MB contro 9,2 MB di provenienza vera (JSON, manifest, log).
+# Non rendono riproducibile nulla da soli, e una volta in cronologia git non si tolgono piu'.
+# I checkpoint che contano stanno fuori dal repo, in ../offnode/ con i loro SHA.
+*.safetensors

@@ -1,0 +1,578 @@
+{
+  "checkpoint": "/workspace/runs/p1-e2/checkpoints/step_000000000200",
+  "optimizer_step": 200,
+  "rows": 24,
+  "seed": 5,
+  "min_advantage": 0.1,
+  "ce_mean": {
+    "TRUE": 1.2995206067959468,
+    "SUBSTITUTED": 1.3223146225015323,
+    "ZEROED": 2.034970606366793
+  },
+  "bootstrap": {
+    "both": {
+      "mean": 0.02279401570558548,
+      "ci95_lower": -0.00465466200063626,
+      "ci95_upper": 0.05739966643353301,
+      "n": 24,
+      "resamples": 10000
+    },
+    "vs_substituted": {
+      "mean": 0.02279401570558548,
+      "ci95_lower": -0.00465466200063626,
+      "ci95_upper": 0.05739966643353301,
+      "n": 24,
+      "resamples": 10000
+    },
+    "vs_zeroed": {
+      "mean": 0.7354499995708466,
+      "ci95_lower": 0.6614862953623135,
+      "ci95_upper": 0.809774106927216,
+      "n": 24,
+      "resamples": 10000
+    }
+  },
+  "generated_accuracy_mean": {
+    "TRUE": 0.06597222222222222,
+    "SUBSTITUTED": 0.03472222222222222,
+    "ZEROED": 0.0
+  },
+  "criteria": {
+    "advantage_ge_min": false,
+    "ci95_lower_gt_zero_vs_substituted": false,
+    "ci95_lower_gt_zero_vs_zeroed": true,
+    "generated_accuracy_true_above_controls": true
+  },
+  "verdict": "FAIL",
+  "seconds": 896.8,
+  "records": [
+    {
+      "recording_id": "aed2f57307ecff8d",
+      "category": "localize",
+      "row": 18,
+      "donor_row": 45,
+      "teacher_reading": "top ch_00:51,22,57; peak ch_00:54.",
+      "ce": {
+        "TRUE": 1.5296411514282227,
+        "SUBSTITUTED": 1.4974437952041626,
+        "ZEROED": 2.183642625808716
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,2,10; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:3,11,12; peak ch_00:3.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "a817b347cae6a26f",
+      "category": "localize",
+      "row": 21,
+      "donor_row": 35,
+      "teacher_reading": "top ch_00:23,3,43; peak ch_00:60.",
+      "ce": {
+        "TRUE": 1.6999201774597168,
+        "SUBSTITUTED": 1.677533745765686,
+        "ZEROED": 2.41780686378479
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,2,10; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:1,2,3; peak ch_00:1.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=16384 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.25,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "3afd5d84f49ffae2",
+      "category": "measure_magnitude",
+      "row": 59,
+      "donor_row": 85,
+      "teacher_reading": "top ch_00:47,26,38; peak ch_00:47.",
+      "ce": {
+        "TRUE": 1.0909764766693115,
+        "SUBSTITUTED": 1.1036527156829834,
+        "ZEROED": 1.9681378602981567
+      },
+      "generated": {
+        "TRUE": "top ch_00:5,1,10; peak ch_00:5.\n",
+        "SUBSTITUTED": "top ch_00:3,42,41; peak ch_00:42.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, I'm being given a recording that appears to be co"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "b85ce070d0de7386",
+      "category": "localize",
+      "row": 98,
+      "donor_row": 189,
+      "teacher_reading": "top ch_00:40,51,57; peak ch_00:36.",
+      "ce": {
+        "TRUE": 1.7786731719970703,
+        "SUBSTITUTED": 1.6997419595718384,
+        "ZEROED": 2.1401021480560303
+      },
+      "generated": {
+        "TRUE": "top ch_00:43,42,41; peak ch_00:43.\n",
+        "SUBSTITUTED": "top ch_00:4,1,24; peak ch_00:4.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains garbled/corrupted text that appears to be placeh"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "fb0c68f28c1f6efb",
+      "category": "localize",
+      "row": 105,
+      "donor_row": 122,
+      "teacher_reading": "top ch_00:28,23,26; peak ch_00:35.",
+      "ce": {
+        "TRUE": 1.6569854021072388,
+        "SUBSTITUTED": 1.5993714332580566,
+        "ZEROED": 2.1239776611328125
+      },
+      "generated": {
+        "TRUE": "top ch_00:40,39,38; peak ch_00:40.\n",
+        "SUBSTITUTED": "top ch_00:4,1,20; peak ch_00:4.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains what appears to be corrupted or placeholder text"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "d718661868688a9d",
+      "category": "localize",
+      "row": 108,
+      "donor_row": 170,
+      "teacher_reading": "top ch_00:59,14,25; peak ch_00:59.",
+      "ce": {
+        "TRUE": 1.1228219270706177,
+        "SUBSTITUTED": 1.148611307144165,
+        "ZEROED": 1.949592113494873
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,29,28; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:1,13,12; peak ch_00:1.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains garbled/corrupted text that appears to be placeh"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "1ea243997c92633d",
+      "category": "localize",
+      "row": 130,
+      "donor_row": 155,
+      "teacher_reading": "top ch_00:0,40,25; peak ch_00:0.",
+      "ce": {
+        "TRUE": 1.2041857242584229,
+        "SUBSTITUTED": 1.514397382736206,
+        "ZEROED": 1.9431569576263428
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,10,11; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:56,54,53; peak ch_00:56.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and determine if there's an anomaly. However, I notice that the \"Global view\" section contains garbled/corrupted text that appears to be placeh"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "26e44ce9d36f67b2",
+      "category": "classify_with_evidence",
+      "row": 145,
+      "donor_row": 148,
+      "teacher_reading": "top ch_00:52,3,9; peak ch_00:52.",
+      "ce": {
+        "TRUE": 1.127134919166565,
+        "SUBSTITUTED": 1.0867809057235718,
+        "ZEROED": 1.9270737171173096
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,2,3; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:4,1,0; peak ch_00:4.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=32768 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.3333333333333333,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "5b38216f6f80e04f",
+      "category": "measure_magnitude",
+      "row": 168,
+      "donor_row": 129,
+      "teacher_reading": "top ch_00:13,30,57; peak ch_00:13.",
+      "ce": {
+        "TRUE": 1.1828645467758179,
+        "SUBSTITUTED": 1.2204196453094482,
+        "ZEROED": 1.9269856214523315
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,10,11; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:63,62,61; peak ch_00:63.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, I'm looking at the provided information and I not"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "f39cc108d856978b",
+      "category": "measure_magnitude",
+      "row": 197,
+      "donor_row": 115,
+      "teacher_reading": "top ch_00:38,63,62; peak ch_00:38.",
+      "ce": {
+        "TRUE": 0.9915212988853455,
+        "SUBSTITUTED": 1.136838674545288,
+        "ZEROED": 2.0446014404296875
+      },
+      "generated": {
+        "TRUE": "top ch_00:63,62,61; peak ch_00:63.\n",
+        "SUBSTITUTED": "top ch_00:1,13,10; peak ch_00:1.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, I notice that the \"Global view\" section contains "
+      },
+      "accuracy": {
+        "TRUE": 0.6666666666666666,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "edb0d7552460169f",
+      "category": "classify_with_evidence",
+      "row": 248,
+      "donor_row": 211,
+      "teacher_reading": "top ch_00:56,14,37; peak ch_00:60.",
+      "ce": {
+        "TRUE": 1.5880752801895142,
+        "SUBSTITUTED": 1.5936670303344727,
+        "ZEROED": 2.2717292308807373
+      },
+      "generated": {
+        "TRUE": "top ch_00:43,44,45; peak ch_00:43.\n",
+        "SUBSTITUTED": "top ch_00:4,1,35; peak ch_00:4.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=65536 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "7ccb3b77e68f8c0b",
+      "category": "classify_with_evidence",
+      "row": 251,
+      "donor_row": 269,
+      "teacher_reading": "top ch_00:27,46,44; peak ch_00:27.",
+      "ce": {
+        "TRUE": 1.0749213695526123,
+        "SUBSTITUTED": 1.0614163875579834,
+        "ZEROED": 2.0628669261932373
+      },
+      "generated": {
+        "TRUE": "top ch_00:5,11,11; peak ch_00:11.\n",
+        "SUBSTITUTED": "top ch_00:5,1,27; peak ch_00:5.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=65536 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.3333333333333333,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "fb6830c0ad3f84e7",
+      "category": "measure_magnitude",
+      "row": 270,
+      "donor_row": 220,
+      "teacher_reading": "top ch_00:46,12,9; peak ch_00:46.",
+      "ce": {
+        "TRUE": 1.20747709274292,
+        "SUBSTITUTED": 1.3368816375732422,
+        "ZEROED": 2.2126405239105225
+      },
+      "generated": {
+        "TRUE": "top ch_00:5,1,10; peak ch_00:5.\n",
+        "SUBSTITUTED": "top ch_00:63,62,61; peak ch_00:63.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, looking at the provided information, I notice som"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "3ff1ee3733bcd74e",
+      "category": "measure_magnitude",
+      "row": 282,
+      "donor_row": 203,
+      "teacher_reading": "top ch_00:7,45,4; peak ch_00:5.",
+      "ce": {
+        "TRUE": 1.5741912126541138,
+        "SUBSTITUTED": 1.580252766609192,
+        "ZEROED": 2.3682432174682617
+      },
+      "generated": {
+        "TRUE": "top ch_00:5,1,2; peak ch_00:5.\n",
+        "SUBSTITUTED": "top ch_00:3,11,12; peak ch_00:3.\n",
+        "ZEROED": "The user is asking me to analyze a time series recording and report the peak deviation in units of the channel's baseline standard deviation. However, I'm looking at the provided information and I not"
+      },
+      "accuracy": {
+        "TRUE": 0.25,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "fe659a78e14e3321",
+      "category": "classify_with_evidence",
+      "row": 317,
+      "donor_row": 358,
+      "teacher_reading": "top ch_00:41,33,58; peak ch_00:63.",
+      "ce": {
+        "TRUE": 1.6933259963989258,
+        "SUBSTITUTED": 1.686139464378357,
+        "ZEROED": 2.407301425933838
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,0,2; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:1,13,11; peak ch_00:1.\n",
+        "ZEROED": "The user wants me to analyze a time series recording and identify an anomaly.\nHowever, the provided \"Global view\" text is completely garbled and unreadable. It looks like a corrupted string of charact"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "81737db406ae3a63",
+      "category": "classify_with_evidence",
+      "row": 328,
+      "donor_row": 331,
+      "teacher_reading": "top ch_00:46,25,29; peak ch_00:46.",
+      "ce": {
+        "TRUE": 1.1239466667175293,
+        "SUBSTITUTED": 1.1237512826919556,
+        "ZEROED": 1.886618733406067
+      },
+      "generated": {
+        "TRUE": "top ch_00:4,1,0; peak ch_00:4.\n",
+        "SUBSTITUTED": "top ch_00:43,44,41; peak ch_00:43.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=131072 samples, dt=1, channels: ch_00) and some statistics (median, scale, min, max, valid count).\n    *   Inp"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "f54edada5b0bdcc4",
+      "category": "measure_magnitude",
+      "row": 350,
+      "donor_row": 285,
+      "teacher_reading": "top ch_00:62,61,39; peak ch_00:62.",
+      "ce": {
+        "TRUE": 1.0276201963424683,
+        "SUBSTITUTED": 1.0393871068954468,
+        "ZEROED": 2.108137369155884
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,2,3; peak ch_00:1.\n",
+        "SUBSTITUTED": "top ch_00:4,1,0; peak ch_00:4.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description (L=131072 samples, dt=1, channels: ch_00), channel statistics (median, scale, min, max, valid count), reading gri"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "b946a76522d10c26",
+      "category": "localize_all_channels",
+      "row": 377,
+      "donor_row": 389,
+      "teacher_reading": "top ch_11:3,30,13; peak ch_11:63, ch_01:1.",
+      "ce": {
+        "TRUE": 1.8497278690338135,
+        "SUBSTITUTED": 1.8291492462158203,
+        "ZEROED": 2.518939733505249
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,10,11; peak ch_00:11, ch_01:10, ch_02:11.\ntop ch_00:1,10,11; peak ch_00:11, ch_01:10, ch_02:11.\ntop ch_00:1,10,11; peak ch_00:11, ch_01:10, ch_02:11.\ntop ch_00:1,10,11; peak ch_00:11, ch_0",
+        "SUBSTITUTED": "top ch_00:1,10,11; peak ch_00:11, ch_01:10, ch_02:11.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A time series recording with 32768 samples, 16 channels (ch_00 to ch_15), dt=1.\n    *   Task: Find anomalies across all channels.\n    *  "
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "7fb236e8519434a1",
+      "category": "localize_all_channels",
+      "row": 383,
+      "donor_row": 387,
+      "teacher_reading": "top ch_06:55,47,14; peak ch_06:42, ch_04:43.",
+      "ce": {
+        "TRUE": 1.6386371850967407,
+        "SUBSTITUTED": 1.6634953022003174,
+        "ZEROED": 2.368541955947876
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,10,11; peak ch_00:11, ch_01:10, ch_02:11.\n",
+        "SUBSTITUTED": "top ch_00:1,10,11; peak ch_00:11, ch_01:10, ch_02:11.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A time series recording with 32768 samples, 16 channels (ch_00 to ch_15).\n    *   Task: Find anomalies across all channels.\n    *   Outpu"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "a6b880ee2b465c79",
+      "category": "localize_all_channels",
+      "row": 419,
+      "donor_row": 429,
+      "teacher_reading": "top ch_01:5, ch_10:36, ch_08:48; peak ch_01:5, ch_10:36.",
+      "ce": {
+        "TRUE": 1.187414526939392,
+        "SUBSTITUTED": 1.279518961906433,
+        "ZEROED": 1.753166675567627
+      },
+      "generated": {
+        "TRUE": "top ch_00:1,47,46; peak ch_00:46, ch_01:47.\n",
+        "SUBSTITUTED": "top ch_00:1,1,1; peak ch_00:1, ch_01:10, ch_02:10.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A time series recording description (L=131072 samples, dt=1, 16 channels) and a \"Global view\" text block containing a massive string of r"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "4fddb3fce838266e",
+      "category": "lead_lag_with_magnitude",
+      "row": 473,
+      "donor_row": 452,
+      "teacher_reading": "top B_ch_00:35, A_ch_00:40,10; peak A_ch_00:40, B_ch_00:35.",
+      "ce": {
+        "TRUE": 0.8284872770309448,
+        "SUBSTITUTED": 0.8259598016738892,
+        "ZEROED": 1.3482494354248047
+      },
+      "generated": {
+        "TRUE": "top A_ch_00:4, B_ch_00:4,40; peak A_ch_00:4, B_ch_00:4.\n",
+        "SUBSTITUTED": "top A_ch_00:1, B_ch_00:1, 2; peak A_ch_00:1, B_ch_00:1, 2.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=32768 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max,"
+      },
+      "accuracy": {
+        "TRUE": 0.3333333333333333,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "6cd1359681c0070d",
+      "category": "lead_lag_with_magnitude",
+      "row": 480,
+      "donor_row": 451,
+      "teacher_reading": "top B_ch_00:9, A_ch_00:2,28; peak A_ch_00:2, B_ch_00:9.",
+      "ce": {
+        "TRUE": 0.9339300990104675,
+        "SUBSTITUTED": 0.9571218490600586,
+        "ZEROED": 1.6589308977127075
+      },
+      "generated": {
+        "TRUE": "top B_ch_00:47,48,49; peak B_ch_00:48.\ntop A_ch_00:47,48,49; peak A_ch_00:48.\n",
+        "SUBSTITUTED": "top B_ch_00:57, A_ch_00:57, 57; peak B_ch_00:57, A_ch_00:57, 57.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=32768 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max,"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "8e4c0174e5ffa3b5",
+      "category": "lead_lag_with_magnitude",
+      "row": 492,
+      "donor_row": 499,
+      "teacher_reading": "top A_ch_00:19, B_ch_00:44,62; peak A_ch_00:19, B_ch_00:44.",
+      "ce": {
+        "TRUE": 0.8071067333221436,
+        "SUBSTITUTED": 0.8173206448554993,
+        "ZEROED": 1.6056442260742188
+      },
+      "generated": {
+        "TRUE": "top A_ch_00:4, B_ch_00:4,4; peak A_ch_00:4, B_ch_00:4.\n",
+        "SUBSTITUTED": "top A_ch_00:3, B_ch_00:3,40; peak A_ch_00:3, B_ch_00:40.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=131072 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      }
+    },
+    {
+      "recording_id": "c972be9671ba5441",
+      "category": "lead_lag_with_magnitude",
+      "row": 516,
+      "donor_row": 501,
+      "teacher_reading": "top A_ch_00:0,50, B_ch_00:35; peak A_ch_00:0, B_ch_00:20.",
+      "ce": {
+        "TRUE": 1.2689082622528076,
+        "SUBSTITUTED": 1.2566978931427002,
+        "ZEROED": 1.6432071924209595
+      },
+      "generated": {
+        "TRUE": "top B_ch_00:43, A_ch_00:43,42; peak B_ch_00:43, A_ch_00:42.\n",
+        "SUBSTITUTED": "top B_ch_00:2, A_ch_00:2,20; peak B_ch_00:2, A_ch_00:2.\n",
+        "ZEROED": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A recording description with metadata (L=131072 samples, dt=1, channels A_ch_00, B_ch_00) and summary statistics (median, scale, min, max"
+      },
+      "accuracy": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.25,
+        "ZEROED": 0.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,2600 @@
+{
+  "n_crops": 60,
+  "n_recordings": 20,
+  "overall": {
+    "conditions": {
+      "TRUE": {
+        "mean": 0.0589971211968082,
+        "n_crops": 60,
+        "invalid": 0,
+        "invalid_rate": 0.0
+      },
+      "SUBSTITUTED": {
+        "mean": 0.11757550601082611,
+        "n_crops": 60,
+        "invalid": 0,
+        "invalid_rate": 0.0
+      },
+      "ZEROED": {
+        "mean": 0.08161958157064839,
+        "n_crops": 60,
+        "invalid": 0,
+        "invalid_rate": 0.0
+      }
+    },
+    "delta": {
+      "n_crops": 60,
+      "n_recordings": 20,
+      "by_recording": {
+        "0ddf53bd1f02f56a": 0.0,
+        "138fb0f940ab6254": 0.024853801169590645,
+        "14724b388e4cf1ea": -0.01907926618206991,
+        "1f7fe4a939481196": -0.2553191489361702,
+        "2fff519a9a56bcec": 0.0,
+        "3aa0b03078419654": -0.003369763205828787,
+        "3ede0db770e1dbb7": 0.0,
+        "46d1481dea381905": -0.6666666666666666,
+        "4c96d496149d1296": 0.019867549668874173,
+        "69dc9b5b32b26bff": 0.0,
+        "83c0a986c66704e9": -0.3333333333333333,
+        "95ab145ff704e60d": 0.0,
+        "a818680782064c5b": 0.0,
+        "b51d5baad89989f5": 0.0,
+        "bd6691e559fcf6eb": -0.07421620553611605,
+        "c2e9921cad487b86": 0.0,
+        "c6cac6126f79ca7e": 0.0,
+        "d691da1aa7ca6e64": 0.0,
+        "eeaa559a69ceb15d": 0.0,
+        "f7fe85dbf6e8c89d": -0.12020986916384406
+      },
+      "mean_delta": -0.07137364510927821,
+      "ci95": [
+        -0.15216831373594164,
+        -0.01140505395805081
+      ],
+      "bootstrap": {
+        "mean": -0.07137364510927821,
+        "ci95": [
+          -0.15216831373594164,
+          -0.01140505395805081
+        ],
+        "lower": -0.15216831373594164,
+        "upper": -0.01140505395805081,
+        "ci95_lower": -0.15216831373594164,
+        "ci95_upper": -0.01140505395805081,
+        "n_ids": 20,
+        "n_resamples": 10000
+      }
+    }
+  },
+  "by_category": {
+    "classify_with_evidence": {
+      "conditions": {
+        "TRUE": {
+          "mean": 0.03861913435683927,
+          "n_crops": 21,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        },
+        "SUBSTITUTED": {
+          "mean": 0.07202324641179285,
+          "n_crops": 21,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        },
+        "ZEROED": {
+          "mean": 0.035933521376030085,
+          "n_crops": 21,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        }
+      },
+      "delta": {
+        "n_crops": 21,
+        "n_recordings": 7,
+        "by_recording": {
+          "0ddf53bd1f02f56a": 0.0,
+          "14724b388e4cf1ea": -0.01907926618206991,
+          "1f7fe4a939481196": -0.2553191489361702,
+          "3aa0b03078419654": -0.003369763205828787,
+          "c6cac6126f79ca7e": 0.0,
+          "d691da1aa7ca6e64": 0.0,
+          "eeaa559a69ceb15d": 0.0
+        },
+        "mean_delta": -0.03968116833200984,
+        "ci95": [
+          -0.11262949659948704,
+          -0.00048139474368982674
+        ],
+        "bootstrap": {
+          "mean": -0.03968116833200984,
+          "ci95": [
+            -0.11262949659948704,
+            -0.00048139474368982674
+          ],
+          "lower": -0.11262949659948704,
+          "upper": -0.00048139474368982674,
+          "ci95_lower": -0.11262949659948704,
+          "ci95_upper": -0.00048139474368982674,
+          "n_ids": 7,
+          "n_resamples": 10000
+        }
+      }
+    },
+    "localize": {
+      "conditions": {
+        "TRUE": {
+          "mean": 0.055367727096452816,
+          "n_crops": 24,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        },
+        "SUBSTITUTED": {
+          "mean": 0.0642517577500799,
+          "n_crops": 24,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        },
+        "ZEROED": {
+          "mean": 0.030940456055927934,
+          "n_crops": 24,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        }
+      },
+      "delta": {
+        "n_crops": 24,
+        "n_recordings": 8,
+        "by_recording": {
+          "138fb0f940ab6254": 0.024853801169590645,
+          "2fff519a9a56bcec": 0.0,
+          "4c96d496149d1296": 0.019867549668874173,
+          "a818680782064c5b": 0.0,
+          "b51d5baad89989f5": 0.0,
+          "bd6691e559fcf6eb": -0.07421620553611605,
+          "c2e9921cad487b86": 0.0,
+          "f7fe85dbf6e8c89d": -0.12020986916384406
+        },
+        "mean_delta": -0.01871309048268691,
+        "ci95": [
+          -0.05435572662845603,
+          0.009933774834437087
+        ],
+        "bootstrap": {
+          "mean": -0.01871309048268691,
+          "ci95": [
+            -0.05435572662845603,
+            0.009933774834437087
+          ],
+          "lower": -0.05435572662845603,
+          "upper": 0.009933774834437087,
+          "ci95_lower": -0.05435572662845603,
+          "ci95_upper": 0.009933774834437087,
+          "n_ids": 8,
+          "n_resamples": 10000
+        }
+      }
+    },
+    "localize_all_channels": {
+      "conditions": {
+        "TRUE": {
+          "mean": 0.09333333333333332,
+          "n_crops": 15,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        },
+        "SUBSTITUTED": {
+          "mean": 0.26666666666666666,
+          "n_crops": 15,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        },
+        "ZEROED": {
+          "mean": 0.22666666666666666,
+          "n_crops": 15,
+          "invalid": 0,
+          "invalid_rate": 0.0
+        }
+      },
+      "delta": {
+        "n_crops": 15,
+        "n_recordings": 5,
+        "by_recording": {
+          "3ede0db770e1dbb7": 0.0,
+          "46d1481dea381905": -0.6666666666666666,
+          "69dc9b5b32b26bff": 0.0,
+          "83c0a986c66704e9": -0.3333333333333333,
+          "95ab145ff704e60d": 0.0
+        },
+        "mean_delta": -0.2,
+        "ci95": [
+          -0.4666666666666666,
+          0.0
+        ],
+        "bootstrap": {
+          "mean": -0.2,
+          "ci95": [
+            -0.4666666666666666,
+            0.0
+          ],
+          "lower": -0.4666666666666666,
+          "upper": 0.0,
+          "ci95_lower": -0.4666666666666666,
+          "ci95_upper": 0.0,
+          "n_ids": 5,
+          "n_resamples": 10000
+        }
+      }
+    }
+  },
+  "invalid_format_rate": {
+    "TRUE": 0.0,
+    "SUBSTITUTED": 0.0,
+    "ZEROED": 0.0
+  },
+  "collapse": [
+    {
+      "category": "localize_all_channels",
+      "true_mean": 0.09333333333333332,
+      "best_control_mean": 0.26666666666666666,
+      "true_below_best_control": 0.17333333333333334,
+      "tolerance": 0.05,
+      "flagged": true
+    }
+  ],
+  "main_categories_at_zero": [],
+  "criteria": {
+    "overall_ci95_lower_gt_zero": false,
+    "no_category_collapse": false,
+    "no_main_category_at_zero": true,
+    "invalid_rate_below_1pct": true,
+    "collapse_tolerance": 0.05,
+    "invalid_rate_limit": 0.01
+  },
+  "invalid_failures": [],
+  "verdict": "FAIL",
+  "pass": false,
+  "records": [
+    {
+      "crop_index": 0,
+      "recording_id": "2fff519a9a56bcec",
+      "row_id": "2fff519a9a56bcec",
+      "row_index": 20,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 955,
+      "end": 1440,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 4395,
+          "end": 4880,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 16384, \"end\": 1099, \"present\": true, \"start\": 1004}",
+        "SUBSTITUTED": "localize:{\"_L\": 16384, \"end\": 1104, \"present\": true, \"start\": 1044}",
+        "ZEROED": "localize:{\"_L\": 16384, \"end\": 1089, \"present\": true, \"start\": 1019}"
+      }
+    },
+    {
+      "crop_index": 1,
+      "recording_id": "2fff519a9a56bcec",
+      "row_id": "2fff519a9a56bcec",
+      "row_index": 20,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 7419,
+      "end": 7766,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 11634,
+          "end": 11981,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 16384, \"end\": 7540, \"present\": true, \"start\": 7460}",
+        "SUBSTITUTED": "localize:{\"_L\": 16384, \"end\": 7560, \"present\": true, \"start\": 7481}",
+        "ZEROED": "localize:{\"_L\": 16384, \"end\": 7541, \"present\": true, \"start\": 7449}"
+      }
+    },
+    {
+      "crop_index": 2,
+      "recording_id": "2fff519a9a56bcec",
+      "row_id": "2fff519a9a56bcec",
+      "row_index": 20,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 5911,
+      "end": 6339,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 2291,
+          "end": 2719,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 16384, \"end\": 6041, \"present\": true, \"start\": 5949}",
+        "SUBSTITUTED": "localize:{\"_L\": 16384, \"end\": 6018, \"present\": true, \"start\": 5941}",
+        "ZEROED": "localize:{\"_L\": 16384, \"end\": 6201, \"present\": true, \"start\": 6099}"
+      }
+    },
+    {
+      "crop_index": 3,
+      "recording_id": "3aa0b03078419654",
+      "row_id": "3aa0b03078419654",
+      "row_index": 27,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 13796,
+      "end": 14576,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 1057,
+          "end": 1837,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.6065573770491803,
+        "SUBSTITUTED": 0.48484848484848486,
+        "ZEROED": 0.6166666666666667
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -0.010109289617486361,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 16384, \"end\": 14460, \"kind\": \"Change in Variance\", \"start\": 14300}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 16384, \"end\": 14440, \"kind\": \"Change in Variance\", \"start\": 14280}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 16384, \"end\": 14460, \"kind\": \"Change in Variance\", \"start\": 14304}"
+      }
+    },
+    {
+      "crop_index": 4,
+      "recording_id": "3aa0b03078419654",
+      "row_id": "3aa0b03078419654",
+      "row_index": 27,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 13673,
+      "end": 14319,
+      "crop_kind": "positive_partial",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 11154,
+          "end": 11800,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 16384, \"end\": 13801, \"kind\": \"Change in Variance\", \"start\": 13673}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 16384, \"end\": 13801, \"kind\": \"Change in Variance\", \"start\": 13680}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 16384, \"end\": 13890, \"kind\": \"Change in Variance\", \"start\": 13774}"
+      }
+    },
+    {
+      "crop_index": 5,
+      "recording_id": "3aa0b03078419654",
+      "row_id": "3aa0b03078419654",
+      "row_index": 27,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 11875,
+      "end": 14072,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 315,
+          "end": 2512,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 16384, \"end\": 12060, \"kind\": \"Change in Variance\", \"start\": 11850}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 16384, \"end\": 12019, \"kind\": \"Change in Variance\", \"start\": 11841}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 16384, \"end\": 12919, \"kind\": \"Change in Variance\", \"start\": 12790}"
+      }
+    },
+    {
+      "crop_index": 6,
+      "recording_id": "4c96d496149d1296",
+      "row_id": "4c96d496149d1296",
+      "row_index": 113,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 17567,
+      "end": 18956,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 18506,
+          "end": 19895,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 32768, \"end\": 18700, \"present\": true, \"start\": 18571}",
+        "SUBSTITUTED": "localize:{\"_L\": 32768, \"end\": 18661, \"present\": true, \"start\": 18540}",
+        "ZEROED": "localize:{\"_L\": 32768, \"end\": 18661, \"present\": true, \"start\": 18509}"
+      }
+    },
+    {
+      "crop_index": 7,
+      "recording_id": "4c96d496149d1296",
+      "row_id": "4c96d496149d1296",
+      "row_index": 113,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 17509,
+      "end": 19387,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 27264,
+          "end": 29142,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.059602649006622516,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.059602649006622516,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 32768, \"end\": 18011, \"present\": true, \"start\": 17860}",
+        "SUBSTITUTED": "localize:{\"_L\": 32768, \"end\": 18090, \"present\": true, \"start\": 17941}",
+        "ZEROED": "localize:{\"_L\": 32768, \"end\": 18069, \"present\": true, \"start\": 17919}"
+      }
+    },
+    {
+      "crop_index": 8,
+      "recording_id": "4c96d496149d1296",
+      "row_id": "4c96d496149d1296",
+      "row_index": 113,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 30449,
+      "end": 31102,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 5953,
+          "end": 6606,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 32768, \"end\": 30911, \"present\": true, \"start\": 30794}",
+        "SUBSTITUTED": "localize:{\"_L\": 32768, \"end\": 30911, \"present\": true, \"start\": 30784}",
+        "ZEROED": "localize:{\"_L\": 32768, \"end\": 30860, \"present\": true, \"start\": 30709}"
+      }
+    },
+    {
+      "crop_index": 9,
+      "recording_id": "138fb0f940ab6254",
+      "row_id": "138fb0f940ab6254",
+      "row_index": 128,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 14589,
+      "end": 15108,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 26897,
+          "end": 27416,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.8245614035087719,
+        "SUBSTITUTED": 0.75,
+        "ZEROED": 0.2023121387283237
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.07456140350877194,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 32768, \"end\": 14901, \"present\": true, \"start\": 14790}",
+        "SUBSTITUTED": "localize:{\"_L\": 32768, \"end\": 14911, \"present\": true, \"start\": 14791}",
+        "ZEROED": "localize:{\"_L\": 32768, \"end\": 14960, \"present\": true, \"start\": 14849}"
+      }
+    },
+    {
+      "crop_index": 10,
+      "recording_id": "138fb0f940ab6254",
+      "row_id": "138fb0f940ab6254",
+      "row_index": 128,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 14763,
+      "end": 15296,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 23492,
+          "end": 24025,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 32768, \"end\": 15041, \"present\": true, \"start\": 14904}",
+        "SUBSTITUTED": "localize:{\"_L\": 32768, \"end\": 15090, \"present\": true, \"start\": 14941}",
+        "ZEROED": "localize:{\"_L\": 32768, \"end\": 15090, \"present\": true, \"start\": 14941}"
+      }
+    },
+    {
+      "crop_index": 11,
+      "recording_id": "138fb0f940ab6254",
+      "row_id": "138fb0f940ab6254",
+      "row_index": 128,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 3229,
+      "end": 3511,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 15641,
+          "end": 15923,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 32768, \"end\": 3460, \"present\": true, \"start\": 3390}",
+        "SUBSTITUTED": "localize:{\"_L\": 32768, \"end\": 3419, \"present\": true, \"start\": 3364}",
+        "ZEROED": "localize:{\"_L\": 32768, \"end\": 3401, \"present\": true, \"start\": 3340}"
+      }
+    },
+    {
+      "crop_index": 12,
+      "recording_id": "eeaa559a69ceb15d",
+      "row_id": "eeaa559a69ceb15d",
+      "row_index": 136,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 6418,
+      "end": 6948,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 22487,
+          "end": 23017,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 32768, \"end\": 6581, \"kind\": \"Change in Variance\", \"start\": 6441}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 32768, \"end\": 6590, \"kind\": \"Change in Variance\", \"start\": 6449}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 32768, \"end\": 6591, \"kind\": \"Change in Trend\", \"start\": 6464}"
+      }
+    },
+    {
+      "crop_index": 13,
+      "recording_id": "eeaa559a69ceb15d",
+      "row_id": "eeaa559a69ceb15d",
+      "row_index": 136,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 6768,
+      "end": 8473,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 25175,
+          "end": 26880,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 32768, \"end\": 7068, \"kind\": \"Change in Variance\", \"start\": 6919}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 32768, \"end\": 7041, \"kind\": \"Change in Variance\", \"start\": 6900}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 32768, \"end\": 7041, \"kind\": \"Change in Trend\", \"start\": 6904}"
+      }
+    },
+    {
+      "crop_index": 14,
+      "recording_id": "eeaa559a69ceb15d",
+      "row_id": "eeaa559a69ceb15d",
+      "row_index": 136,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 12124,
+      "end": 15314,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 2731,
+          "end": 5921,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 32768, \"end\": 12238, \"kind\": \"Change in Variance\", \"start\": 12124}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 32768, \"end\": 12240, \"kind\": \"Change in Variance\", \"start\": 12124}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 32768, \"end\": 12261, \"kind\": \"Change in Trend\", \"start\": 12149}"
+      }
+    },
+    {
+      "crop_index": 15,
+      "recording_id": "bd6691e559fcf6eb",
+      "row_id": "bd6691e559fcf6eb",
+      "row_index": 212,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 12440,
+      "end": 13002,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 16174,
+          "end": 16736,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.25925925925925924,
+        "SUBSTITUTED": 0.03333333333333333,
+        "ZEROED": 0.2692307692307692
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -0.009971509971509973,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 12691, \"present\": true, \"start\": 12594}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 12661, \"present\": true, \"start\": 12579}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 12691, \"present\": true, \"start\": 12599}"
+      }
+    },
+    {
+      "crop_index": 16,
+      "recording_id": "bd6691e559fcf6eb",
+      "row_id": "bd6691e559fcf6eb",
+      "row_index": 212,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 12478,
+      "end": 12980,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 33440,
+          "end": 33942,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.022222222222222223,
+        "SUBSTITUTED": 0.2348993288590604,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -0.21267710663683817,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 12660, \"present\": true, \"start\": 12549}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 12691, \"present\": true, \"start\": 12580}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 12640, \"present\": true, \"start\": 12527}"
+      }
+    },
+    {
+      "crop_index": 17,
+      "recording_id": "bd6691e559fcf6eb",
+      "row_id": "bd6691e559fcf6eb",
+      "row_index": 212,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 6036,
+      "end": 7744,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 49821,
+          "end": 51529,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 65464, \"present\": true, \"start\": 65393}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 6539, \"present\": true, \"start\": 6499}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 65469, \"present\": true, \"start\": 65399}"
+      }
+    },
+    {
+      "crop_index": 18,
+      "recording_id": "c2e9921cad487b86",
+      "row_id": "c2e9921cad487b86",
+      "row_index": 226,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 12111,
+      "end": 18514,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 10193,
+          "end": 16596,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 12291, \"present\": true, \"start\": 12164}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 12291, \"present\": true, \"start\": 12164}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 12241, \"present\": true, \"start\": 12111}"
+      }
+    },
+    {
+      "crop_index": 19,
+      "recording_id": "c2e9921cad487b86",
+      "row_id": "c2e9921cad487b86",
+      "row_index": 226,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 16289,
+      "end": 20856,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 48836,
+          "end": 53403,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 17004, \"present\": true, \"start\": 16891}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 17004, \"present\": true, \"start\": 16881}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 16401, \"present\": true, \"start\": 16289}"
+      }
+    },
+    {
+      "crop_index": 20,
+      "recording_id": "c2e9921cad487b86",
+      "row_id": "c2e9921cad487b86",
+      "row_index": 226,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 64160,
+      "end": 65185,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 52700,
+          "end": 53725,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 64960, \"present\": true, \"start\": 64869}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 64919, \"present\": true, \"start\": 64818}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 64360, \"present\": true, \"start\": 64244}"
+      }
+    },
+    {
+      "crop_index": 21,
+      "recording_id": "b51d5baad89989f5",
+      "row_id": "b51d5baad89989f5",
+      "row_index": 235,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 39238,
+      "end": 41646,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 28810,
+          "end": 31218,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 40191, \"present\": true, \"start\": 39990}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 40169, \"present\": true, \"start\": 40000}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 40511, \"present\": true, \"start\": 40369}"
+      }
+    },
+    {
+      "crop_index": 22,
+      "recording_id": "b51d5baad89989f5",
+      "row_id": "b51d5baad89989f5",
+      "row_index": 235,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 39389,
+      "end": 44015,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 14370,
+          "end": 18996,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 43800, \"present\": true, \"start\": 43651}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 43861, \"present\": true, \"start\": 43740}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 43841, \"present\": true, \"start\": 43709}"
+      }
+    },
+    {
+      "crop_index": 23,
+      "recording_id": "b51d5baad89989f5",
+      "row_id": "b51d5baad89989f5",
+      "row_index": 235,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 13257,
+      "end": 17939,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 1596,
+          "end": 6278,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 14660, \"present\": true, \"start\": 14491}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 14269, \"present\": true, \"start\": 14109}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 15964, \"present\": true, \"start\": 15809}"
+      }
+    },
+    {
+      "crop_index": 24,
+      "recording_id": "f7fe85dbf6e8c89d",
+      "row_id": "f7fe85dbf6e8c89d",
+      "row_index": 238,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 55584,
+      "end": 55899,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 21853,
+          "end": 22168,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.16317991631799164,
+        "SUBSTITUTED": 0.5238095238095238,
+        "ZEROED": 0.27102803738317754
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -0.36062960749153217,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 55741, \"present\": true, \"start\": 55619}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 55790, \"present\": true, \"start\": 55690}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 55760, \"present\": true, \"start\": 55644}"
+      }
+    },
+    {
+      "crop_index": 25,
+      "recording_id": "f7fe85dbf6e8c89d",
+      "row_id": "f7fe85dbf6e8c89d",
+      "row_index": 238,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 54811,
+      "end": 57946,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 13912,
+          "end": 17047,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 55061, \"present\": true, \"start\": 54909}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 55090, \"present\": true, \"start\": 54919}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 55041, \"present\": true, \"start\": 54901}"
+      }
+    },
+    {
+      "crop_index": 26,
+      "recording_id": "f7fe85dbf6e8c89d",
+      "row_id": "f7fe85dbf6e8c89d",
+      "row_index": 238,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 14494,
+      "end": 16118,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 60782,
+          "end": 62406,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 65536, \"end\": 15761, \"present\": true, \"start\": 15609}",
+        "SUBSTITUTED": "localize:{\"_L\": 65536, \"end\": 15801, \"present\": true, \"start\": 15669}",
+        "ZEROED": "localize:{\"_L\": 65536, \"end\": 15901, \"present\": true, \"start\": 15760}"
+      }
+    },
+    {
+      "crop_index": 27,
+      "recording_id": "14724b388e4cf1ea",
+      "row_id": "14724b388e4cf1ea",
+      "row_index": 240,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 41413,
+      "end": 41705,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 12827,
+          "end": 13119,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.20444444444444446,
+        "SUBSTITUTED": 0.2616822429906542,
+        "ZEROED": 0.124
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -0.05723779854620972,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 65536, \"end\": 41581, \"kind\": \"Change in Variance\", \"start\": 41469}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 65536, \"end\": 41591, \"kind\": \"Change in Variance\", \"start\": 41480}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 65536, \"end\": 41566, \"kind\": \"Change in Variance\", \"start\": 41444}"
+      }
+    },
+    {
+      "crop_index": 28,
+      "recording_id": "14724b388e4cf1ea",
+      "row_id": "14724b388e4cf1ea",
+      "row_index": 240,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 40225,
+      "end": 47153,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 26644,
+          "end": 33572,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 65536, \"end\": 46841, \"kind\": \"Change in Variance\", \"start\": 46650}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 65536, \"end\": 46800, \"kind\": \"Change in Variance\", \"start\": 46630}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 65536, \"end\": 41011, \"kind\": \"Change in Variance\", \"start\": 40841}"
+      }
+    },
+    {
+      "crop_index": 29,
+      "recording_id": "14724b388e4cf1ea",
+      "row_id": "14724b388e4cf1ea",
+      "row_index": 240,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 2838,
+      "end": 4329,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 19804,
+          "end": 21295,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 65536, \"end\": 3069, \"kind\": \"Change in Variance\", \"start\": 2938}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 65536, \"end\": 3901, \"kind\": \"Change in Variance\", \"start\": 3790}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 65536, \"end\": 3866, \"kind\": \"Change in Variance\", \"start\": 3749}"
+      }
+    },
+    {
+      "crop_index": 30,
+      "recording_id": "0ddf53bd1f02f56a",
+      "row_id": "0ddf53bd1f02f56a",
+      "row_index": 256,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 59474,
+      "end": 60220,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 22475,
+          "end": 23221,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 65536, \"end\": 59641, \"kind\": \"Change in Variance\", \"start\": 59509}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 65536, \"end\": 59840, \"kind\": \"Change in Variance\", \"start\": 59690}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 65536, \"end\": 59900, \"kind\": \"Change in Variance\", \"start\": 59750}"
+      }
+    },
+    {
+      "crop_index": 31,
+      "recording_id": "0ddf53bd1f02f56a",
+      "row_id": "0ddf53bd1f02f56a",
+      "row_index": 256,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 58708,
+      "end": 63287,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 46128,
+          "end": 50707,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 65536, \"end\": 62800, \"kind\": \"Change in Variance\", \"start\": 62664}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 65536, \"end\": 62800, \"kind\": \"Change in Trend\", \"start\": 62690}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 65536, \"end\": 62600, \"kind\": \"Change in Variance\", \"start\": 62480}"
+      }
+    },
+    {
+      "crop_index": 32,
+      "recording_id": "0ddf53bd1f02f56a",
+      "row_id": "0ddf53bd1f02f56a",
+      "row_index": 256,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 14612,
+      "end": 14989,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 23933,
+          "end": 24310,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 65536, \"end\": 14760, \"kind\": \"Change in Variance\", \"start\": 14649}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 65536, \"end\": 14790, \"kind\": \"Change in Variance\", \"start\": 14680}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 65536, \"end\": 14741, \"kind\": \"Change in Variance\", \"start\": 14640}"
+      }
+    },
+    {
+      "crop_index": 33,
+      "recording_id": "a818680782064c5b",
+      "row_id": "a818680782064c5b",
+      "row_index": 293,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 55934,
+      "end": 61987,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 82437,
+          "end": 88490,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 131072, \"end\": 60661, \"present\": true, \"start\": 60491}",
+        "SUBSTITUTED": "localize:{\"_L\": 131072, \"end\": 60691, \"present\": true, \"start\": 60541}",
+        "ZEROED": "localize:{\"_L\": 131072, \"end\": 60860, \"present\": true, \"start\": 60719}"
+      }
+    },
+    {
+      "crop_index": 34,
+      "recording_id": "a818680782064c5b",
+      "row_id": "a818680782064c5b",
+      "row_index": 293,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 58163,
+      "end": 58666,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 100208,
+          "end": 100711,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 131072, \"end\": 58519, \"present\": true, \"start\": 58389}",
+        "SUBSTITUTED": "localize:{\"_L\": 131072, \"end\": 58541, \"present\": true, \"start\": 58409}",
+        "ZEROED": "localize:{\"_L\": 131072, \"end\": 58560, \"present\": true, \"start\": 58436}"
+      }
+    },
+    {
+      "crop_index": 35,
+      "recording_id": "a818680782064c5b",
+      "row_id": "a818680782064c5b",
+      "row_index": 293,
+      "category": "localize",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 36164,
+      "end": 36675,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 44263,
+          "end": 44774,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize:{\"_L\": 131072, \"end\": 36541, \"present\": true, \"start\": 36409}",
+        "SUBSTITUTED": "localize:{\"_L\": 131072, \"end\": 36561, \"present\": true, \"start\": 36439}",
+        "ZEROED": "localize:{\"_L\": 131072, \"end\": 36561, \"present\": true, \"start\": 36449}"
+      }
+    },
+    {
+      "crop_index": 36,
+      "recording_id": "d691da1aa7ca6e64",
+      "row_id": "d691da1aa7ca6e64",
+      "row_index": 332,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 126707,
+      "end": 127850,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 65065,
+          "end": 66208,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 127000, \"kind\": \"Change in Variance\", \"start\": 126850}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 127206, \"kind\": \"Change in Variance\", \"start\": 127040}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 127206, \"kind\": \"Change in Variance\", \"start\": 127040}"
+      }
+    },
+    {
+      "crop_index": 37,
+      "recording_id": "d691da1aa7ca6e64",
+      "row_id": "d691da1aa7ca6e64",
+      "row_index": 332,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 127137,
+      "end": 130228,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 34513,
+          "end": 37604,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 129900, \"kind\": \"Change in Variance\", \"start\": 129730}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 129501, \"kind\": \"Change in Variance\", \"start\": 129311}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 129501, \"kind\": \"Change in Variance\", \"start\": 129311}"
+      }
+    },
+    {
+      "crop_index": 38,
+      "recording_id": "d691da1aa7ca6e64",
+      "row_id": "d691da1aa7ca6e64",
+      "row_index": 332,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 27205,
+      "end": 27725,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 18650,
+          "end": 19170,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 27490, \"kind\": \"Change in Variance\", \"start\": 27339}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 27490, \"kind\": \"Change in Variance\", \"start\": 27339}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 27490, \"kind\": \"Change in Variance\", \"start\": 27339}"
+      }
+    },
+    {
+      "crop_index": 39,
+      "recording_id": "1f7fe4a939481196",
+      "row_id": "1f7fe4a939481196",
+      "row_index": 335,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 23970,
+      "end": 24881,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 123964,
+          "end": 124875,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.7659574468085106,
+        "ZEROED": 0.013937282229965157
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -0.7659574468085106,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 24261, \"kind\": \"Change in Variance\", \"start\": 24110}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 24561, \"kind\": \"Change in Variance\", \"start\": 24400}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 24660, \"kind\": \"Change in Variance\", \"start\": 24540}"
+      }
+    },
+    {
+      "crop_index": 40,
+      "recording_id": "1f7fe4a939481196",
+      "row_id": "1f7fe4a939481196",
+      "row_index": 335,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 22261,
+      "end": 30100,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 99967,
+          "end": 107806,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 22340, \"kind\": \"Change in Variance\", \"start\": 22208}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 29500, \"kind\": \"Change in Variance\", \"start\": 29300}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 29500, \"kind\": \"Change in Variance\", \"start\": 29300}"
+      }
+    },
+    {
+      "crop_index": 41,
+      "recording_id": "1f7fe4a939481196",
+      "row_id": "1f7fe4a939481196",
+      "row_index": 335,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 39324,
+      "end": 40933,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 90513,
+          "end": 92122,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 39690, \"kind\": \"Change in Variance\", \"start\": 39540}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 39690, \"kind\": \"Change in Variance\", \"start\": 39540}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 39690, \"kind\": \"Change in Variance\", \"start\": 39540}"
+      }
+    },
+    {
+      "crop_index": 42,
+      "recording_id": "c6cac6126f79ca7e",
+      "row_id": "c6cac6126f79ca7e",
+      "row_index": 342,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 49263,
+      "end": 53038,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 31633,
+          "end": 35408,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 50000, \"kind\": \"Change in Variance\", \"start\": 49740}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 50100, \"kind\": \"Change in Variance\", \"start\": 49840}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 50100, \"kind\": \"Change in Variance\", \"start\": 49840}"
+      }
+    },
+    {
+      "crop_index": 43,
+      "recording_id": "c6cac6126f79ca7e",
+      "row_id": "c6cac6126f79ca7e",
+      "row_index": 342,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 47778,
+      "end": 55367,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 30854,
+          "end": 38443,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 54600, \"kind\": \"Change in Variance\", \"start\": 54419}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 54601, \"kind\": \"Change in Variance\", \"start\": 54440}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 54501, \"kind\": \"Change in Variance\", \"start\": 54330}"
+      }
+    },
+    {
+      "crop_index": 44,
+      "recording_id": "c6cac6126f79ca7e",
+      "row_id": "c6cac6126f79ca7e",
+      "row_index": 342,
+      "category": "classify_with_evidence",
+      "channels": [
+        "ch_00"
+      ],
+      "start": 19231,
+      "end": 21991,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 39010,
+          "end": 41770,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "classify_with_evidence:{\"_L\": 131072, \"end\": 20601, \"kind\": \"Change in Variance\", \"start\": 20419}",
+        "SUBSTITUTED": "classify_with_evidence:{\"_L\": 131072, \"end\": 20411, \"kind\": \"Change in Variance\", \"start\": 20231}",
+        "ZEROED": "classify_with_evidence:{\"_L\": 131072, \"end\": 20509, \"kind\": \"Change in Variance\", \"start\": 20339}"
+      }
+    },
+    {
+      "crop_index": 45,
+      "recording_id": "83c0a986c66704e9",
+      "row_id": "83c0a986c66704e9",
+      "row_index": 393,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_04",
+        "ch_06"
+      ],
+      "start": 13906,
+      "end": 15073,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_04": {
+          "start": 28832,
+          "end": 29999,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_06": {
+          "start": 25282,
+          "end": 26449,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_04\", \"end\": 14001, \"start\": 13944}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_04\", \"end\": 14960, \"start\": 14891}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_04\", \"end\": 14009, \"start\": 13960}]}"
+      }
+    },
+    {
+      "crop_index": 46,
+      "recording_id": "83c0a986c66704e9",
+      "row_id": "83c0a986c66704e9",
+      "row_index": 393,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_07",
+        "ch_09"
+      ],
+      "start": 8866,
+      "end": 11224,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_07": {
+          "start": 2856,
+          "end": 5214,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_09": {
+          "start": 25831,
+          "end": 28189,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_07\", \"end\": 10941, \"start\": 10881}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_07\", \"end\": 10960, \"start\": 10891}, {\"channel\": \"ch_09\", \"end\": 10959, \"start\": 10891}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_07\", \"end\": 10941, \"start\": 10881}]}"
+      }
+    },
+    {
+      "crop_index": 47,
+      "recording_id": "83c0a986c66704e9",
+      "row_id": "83c0a986c66704e9",
+      "row_index": 393,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_14",
+        "ch_15"
+      ],
+      "start": 1591,
+      "end": 2311,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_14": {
+          "start": 21788,
+          "end": 22508,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_15": {
+          "start": 31177,
+          "end": 31897,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 1.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -1.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_14\", \"end\": 1901, \"start\": 1860}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 32768, \"anomalies\": []}",
+        "ZEROED": "localize_all_channels:{\"_L\": 32768, \"anomalies\": [{\"channel\": \"ch_14\", \"end\": 1969, \"start\": 1891}]}"
+      }
+    },
+    {
+      "crop_index": 48,
+      "recording_id": "95ab145ff704e60d",
+      "row_id": "95ab145ff704e60d",
+      "row_index": 406,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_05",
+        "ch_08"
+      ],
+      "start": 68658,
+      "end": 73473,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_05": {
+          "start": 49880,
+          "end": 54695,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_08": {
+          "start": 92346,
+          "end": 97161,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_05\", \"end\": 70001, \"start\": 69841}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_05\", \"end\": 70040, \"start\": 69901}, {\"channel\": \"ch_08\", \"end\": 70040, \"start\": 69901}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_05\", \"end\": 70041, \"start\": 69921}]}"
+      }
+    },
+    {
+      "crop_index": 49,
+      "recording_id": "95ab145ff704e60d",
+      "row_id": "95ab145ff704e60d",
+      "row_index": 406,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_05",
+        "ch_08"
+      ],
+      "start": 60652,
+      "end": 63450,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_05": {
+          "start": 19502,
+          "end": 22300,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_08": {
+          "start": 54799,
+          "end": 57597,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_05\", \"end\": 61041, \"start\": 60909}, {\"channel\": \"ch_08\", \"end\": 61041, \"start\": 60909}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_05\", \"end\": 61001, \"start\": 60861}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_05\", \"end\": 61001, \"start\": 60861}]}"
+      }
+    },
+    {
+      "crop_index": 50,
+      "recording_id": "95ab145ff704e60d",
+      "row_id": "95ab145ff704e60d",
+      "row_index": 406,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_07",
+        "ch_08"
+      ],
+      "start": 65342,
+      "end": 66946,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_07": {
+          "start": 89765,
+          "end": 91369,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_08": {
+          "start": 83531,
+          "end": 85135,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_07\", \"end\": 66000, \"start\": 65861}, {\"channel\": \"ch_08\", \"end\": 66000, \"start\": 65861}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_07\", \"end\": 66000, \"start\": 65861}, {\"channel\": \"ch_08\", \"end\": 66000, \"start\": 65861}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_07\", \"end\": 66890, \"start\": 66841}, {\"channel\": \"ch_08\", \"end\": 66935, \"start\": 66885}]}"
+      }
+    },
+    {
+      "crop_index": 51,
+      "recording_id": "46d1481dea381905",
+      "row_id": "46d1481dea381905",
+      "row_index": 416,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_00",
+        "ch_04"
+      ],
+      "start": 117826,
+      "end": 125594,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 61361,
+          "end": 69129,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_04": {
+          "start": 28652,
+          "end": 36420,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 1.0,
+        "SUBSTITUTED": 1.0,
+        "ZEROED": 1.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}"
+      }
+    },
+    {
+      "crop_index": 52,
+      "recording_id": "46d1481dea381905",
+      "row_id": "46d1481dea381905",
+      "row_index": 416,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_02",
+        "ch_11"
+      ],
+      "start": 38182,
+      "end": 40145,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_02": {
+          "start": 34930,
+          "end": 36893,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_11": {
+          "start": 52758,
+          "end": 54721,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 1.0,
+        "ZEROED": 1.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -1.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_02\", \"end\": 38301, \"start\": 38182}, {\"channel\": \"ch_11\", \"end\": 39991, \"start\": 38281}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}"
+      }
+    },
+    {
+      "crop_index": 53,
+      "recording_id": "46d1481dea381905",
+      "row_id": "46d1481dea381905",
+      "row_index": 416,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_00",
+        "ch_09"
+      ],
+      "start": 61908,
+      "end": 62330,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_00": {
+          "start": 16991,
+          "end": 17413,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_09": {
+          "start": 8987,
+          "end": 9409,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 1.0,
+        "ZEROED": 1.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": -1.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_00\", \"end\": 62061, \"start\": 61999}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": []}"
+      }
+    },
+    {
+      "crop_index": 54,
+      "recording_id": "3ede0db770e1dbb7",
+      "row_id": "3ede0db770e1dbb7",
+      "row_index": 430,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_09",
+        "ch_15"
+      ],
+      "start": 76048,
+      "end": 76420,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_09": {
+          "start": 107780,
+          "end": 108152,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_15": {
+          "start": 44175,
+          "end": 44547,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 76191, \"start\": 76147}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 76180, \"start\": 76141}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 76191, \"start\": 76143}, {\"channel\": \"ch_15\", \"end\": 76191, \"start\": 76143}]}"
+      }
+    },
+    {
+      "crop_index": 55,
+      "recording_id": "3ede0db770e1dbb7",
+      "row_id": "3ede0db770e1dbb7",
+      "row_index": 430,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_09",
+        "ch_15"
+      ],
+      "start": 95462,
+      "end": 100231,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_09": {
+          "start": 67692,
+          "end": 72461,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_15": {
+          "start": 9947,
+          "end": 14716,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 95541, \"start\": 95462}, {\"channel\": \"ch_15\", \"end\": 99961, \"start\": 99882}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 95601, \"start\": 95490}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 95560, \"start\": 95462}, {\"channel\": \"ch_15\", \"end\": 99941, \"start\": 99791}]}"
+      }
+    },
+    {
+      "crop_index": 56,
+      "recording_id": "3ede0db770e1dbb7",
+      "row_id": "3ede0db770e1dbb7",
+      "row_index": 430,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_09",
+        "ch_15"
+      ],
+      "start": 42507,
+      "end": 43303,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_09": {
+          "start": 116815,
+          "end": 117611,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_15": {
+          "start": 122362,
+          "end": 123158,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 42790, \"start\": 42749}, {\"channel\": \"ch_15\", \"end\": 42801, \"start\": 42750}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 42791, \"start\": 42749}, {\"channel\": \"ch_15\", \"end\": 42800, \"start\": 42749}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_09\", \"end\": 42760, \"start\": 42699}, {\"channel\": \"ch_15\", \"end\": 42800, \"start\": 42714}]}"
+      }
+    },
+    {
+      "crop_index": 57,
+      "recording_id": "69dc9b5b32b26bff",
+      "row_id": "69dc9b5b32b26bff",
+      "row_index": 432,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_08",
+        "ch_13"
+      ],
+      "start": 98096,
+      "end": 98607,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_08": {
+          "start": 95060,
+          "end": 95571,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_13": {
+          "start": 122205,
+          "end": 122716,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_08\", \"end\": 98541, \"start\": 98444}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_08\", \"end\": 98541, \"start\": 98437}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_08\", \"end\": 98541, \"start\": 98441}]}"
+      }
+    },
+    {
+      "crop_index": 58,
+      "recording_id": "69dc9b5b32b26bff",
+      "row_id": "69dc9b5b32b26bff",
+      "row_index": 432,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_13",
+        "ch_15"
+      ],
+      "start": 17082,
+      "end": 17438,
+      "crop_kind": "positive_full",
+      "substitution_source_window": {
+        "ch_13": {
+          "start": 101954,
+          "end": 102310,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_15": {
+          "start": 64791,
+          "end": 65147,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.4,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.4
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_13\", \"end\": 17290, \"start\": 17191}, {\"channel\": \"ch_15\", \"end\": 17340, \"start\": 17241}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_13\", \"end\": 17291, \"start\": 17191}, {\"channel\": \"ch_15\", \"end\": 17380, \"start\": 17280}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_13\", \"end\": 17290, \"start\": 17141}, {\"channel\": \"ch_15\", \"end\": 17390, \"start\": 17241}]}"
+      }
+    },
+    {
+      "crop_index": 59,
+      "recording_id": "69dc9b5b32b26bff",
+      "row_id": "69dc9b5b32b26bff",
+      "row_index": 432,
+      "category": "localize_all_channels",
+      "channels": [
+        "ch_08",
+        "ch_15"
+      ],
+      "start": 127598,
+      "end": 128261,
+      "crop_kind": "negative",
+      "substitution_source_window": {
+        "ch_08": {
+          "start": 94509,
+          "end": 95172,
+          "overlap": 0,
+          "gold_free": true
+        },
+        "ch_15": {
+          "start": 69556,
+          "end": 70219,
+          "overlap": 0,
+          "gold_free": true
+        }
+      },
+      "primary": {
+        "TRUE": 0.0,
+        "SUBSTITUTED": 0.0,
+        "ZEROED": 0.0
+      },
+      "invalid_format": {
+        "TRUE": false,
+        "SUBSTITUTED": false,
+        "ZEROED": false
+      },
+      "delta": 0.0,
+      "predictions": {
+        "TRUE": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_08\", \"end\": 128161, \"start\": 127991}]}",
+        "SUBSTITUTED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_08\", \"end\": 128090, \"start\": 127929}, {\"channel\": \"ch_15\", \"end\": 128100, \"start\": 127939}]}",
+        "ZEROED": "localize_all_channels:{\"_L\": 131072, \"anomalies\": [{\"channel\": \"ch_08\", \"end\": 128101, \"start\": 127991}]}"
+      }
+    }
+  ],
+  "protocol": {
+    "conditions": [
+      "TRUE",
+      "SUBSTITUTED",
+      "ZEROED"
+    ],
+    "max_new_tokens": 768,
+    "seed": 42,
+    "bootstrap_resamples": 10000,
+    "validation_only": true,
+    "header_source": "TRUE episode for every crop"
+  },
+  "checkpoint": "/workspace/runs/p1-b/checkpoints/step_000000000400",
+  "config": "/workspace/code_p2/configs/p1_mi300x.toml",
+  "panel": "/workspace/runs/gate/panel_r20.json",
+  "validation_parquet": "/scratch/datasets/anomalyxl_df363a467f855e55aaad414b0bdd58590829df9a/Localize/val.parquet"
+}

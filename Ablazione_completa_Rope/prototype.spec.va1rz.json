@@ -1,0 +1,236 @@
+{
+  "name": "Wavelet-RoPE Agent",
+  "spec_version": "0.3",
+  "date": "2026-09-13",
+  "status": "design_only_not_executable_training_config",
+  "modes": [
+    "direct",
+    "agentic"
+  ],
+  "shared_final_checkpoint": true,
+  "signal": {
+    "max_channels": 16,
+    "sampling": "uniform_shared_grid",
+    "interval_convention": "zero_based_half_open",
+    "normalization": "global_channel_median_MAD_with_local_secondary_path",
+    "wavelet": "haar",
+    "max_levels": 12,
+    "wavelet_precision": "float32",
+    "timestamp_precision": "float64",
+    "crop_reencoded_from_raw": true
+  },
+  "branches": {
+    "width": 64,
+    "kernel_size": 5,
+    "expansion": 2,
+    "residual_scale": 0.1,
+    "residual_scale_trainable": false,
+    "A_dilations": [
+      1,
+      2,
+      4
+    ],
+    "D_dilations": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "D_weights_shared_across_scales": true,
+    "A_D_weights_shared": false,
+    "raw_dilations": [
+      1,
+      2
+    ],
+    "local_adapter_dilations_per_branch": [
+      1,
+      2
+    ],
+    "global_local_trunks_shared": true
+  },
+  "tokenizer": {
+    "global_per_channel": {
+      "A": 64,
+      "D_coverage": 64,
+      "D_salient": 64,
+      "raw": 64
+    },
+    "local_per_channel": {
+      "A": 128,
+      "D_coverage": 128,
+      "D_salient": 128,
+      "raw": 128
+    },
+    "salience": "robust_band_magnitude_two_per_bin_then_unique_global_refill",
+    "global_salience_bins": 32,
+    "local_salience_bins": 64,
+    "learned_selection": false,
+    "fusion_input_dim": 256,
+    "fusion_output_dim": 512
+  },
+  "perceptual_attention": {
+    "layers": 2,
+    "hidden_size": 512,
+    "heads": 8,
+    "head_dim": 64,
+    "ffn_dim": 1536,
+    "dropout": 0.0,
+    "rope_location": "perceptual_mixer_and_cross_observation_attention",
+    "rope_temporal_dims_per_head": 32,
+    "rope_positional_dims_per_head": 32,
+    "rope_theta_per_axis": 10000,
+    "time_unit_reference_samples": 64,
+    "time_reference": "shared_recording_origin_not_crop_origin",
+    "position_reference": "immutable_perceptual_memory_ordinal",
+    "memory": "pre_mixer_descriptors_of_global_and_acquired_local_views",
+    "memory_includes_future_observations": false,
+    "qwen_native_rope_modified": true
+  },
+  "backbone": {
+    "model_id": "Qwen/Qwen3.5-4B",
+    "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "projector_output_dim": 2560,
+    "temporal_rope": {
+      "enabled": true,
+      "layer_scope": "all_full_attention_layers_only",
+      "full_attention_layer_count": 8,
+      "head_dim": 256,
+      "rotary_dim": 64,
+      "positional_dims": 32,
+      "temporal_dims": 32,
+      "unrotated_dims": 192,
+      "signal_time": "same_tau_as_perceptual_mixer",
+      "sequence_position": "native_decoder_position_not_perceptual_memory_ordinal",
+      "frequency_schedule": "preserve_native_pairs_even_positional_odd_temporal",
+      "native_mrope_axis_mapping_replaced": true,
+      "rotate_values": false,
+      "modify_linear_attention_layers": false,
+      "causal_mask": "native_sequence_order",
+      "curriculum": {
+        "phase": "P1",
+        "transition_fraction_of_P1_optimizer_steps": 0.1,
+        "interpolation": "T_logits_native_to_wildcard_before_softmax",
+        "lambda_initial": 0,
+        "lambda_final": 1,
+        "lambda_inference": 1
+      },
+      "text_time": null,
+      "text_semantics": "wildcard_modality_not_numeric_timestamp",
+      "pair_rule": {
+        "signal_signal": "physical_relative_time",
+        "text_text": "native_relative_sequence_position",
+        "mixed": "unrotated_content_dot_product_in_T"
+      },
+      "factorized_qk_dim_inference": 352,
+      "factorized_qk_dim_curriculum": 384,
+      "value_head_dim": 256,
+      "attention_scale": 0.0625,
+      "single_joint_softmax": true
+    },
+    "base_weights_frozen": true,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.0,
+    "lora_targets": "resolved_q_k_v_o_projections_in_full_attention_layers",
+    "transformers_revision": null,
+    "transformers_revision_status": "pin_after_implementation_compatibility_check"
+  },
+  "agent": {
+    "tool": "zoom",
+    "min_channels_per_call": 1,
+    "max_channels_per_call": 2,
+    "min_crop_samples": 256,
+    "max_crop_samples": 8192,
+    "short_series_exception": "full_series_when_length_below_256",
+    "max_calls": 6,
+    "max_local_channel_views": 8,
+    "max_global_ts_tokens": 4096,
+    "max_local_ts_tokens": 4096,
+    "max_assistant_tokens": 4096,
+    "max_reasoning_tokens_per_decision": 384,
+    "final_token_reserve_within_assistant_budget": 768,
+    "max_other_text_tokens": 4096,
+    "max_context_tokens": 16384,
+    "invalid_call_consumes_call": true,
+    "duplicate_call_appends_tokens": false,
+    "gold_available_at_inference": false
+  },
+  "training": {
+    "P1_mix": {
+      "direct": 1.0
+    },
+    "P2_mix": {
+      "direct": 0.25,
+      "fixed_crop_reading": 0.25,
+      "agentic": 0.5
+    },
+    "frontend_learning_rate": 0.0001,
+    "lora_learning_rate_P1": 0.0001,
+    "lora_learning_rate_P2": 5e-05,
+    "weight_decay": 0.01,
+    "gradient_clip": 1.0,
+    "warmup_ratio": 0.03,
+    "segment_loss_weights": {
+      "reasoning": 0.0,
+      "action": 1.0,
+      "final": 1.0
+    },
+    "auxiliary_event_occupancy_loss_weight": 0.0,
+    "auxiliary_head_available_at_inference": false,
+    "randomized_positive_crop_offsets": true,
+    "negative_and_partial_crops": true,
+    "split_before_augmentation": true,
+    "grpo_required_for_first_complete_model": false,
+    "phase_passes": {
+      "P1": 2,
+      "P2": 3,
+      "P3": 1
+    },
+    "examples_per_pass": 4488,
+    "max_P3_rollout_episodes": 4488,
+    "microbatch_size": 1,
+    "gradient_accumulation_steps": 1,
+    "P3_mix": {
+      "direct": 0.25,
+      "fixed_crop_reading": 0.25,
+      "agentic": 0.5
+    },
+    "grpo_included": false,
+    "decorrelation_weight": 0.01,
+    "reading_segment": false,
+    "reading_format": "compact",
+    "token_supervision": {
+      "enabled": false,
+      "inputs": [
+        "soft"
+      ],
+      "position_weight": 0.0,
+      "energy_weight": 0.0,
+      "peak_weight": 0.0,
+      "hidden": 0,
+      "stats_path": null
+    },
+    "ce_weight": 1.0,
+    "substitution_share": 0.0,
+    "_va1r_note": "va1 recipe on the unchanged new architecture (Astra 16/09, desktop chat): question -> final JSON, final=1, no bin reading, no auxiliary bin losses, no intermediate reasoning; 5 epochs, batch 1 (accumulation 1 -> 22440 optimizer steps), LoRA and frontend at 1e-4 like va1, wd 0.01, warmup 3%. Clean start: pretrained Qwen plus freshly initialised modules. Documented deviations: decorrelation_weight stays 0.01 (frontend regulariser added in P1-b against scale collapse, not a bin objective; removing it reintroduces a known failure mode) and selection is by validation direct primary instead of va1's validation loss.",
+    "header_stats": "eth",
+    "_va1rz_note": "Raw-header arm (Jacopo 17/09). NO number computed from the signal reaches the text: the prompt keeps only the recording length, dt, channel names and the token count per channel. Verified 17/09 that the statistics header is OURS -- AnomalyXL supplies no statistics, va1's prompt is system + 'The following is channel X:' + embeddings + question, TimeRLM's is an agentic code prompt. So this arm RESTORES va1's input condition rather than ablating it, and makes our numbers comparable with va1 on the same dataset. Hypothesis under test (Jacopo): in the first epochs the model overfits the header, attention shifts away from the temporal embeddings, and by epochs 3-5 those embeddings no longer carry enough weight to change the answer; with no statistics in the text that shift cannot happen. Note: va1rh (min/max removed) killed measure_magnitude 0.7377->0.0471 and lifted lead_lag 0.0000->0.3600, but did NOT produce localisation, so removing the shortcut is necessary and not sufficient."
+  },
+  "evaluation": {
+    "dataset": "AnomalyXL_precise_project_pinned_split",
+    "historical_split_sizes": {
+      "train": 4488,
+      "validation": 520,
+      "test": 800
+    },
+    "test_800_previously_used_by_earlier_project_models": true,
+    "checkpoint_selection_uses_test": false,
+    "paired_unit": "recording_id",
+    "reader_comparison_requires_identical_crops": true,
+    "report_token_and_compute_differences": true,
+    "predicted_primary": null
+  },
+  "architecture_id": "WR-Agent-4B-Wildcard-v1",
+  "architecture_choices_fixed": true,
+  "alternatives_document": "ABLATION.md"
+}
