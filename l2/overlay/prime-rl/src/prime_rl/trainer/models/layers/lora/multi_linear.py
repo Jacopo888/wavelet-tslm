@@ -1,3 +1,5 @@
+# Modified from PrimeIntellect-ai/prime-rl (Apache License 2.0, see third_party_licenses/prime-rl-Apache-2.0.txt).
+# Changes: overlay for the wavelet-tslm experiments, 2026. See THIRD_PARTY_NOTICES.md.
 import os
 import math
 

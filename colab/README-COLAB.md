@@ -1,6 +1,6 @@
 # Catena wavelet su Google Colab — runbook
 
-Continuazione della catena Kaggle quando la quota GPU settimanale è esaurita. CLI ufficiale `colab` (v0.6.0) installata su WSL (`/home/jacop/.local/bin/colab`, auth oauth2 già attiva per jacopodabundo@gmail.com).
+Continuazione della catena Kaggle quando la quota GPU settimanale è esaurita. CLI ufficiale `colab` (v0.6.0) installata su WSL (`/home/jacop/.local/bin/colab`, auth oauth2 già attiva sull'account Google personale).
 
 ## Hardware verificato (sonda 2026-08-27)
 

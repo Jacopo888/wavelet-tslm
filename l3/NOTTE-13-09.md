@@ -49,7 +49,7 @@ circa, ed è la scelta giusta: meglio ferma che spesa su un'ipotesi già smentit
 ## Al risveglio, in ordine
 
 ```bash
-ssh root@78.141.232.142 'cat /root/l3/night_20260913T005001Z/BRANCH.txt; ls /root/l3/night_20260913T005001Z/*/OK'
+ssh root@<ip-del-nodo> 'cat /root/l3/night_20260913T005001Z/BRANCH.txt; ls /root/l3/night_20260913T005001Z/*/OK'
 ```
 
 **Corso effettivo**: la decisione è stata presa alle 00:45Z (ramo `selector_sft`,
