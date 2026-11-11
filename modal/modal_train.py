@@ -18,11 +18,13 @@ The patch overlay (train.py with AMP, wavelet model files, configs) is baked
 into the image from esperimenti/kaggle/patch via add_local_dir.
 """
 
+from pathlib import Path
+
 import modal
 
 app = modal.App("wavelet-train")
 
-PATCH_LOCAL = r"C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm\kaggle\patch"
+PATCH_LOCAL = str(Path(__file__).resolve().parents[1] / "kaggle" / "patch")
 
 image = (
     modal.Image.debian_slim(python_version="3.11")

@@ -25,7 +25,7 @@ Poi da WSL (`wsl bash -lc "..."`), tutti i path Windows via `/mnt/c/...`:
 
 ```bash
 # 1. tar dei file patch (contiene train.py con AMP + i config wavelet_precise_c*.yaml)
-tar -czf /tmp/patch.tar.gz -C "/mnt/c/Users/jacop/Proposta ETH FINALE/esperimenti/kaggle/patch" .
+tar -czf /tmp/patch.tar.gz -C "<cartella-locale>/esperimenti/kaggle/patch" .
 
 # 2. sessione GPU
 colab new -s wavc1 --gpu T4

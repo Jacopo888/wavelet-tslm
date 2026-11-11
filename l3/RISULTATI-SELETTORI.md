@@ -634,7 +634,7 @@ nel loro il **reward**.
 
 ## 14. Il punteggio di localize scomposto: rilevare l'assenza contro puntare (16/09)
 
-Nato da un dubbio posto da Jacopo: *i risultati di `va1` mandati all'ETH erano solo
+Nato da un dubbio posto da Jacopo: *i risultati di `va1` erano solo
 la distribuzione del dataset appresa?* La risposta si misura, e la misura cambia
 come va presentato il numero. Strumento: `l3/tools/decompose_localize.py`, solo CPU
 sulle righe già archiviate.
@@ -701,7 +701,7 @@ non esiste alcun header con coordinate: non c'è nulla da cui trapelare la posiz
 ## 15. Cosa ottiene una scorciatoia, categoria per categoria; audit delle due mail (16/09)
 
 Nato da una seconda domanda di Jacopo, dopo che l'agente dell'ablazione RoPE ha
-scomposto `va1` sulla validazione: *i risultati mandati all'ETH sono falsati?* La §14
+scomposto `va1` sulla validazione: *i risultati di `va1` sono falsati?* La §14
 copriva solo localize. Qui la stessa scomposizione si estende al multicanale, e per le
 altre categorie si misura cosa otterrebbe una risposta costante. Strumento:
 `l3/tools/decompose_localize.py` (ora con `--category localize_all_channels` e

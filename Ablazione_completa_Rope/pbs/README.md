@@ -10,7 +10,7 @@ From WSL, preview the source-only synchronization with:
 rsync -azn --delete-delay --itemize-changes \
   --exclude '.git/' --exclude '__pycache__/' --exclude '.pytest_cache/' \
   -e 'ssh.exe -o BatchMode=yes' \
-  '/mnt/c/Users/jacop/Proposta ETH FINALE/wavelet-tslm/Ablazione_completa_Rope/' \
+  '<cartella-locale>/wavelet-tslm/Ablazione_completa_Rope/' \
   'polimi:/work/u10970284/wavelet-tslm-rope-ablation/code/'
 ```
 

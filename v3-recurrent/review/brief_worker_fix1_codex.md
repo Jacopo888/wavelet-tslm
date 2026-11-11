@@ -1,6 +1,6 @@
 # Brief per Codex — fix del worker `v3-recurrent/node/node_eval_worker_v3.sh` (falso negativo sulla coverage)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file; io spedisco e rilancio. URGENTE: la GPU è ferma.
 
 ## Cosa è successo (06/09 15:57 UTC, nodo A40)

@@ -1,6 +1,6 @@
 # Brief per Codex — smoke end-to-end v3 sulla A40 (scrivi tu lo script)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Il tuo
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Il tuo
 sandbox non esegue comandi: scrivi script semplici e verificabili a occhio; li eseguo io sul nodo
 e ti riporto i log se serve un secondo giro.
 

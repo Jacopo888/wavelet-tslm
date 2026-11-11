@@ -79,7 +79,7 @@ Ablazione_completa_Rope**, e non esisteva ne' nel benchmark ne' in `va1`.
 
 ### Tre conseguenze
 
-1. **La mail a ETH cambia di segno.** Non si puo' scrivere che il loro training set sporcava la lettura: la
+1. **La conclusione cambia di segno.** Non si puo' dire che il training set del benchmark sporcasse la lettura: la
    scorciatoia l'abbiamo costruita noi, e solo in questa linea. Resta valido il risultato metodologico — mettere
    statistiche riassuntive nel prompt consente un buon composito senza usare gli embedding — ma e' un avvertimento
    sul disegno dei prompt per TSLM, non una critica al benchmark.

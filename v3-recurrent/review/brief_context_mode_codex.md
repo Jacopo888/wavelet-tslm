@@ -1,6 +1,6 @@
 # Brief per Codex — decomposizione del contesto: `context_mode: full | local | global` (+ config pilot)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file; io eseguo test, ship e pilot. Report in `CODEX-REPORT.md` §14; README aggiornato.
 
 ## Evidenza (pilot 1 `cross`, run `pilot_cross_20260909T014929Z`, in corso, 09/09)

@@ -1,6 +1,6 @@
 # Brief per Codex — v3 "residuo su v1": a init v3 ≡ v1, il loop ricorrente aggiunge solo contesto
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file (tu sei l'autore); io controllo il diff, eseguo `py v3-recurrent/patch/test_encoder_v3.py`,
 smoke sul nodo, run. Metti l'analisi nel report (Jacopo la vuole).
 

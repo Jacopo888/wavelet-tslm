@@ -1,6 +1,6 @@
 # Brief per Codex — gate dello smoke sulla scala del contesto: criterio sbagliato (fix rapido)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente `v3-recurrent/node/node_smoke_v3.sh` (e, se serve, `CODEX-REPORT.md` §12).
 
 ## Fatto (smoke A40, 08/09 10:44 UTC, commit `5bb1014`)

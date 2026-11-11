@@ -1,6 +1,6 @@
 # Brief per Codex — fix 1 dello smoke A40 (`v3-recurrent/node/node_smoke_v3.sh`)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file (tu sei l'autore); io li spedisco sul nodo e li eseguo.
 
 ## Cosa è successo sul nodo (05/09 16:25 UTC)

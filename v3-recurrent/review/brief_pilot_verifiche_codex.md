@@ -1,6 +1,6 @@
 # Brief per Codex — tre verifiche aggiuntive per i pilot del contesto (harness + post-hoc)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file; io eseguo test, ship e run. Report in `CODEX-REPORT.md` §15.
 NON toccare il comportamento di training; solo valutazione/diagnostica. Il pilot
 `pilot_crosslocal_20260909T071641Z` è IN CORSO sul nodo (fine ≈ 12:40 UTC): spedirò dopo.

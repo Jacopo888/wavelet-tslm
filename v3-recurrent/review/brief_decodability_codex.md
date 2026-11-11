@@ -1,6 +1,6 @@
 # Brief per Codex — v3: la posizione fluisce nei token ma Qwen non la usa (analisi + ridisegno + test di decodificabilità)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file; io controllo il diff, eseguo `py v3-recurrent/patch/test_encoder_v3.py`, poi
 smoke e run. Jacopo vuole la tua analisi del codice nel report, non solo il fix.
 

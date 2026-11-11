@@ -1,6 +1,6 @@
 # Brief per Codex — deadlock dello zero-init del contesto: scegli e implementa il fix, poi ripetiamo l'ablazione 1
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file; io eseguo `py v3-recurrent/patch/test_encoder_v3.py`, smoke sul nodo, run.
 Analisi nel report (Jacopo la legge).
 

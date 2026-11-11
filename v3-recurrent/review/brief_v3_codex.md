@@ -1,6 +1,6 @@
 # Brief per Codex — variante v3 "percettore wavelet ricorrente" (tu sei l'autore del codice)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm` (Windows; Python con torch CPU = `py`,
+Repo: `<cartella-locale>\wavelet-tslm` (Windows; Python con torch CPU = `py`,
 cioè Python 3.14 + torch 2.12 cpu; `python` è 3.11 senza torch). Non committare. Non usare la rete.
 
 ## Contesto (leggi prima, nell'ordine)

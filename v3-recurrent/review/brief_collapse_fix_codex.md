@@ -1,6 +1,6 @@
 # Brief per Codex — collasso dei 256 token dell'encoder v3 (`v3-recurrent/patch/wavelet_encoder_v3.py`)
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file (tu sei l'autore); io controllo il diff, eseguo i test con `py`, spedisco sul
 nodo e rilancio. Jacopo chiede esplicitamente la tua analisi del codice: spiega la causa nel report.
 

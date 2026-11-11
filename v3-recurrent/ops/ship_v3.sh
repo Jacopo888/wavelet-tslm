@@ -11,7 +11,7 @@
 set -euo pipefail
 IP="${1:?uso: ship_v3.sh <ip>}"
 KEY=~/.ssh/vultr_wavelet
-REPO="/mnt/c/Users/jacop/Proposta ETH FINALE/wavelet-tslm"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SSH="ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i $KEY root@$IP"
 SCP="scp -o StrictHostKeyChecking=no -o BatchMode=yes -i $KEY"
 

@@ -4,7 +4,7 @@ Nodo: 1× AMD Instinct MI300X (192 GB), 1,99 $/h, credito AMD 200 $ con scadenza
 **Fatturato anche da spento**: distruggere il droplet quando non si lavora; il bootstrap ricostruisce tutto in circa 5 minuti.
 
 - SSH dal PC: alias `do-mi300x` in `~/.ssh/config` di Windows (chiave `vultr_airway`).
-- Sync del codice (da WSL): `rsync -az --exclude .git/ --exclude __pycache__/ --exclude .pytest_cache/ -e 'ssh -i ~/.ssh/vultr_wavelet' '/mnt/c/Users/jacop/Proposta ETH FINALE/wavelet-tslm/Ablazione_completa_Rope/' root@<ip>:/root/wavelet-rope/code/`
+- Sync del codice (da WSL): `rsync -az --exclude .git/ --exclude __pycache__/ --exclude .pytest_cache/ -e 'ssh -i ~/.ssh/vultr_wavelet' '<cartella-locale>/wavelet-tslm/Ablazione_completa_Rope/' root@<ip>:/root/wavelet-rope/code/`
 - Sync verso il nodo: escludere sempre `.venv-luna/` (ambiente Python locale per gli agenti di codifica, ~2 GB) oltre a `.git/`, `__pycache__/`, `.pytest_cache/`, `integrity/artifacts/`.
 - Bootstrap: `bash /root/wavelet-rope/code/droplet/bootstrap.sh` (idempotente: scratch, container `wrope`, pin L1, asset verificati, manifest ambiente).
 - Comandi nel container: `docker exec -w /workspace/code wrope python ...`; `/workspace` = `/root/wavelet-rope`, `/scratch` = `/mnt/scratch`.

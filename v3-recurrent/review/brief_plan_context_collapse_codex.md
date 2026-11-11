@@ -1,6 +1,6 @@
 # Brief per Codex — eseguire PLAN-CONTEXT-COLLAPSE (parte ingegneristica), priorità dell'audit
 
-Repo: `C:\Users\jacop\Proposta ETH FINALE\wavelet-tslm`. Non committare, niente rete. Modifica
+Repo: `<cartella-locale>\wavelet-tslm`. Non committare, niente rete. Modifica
 direttamente i file (tu sei l'autore); io eseguo `py v3-recurrent/patch/test_encoder_v3.py`, smoke e
 pilot sulla A40 stanotte. Jacopo ha approvato l'esecuzione del tuo piano `v3-recurrent/PLAN-CONTEXT-COLLAPSE.md`
 (con l'ordine aggiornato dal tuo `AUDIT-CONTEXT-20260908.md`): prima un lettore che conservi
