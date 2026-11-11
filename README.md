@@ -1,7 +1,5 @@
 # wavelet-tslm — tokenizzazione multirisoluzione per time-series language models
 
-Cartella di lavoro dedicata (isolata dalla vecchia proposta ADMIT, ora in `../admit-legacy/`; le cartelle `../airway-agent/` e `../infra/` sono dell'altro agente — non toccare).
-
 ## Mappa
 
 - `timerlm/` — clone di OpenTSLM/TimeRLM + AnomalyXL rigenerato (seed 42) + innesti wavelet (tool v0, skill v1, docs/PRIME_RL_PIN.md per il Livello 2)
