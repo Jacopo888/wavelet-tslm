@@ -1,4 +1,4 @@
-# wavelet-tslm — proposta PhD ETH (tokenizzazione multirisoluzione per TSLM)
+# wavelet-tslm — tokenizzazione multirisoluzione per time-series language models
 
 Cartella di lavoro dedicata (isolata dalla vecchia proposta ADMIT, ora in `../admit-legacy/`; le cartelle `../airway-agent/` e `../infra/` sono dell'altro agente — non toccare).
 
